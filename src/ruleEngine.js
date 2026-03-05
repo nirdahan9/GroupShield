@@ -21,6 +21,9 @@ function evaluateMessage(rules, msgInfo, lang = 'he') {
             case 'forbidden_messages':
                 violations.push(...checkForbiddenMessages(rule.ruleData, content, lang));
                 break;
+            case 'block_non_text':
+                violations.push(...checkNonTextRule(rule.ruleData, msgType, lang));
+                break;
             case 'time_window':
                 violations.push(...checkTimeWindow(rule.ruleData, lang));
                 break;
@@ -41,18 +44,26 @@ function evaluateMessage(rules, msgInfo, lang = 'he') {
 function checkAllowedMessages(ruleData, content, msgType, lang) {
     const violations = [];
     const allowedList = ruleData.messages || [];
+    const matchMode = ruleData.matchMode || 'contains';
 
-    // Only text messages can match allowed list
-    if (msgType !== 'chat' && msgType !== 'revoked') {
-        violations.push(t('reason_forbidden_type', lang, { type: msgType }));
+    // Non-text is allowed by default (can be restricted via dedicated block_non_text rule)
+    if (msgType !== 'chat') {
         return violations;
     }
 
-    // Check if content matches any allowed message (case-insensitive, trim whitespace)
+    // Check if content matches any allowed message (exact or contains)
     const normalizedContent = content.trim();
+    const lcContent = normalizedContent.toLowerCase();
     const isAllowed = allowedList.some(allowed => {
-        const pattern = new RegExp(`^${escapeRegex(allowed.trim())}\\s*$`, 'i');
-        return pattern.test(normalizedContent);
+        const target = allowed.trim();
+        if (!target) return false;
+
+        if (matchMode === 'exact') {
+            const pattern = new RegExp(`^${escapeRegex(target)}\\s*$`, 'i');
+            return pattern.test(normalizedContent);
+        }
+
+        return lcContent.includes(target.toLowerCase());
     });
 
     if (!isAllowed) {
@@ -63,17 +74,52 @@ function checkAllowedMessages(ruleData, content, msgType, lang) {
 }
 
 /**
+ * Optional rule: block non-text messages
+ */
+function checkNonTextRule(ruleData, msgType, lang) {
+    const violations = [];
+    if (msgType === 'chat') return violations;
+
+    const blockedTypes = Array.isArray(ruleData && ruleData.blockedTypes)
+        ? ruleData.blockedTypes
+        : ['other_non_text'];
+
+    const knownMap = {
+        image: 'image',
+        video: 'video',
+        sticker: 'sticker',
+        document: 'document',
+        audio: 'audio',
+        ptt: 'audio'
+    };
+
+    const normalizedType = knownMap[msgType] || 'other_non_text';
+    if (blockedTypes.includes(normalizedType) || blockedTypes.includes('all_non_text')) {
+        violations.push(t('reason_forbidden_type', lang, { type: msgType }));
+    }
+    return violations;
+}
+
+/**
  * Check forbidden messages rule
  * Specific messages are banned; everything else is allowed
  */
 function checkForbiddenMessages(ruleData, content, lang) {
     const violations = [];
     const forbiddenList = ruleData.messages || [];
+    const matchMode = ruleData.matchMode || 'contains';
     const normalizedContent = content.trim().toLowerCase();
 
-    const isForbidden = forbiddenList.some(forbidden =>
-        normalizedContent.includes(forbidden.trim().toLowerCase())
-    );
+    const isForbidden = forbiddenList.some(forbidden => {
+        const target = forbidden.trim().toLowerCase();
+        if (!target) return false;
+
+        if (matchMode === 'exact') {
+            return normalizedContent === target;
+        }
+
+        return normalizedContent.includes(target);
+    });
 
     if (isForbidden) {
         violations.push(t('reason_forbidden_content', lang));
@@ -88,33 +134,57 @@ function checkForbiddenMessages(ruleData, content, lang) {
  */
 function checkTimeWindow(ruleData, lang) {
     const violations = [];
-    const { day, startHour, endHour } = ruleData;
 
     const now = new Date();
-    const options = { timeZone: 'Asia/Jerusalem', hour12: false, weekday: 'long', hour: 'numeric' };
+    const options = { timeZone: 'Asia/Jerusalem', hour12: false, weekday: 'long', hour: 'numeric', minute: 'numeric' };
     const fmt = new Intl.DateTimeFormat('en-US', options);
     const parts = fmt.formatToParts(now);
 
     const currentDayName = parts.find(p => p.type === 'weekday').value;
     const currentHour = parseInt(parts.find(p => p.type === 'hour').value, 10);
+    const currentMinute = parseInt(parts.find(p => p.type === 'minute').value, 10);
+    const currentMinuteOfDay = currentHour * 60 + currentMinute;
 
-    // Map day number to day name
-    const dayMap = {
-        0: 'Sunday', 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday',
-        4: 'Thursday', 5: 'Friday', 6: 'Saturday'
+    // Map day name to number
+    const dayNameToNum = {
+        Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3,
+        Thursday: 4, Friday: 5, Saturday: 6
     };
+    const currentDay = dayNameToNum[currentDayName];
 
-    // Day check (7 = every day)
-    if (day !== 7) {
-        const expectedDay = dayMap[day];
-        if (currentDayName !== expectedDay) {
-            violations.push(t('reason_time_violation', lang));
-            return violations;
+    const windows = Array.isArray(ruleData.windows) && ruleData.windows.length > 0
+        ? ruleData.windows
+        : [ruleData];
+
+    const isAnyWindowOpen = windows.some(w => {
+        const day = Number(w.day);
+        const startMinute = typeof w.startMinute === 'number' ? Number(w.startMinute) : Number(w.startHour) * 60;
+        const endMinute = typeof w.endMinute === 'number' ? Number(w.endMinute) : Number(w.endHour) * 60;
+
+        if ([day, startMinute, endMinute].some(n => Number.isNaN(n))) return false;
+
+        // Every day
+        if (day === 7) {
+            if (startMinute <= endMinute) {
+                return currentMinuteOfDay >= startMinute && currentMinuteOfDay <= endMinute;
+            }
+            // Overnight every-day window (e.g., 22:30-06:15)
+            return currentMinuteOfDay >= startMinute || currentMinuteOfDay <= endMinute;
         }
-    }
 
-    // Hour check
-    if (currentHour < startHour || currentHour > endHour) {
+        // Specific day
+        if (startMinute <= endMinute) {
+            return currentDay === day && currentMinuteOfDay >= startMinute && currentMinuteOfDay <= endMinute;
+        }
+
+        // Overnight specific day, e.g. Monday 22:30-06:15 means:
+        // Monday 22:30-23:59 OR Tuesday 00:00-06:15
+        const nextDay = (day + 1) % 7;
+        return (currentDay === day && currentMinuteOfDay >= startMinute)
+            || (currentDay === nextDay && currentMinuteOfDay <= endMinute);
+    });
+
+    if (!isAnyWindowOpen) {
         violations.push(t('reason_time_violation', lang));
     }
 

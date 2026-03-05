@@ -11,8 +11,8 @@ const strings = {
         en: '✅ Language set to English.\n\nLet\'s begin! 👇'
     },
     'ask_group_name': {
-        he: '📋 *שלב 1: קישור קבוצה*\n\nקודם כל, הוסף אותי לקבוצה שאתה רוצה שאאכוף ומנה אותי כ*מנהל*.\n\nלאחר מכן, שלח לי את *שם הקבוצה* (כפי שהוא מופיע בוואטסאפ):',
-        en: '📋 *Step 1: Link Group*\n\nFirst, add me to the group you want me to enforce and make me an *admin*.\n\nThen, send me the *group name* (as it appears in WhatsApp):'
+        he: '📋 *שלב 1: קישור קבוצה*\n\nקודם כל, הוסף אותי לקבוצה שאתה רוצה שאאכוף ומנה אותי כ*מנהל*.\n\nלאחר מכן, שלח לי את *שם הקבוצה* (כפי שהוא מופיע בוואטסאפ).\n\n✳️ תשובה לדוגמה:\nמשפחה',
+        en: '📋 *Step 1: Link Group*\n\nFirst, add me to the group you want me to enforce and make me an *admin*.\n\nThen, send me the *group name* (as it appears in WhatsApp).\n\n✳️ Example reply:\nFamily'
     },
     'group_searching': {
         he: '🔍 מחפש את הקבוצה...',
@@ -34,11 +34,47 @@ const strings = {
         he: '✅ מעולה! אני מנהל בקבוצה. נמשיך להגדרת החוקים.',
         en: '✅ Great! I\'m an admin in the group. Let\'s set up the rules.'
     },
+    'ask_group_verify_admin': {
+        he: '🔐 *אימות קבוצה נוסף*\n\nכדי לוודא שזו הקבוצה הנכונה, שלח מספר טלפון של *אחד ממנהלי הקבוצה* (בפורמט בינלאומי או מקומי).\n\n✳️ תשובה לדוגמה:\n+1 202-555-0187',
+        en: '🔐 *Additional group verification*\n\nTo verify this is the correct group, send the phone number of *one group admin* (international or local format).\n\n✳️ Example reply:\n+1 202-555-0187'
+    },
+    'group_already_managed': {
+        he: '⛔ הקבוצה הזו כבר מנוהלת על-ידי משתמש אחר, ולכן אי אפשר להגדיר עליה אכיפה מחדש.',
+        en: '⛔ This group is already managed by another user, so it cannot be configured again.'
+    },
+    'group_used_as_mgmt': {
+        he: '⛔ הקבוצה הזו מוגדרת כבר כקבוצת הנהלה, ולכן לא יכולה להיות קבוצה נאכפת.',
+        en: '⛔ This group is already used as a management group, so it cannot be an enforced group.'
+    },
+    'group_verify_admin_failed': {
+        he: '❌ המספר לא זוהה כמנהל בקבוצה הזו. נסה מספר של מנהל אחר.',
+        en: '❌ This number was not identified as an admin in this group. Try another admin number.'
+    },
+    'group_verify_admin_success': {
+        he: '✅ אימות הקבוצה הושלם בהצלחה.',
+        en: '✅ Group verification completed successfully.'
+    },
 
     // ── Rules Setup ──────────────────────────────────────────────────────
     'ask_rules_type': {
         he: '📏 *שלב 2: הגדרת חוקים*\n\nאיזה סוג חוקי תוכן תרצה?\n\n1️⃣ *הודעות מותרות בלבד* — רק הודעות ספציפיות מותרות\n2️⃣ *הודעות אסורות* — הודעות ספציפיות אסורות, השאר מותר\n3️⃣ *ללא חוקי תוכן* — ללא הגבלת תוכן',
         en: '📏 *Step 2: Set Rules*\n\nWhat type of content rules do you want?\n\n1️⃣ *Allowed messages only* — only specific messages allowed\n2️⃣ *Forbidden messages* — specific messages blocked, rest allowed\n3️⃣ *No content rules* — no content restrictions'
+    },
+    'ask_non_text_rule': {
+        he: '🖼️ *חוק סוג הודעה*\n\nהאם לחסום הודעות שהן לא טקסט? (תמונה/וידאו/מסמך וכו׳)\n\n1️⃣ כן, לחסום\n2️⃣ לא, לאפשר (ברירת מחדל)',
+        en: '🖼️ *Message type rule*\n\nDo you want to block non-text messages? (image/video/document etc.)\n\n1️⃣ Yes, block\n2️⃣ No, allow (default)'
+    },
+    'ask_non_text_types': {
+        he: '🧩 אילו סוגי הודעות לא-טקסט לחסום?\n\n0️⃣ הכל (כל סוג לא-טקסט)\n1️⃣ תמונות\n2️⃣ וידאו\n3️⃣ סטיקרים\n4️⃣ מסמכים\n5️⃣ אודיו\n6️⃣ כל סוג לא-טקסט אחר (למשל מיקום, איש קשר, סקר ועוד)\n\nשלח מספר/ים מופרדים בפסיק.\n✳️ לדוגמה: 0 או 1,3',
+        en: '🧩 Which non-text message types should be blocked?\n\n0️⃣ All (all non-text types)\n1️⃣ Images\n2️⃣ Video\n3️⃣ Stickers\n4️⃣ Documents\n5️⃣ Audio\n6️⃣ Any other non-text type (e.g., location, contact cards, polls, etc.)\n\nSend number(s) separated by commas.\n✳️ Example: 0 or 1,3'
+    },
+    'non_text_types_saved': {
+        he: '✅ סוגי הודעות לא-טקסט לחסימה נשמרו: {{types}}',
+        en: '✅ Blocked non-text message types saved: {{types}}'
+    },
+    'non_text_rule_saved': {
+        he: '✅ חוק הודעות לא-טקסט: {{status}}',
+        en: '✅ Non-text message rule: {{status}}'
     },
     'ask_allowed_messages': {
         he: '✍️ שלח לי את ההודעות *המותרות*.\nשלח כל הודעה בשורה נפרדת.\n\nלדוגמה:\nשבת שלום\nבוקר טוב',
@@ -52,39 +88,55 @@ const strings = {
         he: '✅ נשמר! {{count}} הודעות הוגדרו.',
         en: '✅ Saved! {{count}} messages configured.'
     },
+    'ask_rules_match_mode': {
+        he: '🧠 איך להתאים את הודעות הכלל?\n\n1️⃣ זהה בדיוק — ההודעה חייבת להיות בדיוק הטקסט שציינת\n2️⃣ מכיל ביטוי — מספיק שהטקסט שציינת מופיע בתוך ההודעה\n\n✳️ לדוגמה: אם המילה "קללה" אסורה ובוחרים "מכיל ביטוי" — גם "איזו קללה קשה" תיחשב הפרה.',
+        en: '🧠 How should message matching work for this rule?\n\n1️⃣ Exact match — message must exactly equal your configured text\n2️⃣ Contains phrase — configured text can appear inside a larger message\n\n✳️ Example: if "curse" is forbidden and you choose "contains", then "this is a curse word" is also a violation.'
+    },
+    'rules_match_mode_saved': {
+        he: '✅ מצב התאמת הודעות נשמר: {{mode}}',
+        en: '✅ Message match mode saved: {{mode}}'
+    },
     'ask_time_window': {
         he: '⏰ *שלב 3: חלון זמנים*\n\nלהגביל שליחת הודעות לזמנים מסוימים?\n\n1️⃣ כן ✅\n2️⃣ לא ❌',
         en: '⏰ *Step 3: Time Window*\n\nRestrict messages to specific times?\n\n1️⃣ Yes ✅\n2️⃣ No ❌'
     },
     'ask_time_day': {
-        he: '📅 באיזה יום? (שלח מספר)\n\n0️⃣ ראשון\n1️⃣ שני\n2️⃣ שלישי\n3️⃣ רביעי\n4️⃣ חמישי\n5️⃣ שישי\n6️⃣ שבת\n7️⃣ כל יום',
-        en: '📅 Which day? (send number)\n\n0️⃣ Sunday\n1️⃣ Monday\n2️⃣ Tuesday\n3️⃣ Wednesday\n4️⃣ Thursday\n5️⃣ Friday\n6️⃣ Saturday\n7️⃣ Every day'
+        he: '📅 באיזה יום? (שלח מספר)\n\n1️⃣ ראשון\n2️⃣ שני\n3️⃣ שלישי\n4️⃣ רביעי\n5️⃣ חמישי\n6️⃣ שישי\n7️⃣ שבת\n0️⃣ כל יום',
+        en: '📅 Which day? (send number)\n\n1️⃣ Sunday\n2️⃣ Monday\n3️⃣ Tuesday\n4️⃣ Wednesday\n5️⃣ Thursday\n6️⃣ Friday\n7️⃣ Saturday\n0️⃣ Every day'
     },
     'ask_time_start': {
-        he: '🕐 שעת התחלה? (0-23)\nלדוגמה: 6',
-        en: '🕐 Start hour? (0-23)\nExample: 6'
+        he: '🕐 שעת התחלה?\nאפשר לשלוח שעה בלבד או שעה:דקות\n\n✳️ תשובות מוצעות:\n06:00\n22:30\n6',
+        en: '🕐 Start time?\nYou can send hour only or hour:minute\n\n✳️ Suggested replies:\n06:00\n22:30\n6'
     },
     'ask_time_end': {
-        he: '🕐 שעת סיום? (0-23)\nלדוגמה: 23',
-        en: '🕐 End hour? (0-23)\nExample: 23'
+        he: '🕐 שעת סיום?\nאפשר לשלוח שעה בלבד או שעה:דקות\n\n✳️ תשובות מוצעות:\n23:00\n06:15\n23',
+        en: '🕐 End time?\nYou can send hour only or hour:minute\n\n✳️ Suggested replies:\n23:00\n06:15\n23'
     },
     'time_window_saved': {
-        he: '✅ חלון זמנים נשמר: יום {{day}}, {{start}}:00 - {{end}}:00',
-        en: '✅ Time window saved: {{day}}, {{start}}:00 - {{end}}:00'
+        he: '✅ חלון זמנים נשמר: יום {{day}}, {{start}} - {{end}}',
+        en: '✅ Time window saved: {{day}}, {{start}} - {{end}}'
+    },
+    'time_range_added': {
+        he: '✅ טווח זמן נוסף: יום {{day}}, {{start}} - {{end}}',
+        en: '✅ Time range added: {{day}}, {{start}} - {{end}}'
+    },
+    'ask_time_more': {
+        he: '➕ להוסיף עוד טווח זמן?\n\n1️⃣ כן\n2️⃣ לא, המשך',
+        en: '➕ Add another time range?\n\n1️⃣ Yes\n2️⃣ No, continue'
     },
 
     // ── Anti-Spam ────────────────────────────────────────────────────────
     'ask_antispam': {
-        he: '🔁 *שלב 4: אנטי-ספאם*\n\nלהפעיל הגנה מפני ספאם?\n\n1️⃣ כן ✅\n2️⃣ לא ❌',
-        en: '🔁 *Step 4: Anti-Spam*\n\nEnable spam protection?\n\n1️⃣ Yes ✅\n2️⃣ No ❌'
+        he: '🔁 *שלב 4: אנטי-ספאם*\n\nהאנטי-ספאם עובד כך:\n• מגדירים *מקסימום הודעות* בתוך *חלון זמן בשניות*\n• בהגעה למקסימום — התראה ⚠️\n• הודעה נוספת מעבר למקסימום — הפרה ואכיפה לפי השלבים שהגדרת\n\nלדוגמה: 5 הודעות ב-10 שניות → ההודעה ה-6 תיחשב ספאם.\n\nלהפעיל?\n1️⃣ כן ✅\n2️⃣ לא ❌',
+        en: '🔁 *Step 4: Anti-Spam*\n\nAnti-spam works like this:\n• Set *max messages* within a *time window (seconds)*\n• Reaching max → warning ⚠️\n• Next message above max → violation and enforcement (based on your configured steps)\n\nExample: 5 messages in 10 seconds → 6th message is spam.\n\nEnable it?\n1️⃣ Yes ✅\n2️⃣ No ❌'
     },
     'ask_spam_max': {
-        he: '📊 כמה הודעות מקסימום בחלון זמן?\nלדוגמה: 5',
-        en: '📊 Maximum messages in time window?\nExample: 5'
+        he: '📊 כמה הודעות מקסימום בחלון זמן?\n\n✳️ תשובות מוצעות:\n3\n5\n10',
+        en: '📊 Maximum messages in time window?\n\n✳️ Suggested replies:\n3\n5\n10'
     },
     'ask_spam_window': {
-        he: '⏱️ חלון זמן בשניות?\nלדוגמה: 10',
-        en: '⏱️ Time window in seconds?\nExample: 10'
+        he: '⏱️ חלון זמן בשניות?\n\n✳️ תשובות מוצעות:\n10\n20\n30',
+        en: '⏱️ Time window in seconds?\n\n✳️ Suggested replies:\n10\n20\n30'
     },
     'antispam_saved': {
         he: '✅ אנטי-ספאם: מקסימום {{max}} הודעות ב-{{window}} שניות',
@@ -97,24 +149,24 @@ const strings = {
         en: '⚖️ *Step 5: Enforcement Steps*\n\nChoose which steps the bot takes on violation.\n*Fixed order* — choose which to enable:\n\n{{steps}}\n\nSend the numbers you want to enable, separated by commas.\nExample: 1,2,3,5'
     },
     'enforcement_step_1': {
-        he: '1️⃣ מחיקת ההודעה המפרה',
-        en: '1️⃣ Delete the violating message'
+        he: '1️⃣ מחיקת ההודעה המפרה — ההודעה תימחק מהקבוצה',
+        en: '1️⃣ Delete violating message — removes the message from the group'
     },
     'enforcement_step_2': {
-        he: '2️⃣ הודעה פרטית (אזהרה)',
-        en: '2️⃣ Private message (warning)'
+        he: '2️⃣ הודעה פרטית — המשתמש יקבל אזהרה/הודעת ענישה בפרטי',
+        en: '2️⃣ Private message — user receives warning/enforcement notice in DM'
     },
     'enforcement_step_3': {
-        he: '3️⃣ הסרה מהקבוצה',
-        en: '3️⃣ Remove from group'
+        he: '3️⃣ הסרה מהקבוצה — המשתמש יוצא מהקבוצה',
+        en: '3️⃣ Remove from group — user is removed from the group'
     },
     'enforcement_step_4': {
-        he: '4️⃣ חסימת המשתמש',
-        en: '4️⃣ Block the user'
+        he: '4️⃣ חסימת המשתמש — הבוט יחסום את המשתמש בוואטסאפ',
+        en: '4️⃣ Block user — bot blocks the user on WhatsApp'
     },
     'enforcement_step_5': {
-        he: '5️⃣ שליחת דיווח',
-        en: '5️⃣ Send report'
+        he: '5️⃣ שליחת דיווח — נשלח דו״ח ליעד הדיווח שהוגדר',
+        en: '5️⃣ Send report — sends enforcement report to configured report target'
     },
     'enforcement_saved': {
         he: '✅ שלבי אכיפה נשמרו.',
@@ -123,8 +175,8 @@ const strings = {
 
     // ── Warnings ─────────────────────────────────────────────────────────
     'ask_warnings': {
-        he: '⚠️ *שלב 6: אזהרות*\n\nכמה אזהרות לפני אכיפה מלאה?\n(0 = אכיפה מיידית, ללא אזהרות)\n\nשלח מספר:',
-        en: '⚠️ *Step 6: Warnings*\n\nHow many warnings before full enforcement?\n(0 = immediate enforcement, no warnings)\n\nSend a number:'
+        he: '⚠️ *שלב 6: אזהרות*\n\nכמה אזהרות לפני אכיפה מלאה?\n(0 = אכיפה מיידית, ללא אזהרות)\n\n✳️ תשובות מוצעות:\n0\n3\n5',
+        en: '⚠️ *Step 6: Warnings*\n\nHow many warnings before full enforcement?\n(0 = immediate enforcement, no warnings)\n\n✳️ Suggested replies:\n0\n3\n5'
     },
     'warnings_saved': {
         he: '✅ מספר אזהרות: {{count}}',
@@ -133,8 +185,8 @@ const strings = {
 
     // ── Exempt Users ─────────────────────────────────────────────────────
     'ask_exempt': {
-        he: '🛡️ *שלב 7: משתמשים חסינים*\n\nשלח מספרי טלפון של משתמשים שלא ייאכפו עליהם חוקים.\nמספר אחד בכל שורה, בפורמט ישראלי.\n\nלדוגמה:\n052-123-4567\n054-987-6543\n\nאו שלח *"דלג"* לדלג.',
-        en: '🛡️ *Step 7: Exempt Users*\n\nSend phone numbers of users exempt from rules.\nOne number per line, in Israeli format.\n\nExample:\n052-123-4567\n054-987-6543\n\nOr send *"skip"* to skip.'
+        he: '🛡️ *שלב 7: משתמשים חסינים*\n\nשלח מספרי טלפון של משתמשים שלא ייאכפו עליהם חוקים.\nמספר אחד בכל שורה, בפורמט בינלאומי או מקומי.\n\nלדוגמה:\n+1 202-555-0187\n+972-52-123-4567\n\nאו שלח *"דלג"* לדלג.',
+        en: '🛡️ *Step 7: Exempt Users*\n\nSend phone numbers of users exempt from rules.\nOne number per line, in international or local format.\n\nExample:\n+1 202-555-0187\n+972-52-123-4567\n\nOr send *"skip"* to skip.'
     },
     'exempt_saved': {
         he: '✅ {{count}} משתמשים חסינים נשמרו.',
@@ -151,16 +203,32 @@ const strings = {
         en: '📨 *Step 8: Report Target*\n\nWhere should violation reports be sent?\n\n1️⃣ To me (DM)\n2️⃣ To another phone\n3️⃣ To a management group'
     },
     'ask_report_phone': {
-        he: '📱 שלח את מספר הטלפון לדיווח:',
-        en: '📱 Send the phone number for reports:'
+        he: '📱 שלח את מספר הטלפון לדיווח:\n\n✳️ תשובות מוצעות:\n+1 202-555-0187\n+972521234567',
+        en: '📱 Send the phone number for reports:\n\n✳️ Suggested replies:\n+1 202-555-0187\n+972521234567'
     },
     'ask_mgmt_group_name': {
-        he: '👥 שלח את שם קבוצת ההנהלה (הוסף אותי לקבוצה קודם):',
-        en: '👥 Send the management group name (add me to the group first):'
+        he: '👥 שלח את שם קבוצת ההנהלה (הוסף אותי לקבוצה קודם):\n\n✳️ תשובה לדוגמה:\nהנהלה',
+        en: '👥 Send the management group name (add me to the group first):\n\n✳️ Example reply:\nManagement'
     },
     'mgmt_group_confirm': {
         he: '✅ מצאתי קבוצת הנהלה!\n\n📌 *שם:* {{name}}\n👥 *משתתפים:* {{count}}\n\nזו הקבוצה הנכונה?\n\n1️⃣ כן ✅\n2️⃣ לא, חפש שוב ❌',
         en: '✅ Found management group!\n\n📌 *Name:* {{name}}\n👥 *Participants:* {{count}}\n\nIs this the right group?\n\n1️⃣ Yes ✅\n2️⃣ No, search again ❌'
+    },
+    'mgmt_group_cannot_be_enforced': {
+        he: '⛔ קבוצת הנהלה לא יכולה להיות קבוצה נאכפת (ולהפך). בחר קבוצה אחרת.',
+        en: '⛔ A management group cannot be an enforced group (and vice versa). Please choose another group.'
+    },
+    'ask_mgmt_group_verify_count': {
+        he: '🔍 אימות נוסף לקבוצת הנהלה: שלח את מספר המשתתפים שאתה מצפה לראות בקבוצה.',
+        en: '🔍 Additional management-group verification: send the participant count you expect in that group.'
+    },
+    'mgmt_group_verify_count_failed': {
+        he: '❌ אימות נכשל: ציפית ל-{{expected}} משתתפים, אבל כרגע זוהו {{actual}}. נסה שוב.',
+        en: '❌ Verification failed: expected {{expected}} participants, but detected {{actual}}. Please try again.'
+    },
+    'mgmt_group_verify_count_success': {
+        he: '✅ אימות קבוצת הנהלה הושלם בהצלחה.',
+        en: '✅ Management group verification completed successfully.'
     },
     'report_saved': {
         he: '✅ יעד דיווח נשמר.',
@@ -169,8 +237,8 @@ const strings = {
 
     // ── Summary & Completion ─────────────────────────────────────────────
     'setup_summary': {
-        he: '📋 *סיכום הגדרות GroupShield*\n\n🏷️ *קבוצה:* {{groupName}}\n📏 *חוקי תוכן:* {{rulesType}}\n⏰ *חלון זמנים:* {{timeWindow}}\n🔁 *אנטי-ספאם:* {{antiSpam}}\n⚖️ *שלבי אכיפה:* {{enforcement}}\n⚠️ *אזהרות:* {{warnings}}\n🛡️ *חסינים:* {{exempt}}\n📨 *דיווח:* {{report}}\n\nלאשר ולהפעיל?\n\n1️⃣ אשר ✅\n2️⃣ התחל מחדש 🔄',
-        en: '📋 *GroupShield Configuration Summary*\n\n🏷️ *Group:* {{groupName}}\n📏 *Content rules:* {{rulesType}}\n⏰ *Time window:* {{timeWindow}}\n🔁 *Anti-spam:* {{antiSpam}}\n⚖️ *Enforcement:* {{enforcement}}\n⚠️ *Warnings:* {{warnings}}\n🛡️ *Exempt:* {{exempt}}\n📨 *Reports:* {{report}}\n\nConfirm and activate?\n\n1️⃣ Confirm ✅\n2️⃣ Start over 🔄'
+        he: '📋 *סיכום הגדרות GroupShield*\n\n🏷️ *קבוצה:* {{groupName}}\n📏 *חוקי תוכן:* {{rulesType}}\n🧠 *התאמת תוכן:* {{rulesMode}}\n🖼️ *הודעות לא-טקסט:* {{nonTextRule}}\n⏰ *חלון זמנים:* {{timeWindow}}\n🔁 *אנטי-ספאם:* {{antiSpam}}\n⚖️ *שלבי אכיפה:* {{enforcement}}\n⚠️ *אזהרות:* {{warnings}}\n🛡️ *חסינים:* {{exempt}}\n📨 *דיווח:* {{report}}\n\nלאשר ולהפעיל?\n\n1️⃣ אשר ✅\n2️⃣ התחל מחדש 🔄',
+        en: '📋 *GroupShield Configuration Summary*\n\n🏷️ *Group:* {{groupName}}\n📏 *Content rules:* {{rulesType}}\n🧠 *Match mode:* {{rulesMode}}\n🖼️ *Non-text messages:* {{nonTextRule}}\n⏰ *Time window:* {{timeWindow}}\n🔁 *Anti-spam:* {{antiSpam}}\n⚖️ *Enforcement:* {{enforcement}}\n⚠️ *Warnings:* {{warnings}}\n🛡️ *Exempt:* {{exempt}}\n📨 *Reports:* {{report}}\n\nConfirm and activate?\n\n1️⃣ Confirm ✅\n2️⃣ Start over 🔄'
     },
     'setup_complete': {
         he: '🛡️✅ *GroupShield פעיל!*\n\nהבוט מאכוף כעת את החוקים בקבוצה *{{groupName}}*.\n\nשלח *"עזרה"* לרשימת פקודות.',
@@ -187,8 +255,8 @@ const strings = {
         en: '🚫 *You were removed from "{{groupName}}"*\n\n📝 *Reason:* {{reason}}\n📅 *Time:* {{time}}'
     },
     'violation_report': {
-        he: '🛡️ *דו"ח GroupShield*\n\n👤 *שם:* {{pushname}}\n📱 *מספר:* {{number}}\n📝 *סיבה:* {{reason}}\n📝 *תוכן:* "{{content}}"\n📩 *הודעה פרטית:* {{privateStatus}}\n🚫 *הסרה:* {{removeStatus}}\n🔒 *חסימה:* {{blockStatus}}\n🕒 *זמן:* {{time}}',
-        en: '🛡️ *GroupShield Report*\n\n👤 *Name:* {{pushname}}\n📱 *Number:* {{number}}\n📝 *Reason:* {{reason}}\n📝 *Content:* "{{content}}"\n📩 *Private msg:* {{privateStatus}}\n🚫 *Removal:* {{removeStatus}}\n🔒 *Block:* {{blockStatus}}\n🕒 *Time:* {{time}}'
+        he: '🛡️ *דו"ח GroupShield*\n\n🏷️ *קבוצה:* {{groupName}}\n🆔 *מזהה:* {{violationId}}\n👤 *שם:* {{pushname}}\n📱 *מספר:* {{number}}\n📝 *סיבה:* {{reason}}\n📝 *תוכן:* "{{content}}"\n📩 *הודעה פרטית:* {{privateStatus}}\n🚫 *הסרה:* {{removeStatus}}\n🔒 *חסימה:* {{blockStatus}}\n🕒 *זמן:* {{time}}',
+        en: '🛡️ *GroupShield Report*\n\n🏷️ *Group:* {{groupName}}\n🆔 *ID:* {{violationId}}\n👤 *Name:* {{pushname}}\n📱 *Number:* {{number}}\n📝 *Reason:* {{reason}}\n📝 *Content:* "{{content}}"\n📩 *Private msg:* {{privateStatus}}\n🚫 *Removal:* {{removeStatus}}\n🔒 *Block:* {{blockStatus}}\n🕒 *Time:* {{time}}'
     },
 
     // ── Undo ─────────────────────────────────────────────────────────────
@@ -207,18 +275,38 @@ const strings = {
 
     // ── Commands ─────────────────────────────────────────────────────────
     'help': {
-        he: '🛡️ *פקודות GroupShield*\n\n📊 *מידע:*\n• *עזרה* — תפריט זה\n• *סטטוס* — מצב הבוט והקבוצה\n\n🛡️ *חסינים:*\n• *הוסף חסין 05X-XXX-XXXX* — הוסף חסין\n• *הסר חסין 05X-XXX-XXXX* — הסר חסין\n• *רשימת חסינים* — הצג חסינים\n\n⚠️ *אזהרות:*\n• *אפס אזהרות 05X-XXX-XXXX* — אפס אזהרות\n\n⚙️ *מערכת:*\n• *הגדרות* — שנה הגדרות\n• *שפה* — החלף שפה\n• *ריסטארט* — אתחל בוט',
-        en: '🛡️ *GroupShield Commands*\n\n📊 *Info:*\n• *help* — this menu\n• *status* — bot and group status\n\n🛡️ *Exemptions:*\n• *exempt add 05X-XXX-XXXX* — add exempt\n• *exempt remove 05X-XXX-XXXX* — remove exempt\n• *exempt list* — list exempt users\n\n⚠️ *Warnings:*\n• *warnings reset 05X-XXX-XXXX* — reset warnings\n\n⚙️ *System:*\n• *settings* — change settings\n• *language* — switch language\n• *restart* — restart bot'
+        he: '🛡️ *פקודות GroupShield*\n\n📊 *מידע:*\n• *עזרה* — תפריט זה\n• *סטטוס* — מצב הבוט והקבוצה\n\n🛡️ *חסינים:*\n• *הוסף חסין 05X-XXX-XXXX* — הוסף חסין\n• *הסר חסין 05X-XXX-XXXX* — הסר חסין\n• *רשימת חסינים* — הצג חסינים\n\n⚠️ *אזהרות:*\n• *אפס אזהרות 05X-XXX-XXXX* — אפס אזהרות\n\n🔄 *שינוי שם קבוצה:*\n• *אשר שם <requestId>* — אישור שם חדש\n• *דחה שם <requestId>* — דחיית שם חדש\n\n⚙️ *מערכת:*\n• *התחל* — התחלת setup\n• *הגדרות* — שינוי הגדרות מלא\n• *עדכן אכיפה* — שינוי מהיר של אכיפה ואזהרות\n• *איפוס* — איפוס מלא\n• *הפסק אכיפה* — עצירת אכיפה ויציאה מקבוצות\n• *שפה* — החלף שפה\n• *ריסטארט* — אתחל בוט',
+        en: '🛡️ *GroupShield Commands*\n\n📊 *Info:*\n• *help* — this menu\n• *status* — bot and group status\n\n🛡️ *Exemptions:*\n• *exempt add 05X-XXX-XXXX* — add exempt\n• *exempt remove 05X-XXX-XXXX* — remove exempt\n• *exempt list* — list exempt users\n\n⚠️ *Warnings:*\n• *warnings reset 05X-XXX-XXXX* — reset warnings\n\n🔄 *Group name changes:*\n• *confirm name <requestId>* — approve new name\n• *reject name <requestId>* — reject new name\n\n⚙️ *System:*\n• *start* — begin setup\n• *settings* — full reconfiguration\n• *update enforcement* — quick enforcement + warnings update\n• *reset* — full reset\n• *stop enforcement* — stop enforcement and leave groups\n• *language* — switch language\n• *restart* — restart bot'
     },
     'status_message': {
-        he: '📊 *סטטוס GroupShield*\n🟢 פעיל\n🛡️ *קבוצה:* {{groupName}} ({{memberCount}} חברים)\n⚠️ *אזהרות פעילות:* {{activeWarnings}}\n⏱️ *זמן פעילות:* {{uptime}}\n💾 *זיכרון:* {{memory}}\n🕒 {{time}}',
-        en: '📊 *GroupShield Status*\n🟢 Active\n🛡️ *Group:* {{groupName}} ({{memberCount}} members)\n⚠️ *Active warnings:* {{activeWarnings}}\n⏱️ *Uptime:* {{uptime}}\n💾 *Memory:* {{memory}}\n🕒 {{time}}'
+        he: '📊 *סטטוס GroupShield*\n🟢 פעיל\n🛡️ *קבוצה:* {{groupName}} ({{memberCount}} חברים)\n⚠️ *אזהרות פעילות:* {{activeWarnings}}\n🕒 {{time}}',
+        en: '📊 *GroupShield Status*\n🟢 Active\n🛡️ *Group:* {{groupName}} ({{memberCount}} members)\n⚠️ *Active warnings:* {{activeWarnings}}\n🕒 {{time}}'
     },
 
     // ── General ──────────────────────────────────────────────────────────
     'unknown_command': {
-        he: '❓ לא הבנתי. שלח *"עזרה"* לרשימת פקודות.',
-        en: '❓ I didn\'t understand. Send *"help"* for a list of commands.'
+        he: '❓ לא זיהיתי את ההודעה.\nשלח *"עזרה"* לרשימת פקודות, או *"התחל"* כדי להתחיל הגדרה.',
+        en: '❓ I could not recognize this message.\nSend *"help"* for commands, or *"start"* to begin setup.'
+    },
+    'setup_start_hint': {
+        he: '👋 כדי להתחיל הגדרת בוט, שלח *"התחל"*.',
+        en: '👋 To start setup, send *"start"*.'
+    },
+    'quick_enforcement_intro': {
+        he: '⚙️ *עדכון אכיפה מהיר*\nבחר מחדש את שלבי האכיפה והאזהרות:',
+        en: '⚙️ *Quick enforcement update*\nReconfigure enforcement steps and warnings:'
+    },
+    'quick_enforcement_saved': {
+        he: '✅ הגדרות האכיפה עודכנו בהצלחה.',
+        en: '✅ Enforcement settings updated successfully.'
+    },
+    'reset_completed': {
+        he: '✅ בוצע איפוס מלא.\nכדי להתחיל מחדש שלח *"התחל"*.',
+        en: '✅ Full reset completed.\nSend *"start"* to begin again.'
+    },
+    'stop_enforcement_done': {
+        he: '🛑 האכיפה הופסקה לקבוצה *{{groupName}}*. יצאתי מהקבוצה (וגם מקבוצת הנהלה אם הוגדרה).',
+        en: '🛑 Enforcement stopped for *{{groupName}}*. I left the group (and management group if configured).'
     },
     'error_generic': {
         he: '❌ שגיאה: {{error}}',
@@ -289,6 +377,26 @@ const strings = {
     'warnings_reset': {
         he: '✅ האזהרות אופסו עבור {{number}}.',
         en: '✅ Warnings reset for {{number}}.'
+    },
+    'group_name_change_detected': {
+        he: '🔄 *זוהה שינוי בשם קבוצה*\n\nשם קודם: *{{oldName}}*\nשם חדש שזוהה: *{{newName}}*\n\nאם השם החדש תקין, השב:\n*אשר שם {{requestId}}*\n\nאם לא תקין, השב:\n*דחה שם {{requestId}}*',
+        en: '🔄 *Group name change detected*\n\nOld name: *{{oldName}}*\nDetected new name: *{{newName}}*\n\nIf the new name is correct, reply:\n*confirm name {{requestId}}*\n\nIf not correct, reply:\n*reject name {{requestId}}*'
+    },
+    'name_change_request_not_found': {
+        he: '❌ בקשת עדכון שם לא נמצאה או שכבר טופלה ({{requestId}}).',
+        en: '❌ Name-change request not found or already handled ({{requestId}}).'
+    },
+    'name_change_unauthorized': {
+        he: '⛔ אין לך הרשאה לאשר/לדחות את שינוי השם עבור קבוצה זו.',
+        en: '⛔ You are not authorized to approve/reject this group name change.'
+    },
+    'name_change_approved': {
+        he: '✅ שינוי שם אושר.\n*{{oldName}}* → *{{newName}}*',
+        en: '✅ Name change approved.\n*{{oldName}}* → *{{newName}}*'
+    },
+    'name_change_rejected': {
+        he: '✅ שינוי שם נדחה. השם יישאר:\n*{{oldName}}*\n(השם שזוהה: *{{newName}}*)',
+        en: '✅ Name change rejected. Stored name remains:\n*{{oldName}}*\n(detected: *{{newName}}*)'
     },
     'not_configured': {
         he: '❌ הבוט עדיין לא הוגדר. שלח הודעה כלשהי כדי להתחיל.',

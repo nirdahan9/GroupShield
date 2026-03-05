@@ -4,7 +4,7 @@ const config = require('./config');
 const logger = require('./logger');
 const database = require('./database');
 const { t } = require('./i18n');
-const { extractNumber, parsePhoneNumber } = require('./utils');
+const { extractNumber, parsePhoneNumber, getNormalizedJid } = require('./utils');
 const setupFlow = require('./setupFlow');
 
 /**
@@ -30,10 +30,36 @@ async function executeCommand(client, senderJid, command, lang) {
             return await buildUserStatus(client, senderJid, groupConfig, lang);
         }
 
+        // ── Start Setup Trigger Alias ────────────────────────────────
+        if (cmdLower === 'התחל' || cmdLower === 'setup' || cmdLower === 'start setup' || cmdLower === 'start') {
+            return await setupFlow.startSetup(senderJid, lang);
+        }
+
         // ── Settings ─────────────────────────────────────────────────
         if (cmdLower === 'הגדרות' || cmdLower === 'settings') {
             await setupFlow.resetSetup(senderJid);
             return await setupFlow.processSetupMessage(client, senderJid, '');
+        }
+
+        // ── Reset All Configuration ──────────────────────────────────
+        if (cmdLower === 'איפוס' || cmdLower === 'reset') {
+            if (!groupConfig) return t('no_group_linked', lang);
+            await database.deleteGroup(groupConfig.groupId);
+            await database.updateUserGroup(senderJid, null);
+            await setupFlow.resetSetup(senderJid);
+            logger.auditLog(senderJid, 'RESET_CONFIG', `Group: ${groupConfig.groupName}`, true);
+            return t('reset_completed', lang);
+        }
+
+        // ── Quick Enforcement Update ────────────────────────────────
+        if (cmdLower === 'עדכן אכיפה' || cmdLower === 'update enforcement') {
+            return await setupFlow.startQuickEnforcementUpdate(senderJid);
+        }
+
+        // ── Stop Enforcement + Exit Groups ───────────────────────────
+        if (cmdLower === 'הפסק אכיפה' || cmdLower === 'stop enforcement') {
+            if (!groupConfig) return t('no_group_linked', lang);
+            return await stopEnforcement(client, senderJid, groupConfig, lang);
         }
 
         // ── Language ─────────────────────────────────────────────────
@@ -78,6 +104,17 @@ async function executeCommand(client, senderJid, command, lang) {
             return t('restart_message', lang);
         }
 
+        // ── Group Name Change Approvals ─────────────────────────────
+        if (cmdLower.startsWith('אשר שם ') || cmdLower.startsWith('confirm name ')) {
+            const requestId = cmd.split(/\s+/).slice(2).join(' ').trim();
+            return await approveGroupNameChange(client, senderJid, requestId, lang);
+        }
+
+        if (cmdLower.startsWith('דחה שם ') || cmdLower.startsWith('reject name ')) {
+            const requestId = cmd.split(/\s+/).slice(2).join(' ').trim();
+            return await rejectGroupNameChange(client, senderJid, requestId, lang);
+        }
+
         // No command matched
         return null;
 
@@ -100,17 +137,12 @@ async function buildUserStatus(client, senderJid, groupConfig, lang) {
     } catch (e) { }
 
     const activeWarnings = await database.getActiveWarningsCount(groupConfig.groupId);
-    const uptime = process.uptime();
-    const uptimeStr = `${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m`;
-    const memMB = (process.memoryUsage().rss / 1024 / 1024).toFixed(0);
     const time = new Date().toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' });
 
     return t('status_message', lang, {
         groupName: groupConfig.groupName,
         memberCount: memberCount.toString(),
         activeWarnings: activeWarnings.toString(),
-        uptime: uptimeStr,
-        memory: `${memMB}MB`,
         time
     });
 }
@@ -174,6 +206,121 @@ async function resetUserWarnings(groupConfig, rawPhone, lang) {
     await database.resetWarnings(groupConfig.groupId, jid);
     logger.auditLog(null, 'WARNINGS_RESET', `User: ${number}, Group: ${groupConfig.groupName}`, true);
     return t('warnings_reset', lang, { number });
+}
+
+async function stopEnforcement(client, senderJid, groupConfig, lang) {
+    try {
+        // Disable enforcement and cleanup DB config
+        await database.setGroupActive(groupConfig.groupId, false);
+        await database.deleteGroup(groupConfig.groupId);
+        await database.updateUserGroup(senderJid, null);
+
+        // Leave managed group
+        try {
+            const managedChat = await client.getChatById(groupConfig.groupId);
+            await managedChat.leave();
+        } catch (e) {
+            logger.warn(`Could not leave managed group ${groupConfig.groupId}`);
+        }
+
+        // Leave management group (if configured)
+        if (groupConfig.mgmtGroupId) {
+            try {
+                const mgmtChat = await client.getChatById(groupConfig.mgmtGroupId);
+                await mgmtChat.leave();
+            } catch (e) {
+                logger.warn(`Could not leave management group ${groupConfig.mgmtGroupId}`);
+            }
+        }
+
+        logger.auditLog(senderJid, 'STOP_ENFORCEMENT', `Group: ${groupConfig.groupName}`, true);
+        return t('stop_enforcement_done', lang, { groupName: groupConfig.groupName });
+    } catch (error) {
+        logger.error('Failed to stop enforcement', error);
+        return t('error_generic', lang, { error: error.message });
+    }
+}
+
+async function isAuthorizedNameChangeResponder(client, senderJid, groupConfig) {
+    const normalizedSender = getNormalizedJid(senderJid);
+    const target = groupConfig.reportTarget || 'dm';
+
+    if (target === 'dm') {
+        return normalizedSender === groupConfig.ownerJid;
+    }
+
+    if (target.startsWith('phone:')) {
+        const phoneJid = target.split(':')[1] + '@s.whatsapp.net';
+        return normalizedSender === phoneJid;
+    }
+
+    if (target === 'mgmt_group' && groupConfig.mgmtGroupId) {
+        try {
+            const mgmtChat = await client.getChatById(groupConfig.mgmtGroupId);
+            return mgmtChat.participants.some(p => getNormalizedJid(p.id._serialized) === normalizedSender);
+        } catch {
+            return false;
+        }
+    }
+
+    return false;
+}
+
+async function approveGroupNameChange(client, senderJid, requestId, lang) {
+    if (!requestId) return t('invalid_input', lang);
+
+    const req = await database.getGroupNameChangeRequest(requestId);
+    if (!req || req.status !== 'pending') {
+        return t('name_change_request_not_found', lang, { requestId });
+    }
+
+    const groupConfig = await database.getGroup(req.groupId);
+    if (!groupConfig) {
+        await database.resolveGroupNameChangeRequest(requestId, 'rejected_missing_group', senderJid);
+        return t('name_change_request_not_found', lang, { requestId });
+    }
+
+    const authorized = await isAuthorizedNameChangeResponder(client, senderJid, groupConfig);
+    if (!authorized) {
+        return t('name_change_unauthorized', lang);
+    }
+
+    await database.updateGroupName(req.groupId, req.newName);
+    await database.resolveGroupNameChangeRequest(requestId, 'approved', senderJid);
+    logger.auditLog(senderJid, 'GROUP_NAME_APPROVED', `${req.oldName} -> ${req.newName} (${requestId})`, true);
+
+    return t('name_change_approved', lang, {
+        oldName: req.oldName || (lang === 'he' ? 'לא ידוע' : 'Unknown'),
+        newName: req.newName
+    });
+}
+
+async function rejectGroupNameChange(client, senderJid, requestId, lang) {
+    if (!requestId) return t('invalid_input', lang);
+
+    const req = await database.getGroupNameChangeRequest(requestId);
+    if (!req || req.status !== 'pending') {
+        return t('name_change_request_not_found', lang, { requestId });
+    }
+
+    const groupConfig = await database.getGroup(req.groupId);
+    if (!groupConfig) {
+        await database.resolveGroupNameChangeRequest(requestId, 'rejected_missing_group', senderJid);
+        return t('name_change_request_not_found', lang, { requestId });
+    }
+
+    const authorized = await isAuthorizedNameChangeResponder(client, senderJid, groupConfig);
+    if (!authorized) {
+        return t('name_change_unauthorized', lang);
+    }
+
+    await database.resolveGroupNameChangeRequest(requestId, 'rejected', senderJid);
+    logger.auditLog(senderJid, 'GROUP_NAME_REJECTED', `${req.oldName} -> ${req.newName} (${requestId})`, true);
+
+    return t('name_change_rejected', lang, {
+        oldName: req.oldName || (lang === 'he' ? 'לא ידוע' : 'Unknown'),
+        newName: req.newName
+    });
 }
 
 module.exports = {

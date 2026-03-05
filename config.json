@@ -39,8 +39,14 @@
         "delayBetweenRemovalsMs": 2500,
         "maxRemovalsPerMinute": 15
     },
+    "warnings": {
+        "resetAfterDays": 60
+    },
     "scheduling": {
         "dailyRestart": "0 4 * * *",
-        "statusMessages": "0 8,12,16,20 * * *"
+        "statusMessages": "0 8,12,16,20 * * *",
+        "groupNameRefreshIntervalMs": 300000,
+        "warningsCleanup": "15 4 * * *",
+        "orphanGroupCleanup": "30 4 * * *"
     }
 }

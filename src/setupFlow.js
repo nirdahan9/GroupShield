@@ -39,10 +39,18 @@ async function processSetupMessage(client, senderJid, content) {
             return await handleGroupConfirm(client, senderJid, content, state, lang);
         case 'admin_check':
             return await handleAdminCheck(client, senderJid, content, state, lang);
+        case 'group_verify_admin':
+            return await handleGroupVerifyAdmin(client, senderJid, content, state, lang);
         case 'rules_type':
             return await handleRulesType(client, senderJid, content, state, lang);
         case 'rules_content':
             return await handleRulesContent(client, senderJid, content, state, lang);
+        case 'rules_match_mode':
+            return await handleRulesMatchMode(client, senderJid, content, state, lang);
+        case 'non_text_rule':
+            return await handleNonTextRule(client, senderJid, content, state, lang);
+        case 'non_text_types':
+            return await handleNonTextTypes(client, senderJid, content, state, lang);
         case 'time_window':
             return await handleTimeWindow(client, senderJid, content, state, lang);
         case 'time_day':
@@ -51,6 +59,8 @@ async function processSetupMessage(client, senderJid, content) {
             return await handleTimeStart(client, senderJid, content, state, lang);
         case 'time_end':
             return await handleTimeEnd(client, senderJid, content, state, lang);
+        case 'time_more':
+            return await handleTimeMore(client, senderJid, content, state, lang);
         case 'antispam':
             return await handleAntiSpam(client, senderJid, content, state, lang);
         case 'spam_max':
@@ -59,8 +69,12 @@ async function processSetupMessage(client, senderJid, content) {
             return await handleSpamWindow(client, senderJid, content, state, lang);
         case 'enforcement':
             return await handleEnforcement(client, senderJid, content, state, lang);
+        case 'quick_enforcement':
+            return await handleQuickEnforcement(client, senderJid, content, state, lang);
         case 'warnings':
             return await handleWarnings(client, senderJid, content, state, lang);
+        case 'quick_warnings':
+            return await handleQuickWarnings(client, senderJid, content, state, lang);
         case 'exempt':
             return await handleExempt(client, senderJid, content, state, lang);
         case 'report_target':
@@ -71,6 +85,8 @@ async function processSetupMessage(client, senderJid, content) {
             return await handleMgmtGroupName(client, senderJid, content, state, lang);
         case 'mgmt_group_confirm':
             return await handleMgmtGroupConfirm(client, senderJid, content, state, lang);
+        case 'mgmt_group_verify_count':
+            return await handleMgmtGroupVerifyCount(client, senderJid, content, state, lang);
         case 'summary':
             return await handleSummary(client, senderJid, content, state, lang);
         default:
@@ -88,6 +104,53 @@ async function saveState(jid, state) {
 
 async function updateLang(jid, lang) {
     await database.updateUserLanguage(jid, lang);
+}
+
+function parseTimeToMinutes(input) {
+    const raw = (input || '').trim();
+    if (!raw) return null;
+
+    // Backward compatible: "6" => 06:00
+    if (/^\d{1,2}$/.test(raw)) {
+        const h = parseInt(raw, 10);
+        if (h >= 0 && h <= 23) return h * 60;
+        return null;
+    }
+
+    // New format: HH:mm
+    const m = raw.match(/^(\d{1,2}):(\d{2})$/);
+    if (!m) return null;
+    const h = parseInt(m[1], 10);
+    const min = parseInt(m[2], 10);
+    if (h < 0 || h > 23 || min < 0 || min > 59) return null;
+    return h * 60 + min;
+}
+
+function formatMinutes(totalMinutes) {
+    const h = Math.floor(totalMinutes / 60);
+    const m = totalMinutes % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+function getNonTextTypeLabel(type, lang) {
+    const labels = {
+        all_non_text: { he: 'הכל', en: 'All non-text types' },
+        image: { he: 'תמונות', en: 'Images' },
+        video: { he: 'וידאו', en: 'Video' },
+        sticker: { he: 'סטיקרים', en: 'Stickers' },
+        document: { he: 'מסמכים', en: 'Documents' },
+        audio: { he: 'אודיו', en: 'Audio' },
+        other_non_text: { he: 'שאר סוגי לא-טקסט', en: 'Other non-text types' }
+    };
+    return (labels[type] && labels[type][lang]) || type;
+}
+
+function getRuleMatchModeLabel(mode, lang) {
+    const labels = {
+        exact: { he: 'זהה בדיוק', en: 'Exact match' },
+        contains: { he: 'מכיל ביטוי', en: 'Contains phrase' }
+    };
+    return (labels[mode] && labels[mode][lang]) || mode;
 }
 
 // ── Step Handlers ────────────────────────────────────────────────────────
@@ -170,6 +233,18 @@ async function handleGroupConfirm(client, jid, content, state, lang) {
             );
             const isAdmin = botParticipant && (botParticipant.isAdmin || botParticipant.isSuperAdmin);
 
+            const canClaim = await database.canOwnerClaimGroup(groupId, jid);
+            if (!canClaim) {
+                await saveState(jid, { step: 'group_name' });
+                return t('group_already_managed', lang);
+            }
+
+            const usedAsMgmt = await database.isGroupUsedAsMgmt(groupId);
+            if (usedAsMgmt) {
+                await saveState(jid, { step: 'group_name' });
+                return t('group_used_as_mgmt', lang);
+            }
+
             if (!isAdmin) {
                 await saveState(jid, {
                     ...state,
@@ -178,13 +253,28 @@ async function handleGroupConfirm(client, jid, content, state, lang) {
                 return t('group_not_admin', lang);
             }
 
-            // Bot is admin — proceed
+            const adminNumbers = chat.participants
+                .filter(p => p.isAdmin || p.isSuperAdmin)
+                .map(p => extractNumber(getNormalizedJid(p.id._serialized)))
+                .filter(Boolean);
+
+            if (adminNumbers.length === 0) {
+                await saveState(jid, {
+                    step: 'rules_type',
+                    groupId: groupId,
+                    groupName: state.candidateGroupName
+                });
+                return t('group_admin_confirmed', lang) + '\n\n' + t('ask_rules_type', lang);
+            }
+
+            // Bot is admin — perform second verification by known admin number
             await saveState(jid, {
-                step: 'rules_type',
+                step: 'group_verify_admin',
                 groupId: groupId,
-                groupName: state.candidateGroupName
+                groupName: state.candidateGroupName,
+                candidateAdminNumbers: adminNumbers
             });
-            return t('group_admin_confirmed', lang) + '\n\n' + t('ask_rules_type', lang);
+            return t('group_admin_confirmed', lang) + '\n\n' + t('ask_group_verify_admin', lang);
         } catch (e) {
             logger.error('Failed to check admin status', e);
             return t('error_generic', lang, { error: e.message });
@@ -210,22 +300,71 @@ async function handleAdminCheck(client, jid, content, state, lang) {
             );
             const isAdmin = botParticipant && (botParticipant.isAdmin || botParticipant.isSuperAdmin);
 
+            const canClaim = await database.canOwnerClaimGroup(groupId, jid);
+            if (!canClaim) {
+                await saveState(jid, { step: 'group_name' });
+                return t('group_already_managed', lang);
+            }
+
+            const usedAsMgmt = await database.isGroupUsedAsMgmt(groupId);
+            if (usedAsMgmt) {
+                await saveState(jid, { step: 'group_name' });
+                return t('group_used_as_mgmt', lang);
+            }
+
             if (!isAdmin) {
                 return t('group_not_admin', lang);
             }
 
+            const adminNumbers = chat.participants
+                .filter(p => p.isAdmin || p.isSuperAdmin)
+                .map(p => extractNumber(getNormalizedJid(p.id._serialized)))
+                .filter(Boolean);
+
+            if (adminNumbers.length === 0) {
+                await saveState(jid, {
+                    step: 'rules_type',
+                    groupId: groupId,
+                    groupName: state.candidateGroupName
+                });
+                return t('group_admin_confirmed', lang) + '\n\n' + t('ask_rules_type', lang);
+            }
+
             await saveState(jid, {
-                step: 'rules_type',
+                step: 'group_verify_admin',
                 groupId: groupId,
-                groupName: state.candidateGroupName
+                groupName: state.candidateGroupName,
+                candidateAdminNumbers: adminNumbers
             });
-            return t('group_admin_confirmed', lang) + '\n\n' + t('ask_rules_type', lang);
+            return t('group_admin_confirmed', lang) + '\n\n' + t('ask_group_verify_admin', lang);
         } catch (e) {
             logger.error('Failed to re-check admin', e);
             return t('error_generic', lang, { error: e.message });
         }
     }
     return t('group_not_admin', lang);
+}
+
+async function handleGroupVerifyAdmin(client, jid, content, state, lang) {
+    const parsed = parsePhoneNumber(content.trim());
+    if (!parsed) {
+        return t('ask_group_verify_admin', lang);
+    }
+
+    const candidates = state.candidateAdminNumbers || [];
+    const match = candidates.includes(parsed);
+
+    if (!match) {
+        return t('group_verify_admin_failed', lang);
+    }
+
+    await saveState(jid, {
+        step: 'rules_type',
+        groupId: state.groupId || state.candidateGroupId,
+        groupName: state.groupName || state.candidateGroupName
+    });
+
+    return t('group_verify_admin_success', lang) + '\n\n' + t('ask_rules_type', lang);
 }
 
 async function handleRulesType(client, jid, content, state, lang) {
@@ -237,8 +376,8 @@ async function handleRulesType(client, jid, content, state, lang) {
         await saveState(jid, { ...state, step: 'rules_content', rulesType: 'forbidden' });
         return t('ask_forbidden_messages', lang);
     } else if (choice === '3') {
-        await saveState(jid, { ...state, step: 'time_window', rulesType: 'none' });
-        return t('ask_time_window', lang);
+        await saveState(jid, { ...state, step: 'non_text_rule', rulesType: 'none' });
+        return t('ask_non_text_rule', lang);
     }
     return t('ask_rules_type', lang);
 }
@@ -253,62 +392,148 @@ async function handleRulesContent(client, jid, content, state, lang) {
 
     await saveState(jid, {
         ...state,
-        step: 'time_window',
+        step: 'rules_match_mode',
         rulesMessages: messages
     });
-    return t('rules_content_saved', lang, { count: messages.length.toString() }) + '\n\n' + t('ask_time_window', lang);
+    return t('rules_content_saved', lang, { count: messages.length.toString() }) + '\n\n' + t('ask_rules_match_mode', lang);
+}
+
+async function handleRulesMatchMode(client, jid, content, state, lang) {
+    const choice = content.trim();
+    if (choice === '1') {
+        await saveState(jid, { ...state, step: 'non_text_rule', rulesMatchMode: 'exact' });
+        return t('rules_match_mode_saved', lang, { mode: getRuleMatchModeLabel('exact', lang) }) + '\n\n' + t('ask_non_text_rule', lang);
+    }
+    if (choice === '2') {
+        await saveState(jid, { ...state, step: 'non_text_rule', rulesMatchMode: 'contains' });
+        return t('rules_match_mode_saved', lang, { mode: getRuleMatchModeLabel('contains', lang) }) + '\n\n' + t('ask_non_text_rule', lang);
+    }
+    return t('ask_rules_match_mode', lang);
+}
+
+async function handleNonTextRule(client, jid, content, state, lang) {
+    const choice = content.trim();
+    if (choice === '1' || choice.includes('כן') || choice.toLowerCase() === 'yes') {
+        await saveState(jid, { ...state, step: 'non_text_types', blockNonText: true });
+        return t('non_text_rule_saved', lang, { status: lang === 'he' ? 'מופעל' : 'Enabled' }) + '\n\n' + t('ask_non_text_types', lang);
+    } else if (choice === '2' || choice.includes('לא') || choice.toLowerCase() === 'no') {
+        await saveState(jid, { ...state, step: 'time_window', blockNonText: false, blockedNonTextTypes: [] });
+        return t('non_text_rule_saved', lang, { status: lang === 'he' ? 'כבוי' : 'Disabled' }) + '\n\n' + t('ask_time_window', lang);
+    }
+    return t('ask_non_text_rule', lang);
+}
+
+async function handleNonTextTypes(client, jid, content, state, lang) {
+    const options = {
+        0: 'all_non_text',
+        1: 'image',
+        2: 'video',
+        3: 'sticker',
+        4: 'document',
+        5: 'audio',
+        6: 'other_non_text'
+    };
+
+    const picks = content.trim().split(/[\s,]+/).map(x => parseInt(x, 10)).filter(n => !isNaN(n));
+    let blockedTypes = [...new Set(picks.map(p => options[p]).filter(Boolean))];
+    if (blockedTypes.includes('all_non_text')) {
+        blockedTypes = ['all_non_text'];
+    }
+
+    if (blockedTypes.length === 0) {
+        return t('ask_non_text_types', lang);
+    }
+
+    await saveState(jid, { ...state, step: 'time_window', blockedNonTextTypes: blockedTypes });
+    const blockedTypesLabel = blockedTypes.map(tKey => getNonTextTypeLabel(tKey, lang)).join(', ');
+    return t('non_text_types_saved', lang, {
+        types: blockedTypesLabel
+    }) + '\n\n' + t('ask_time_window', lang);
 }
 
 async function handleTimeWindow(client, jid, content, state, lang) {
     const choice = content.trim();
     if (choice === '1' || choice.includes('כן') || choice.toLowerCase() === 'yes') {
-        await saveState(jid, { ...state, step: 'time_day' });
+        await saveState(jid, { ...state, step: 'time_day', timeWindows: state.timeWindows || [] });
         return t('ask_time_day', lang);
     } else if (choice === '2' || choice.includes('לא') || choice.toLowerCase() === 'no') {
-        await saveState(jid, { ...state, step: 'antispam', timeWindow: null });
+        await saveState(jid, { ...state, step: 'antispam', timeWindow: null, timeWindows: [] });
         return t('ask_antispam', lang);
     }
     return t('ask_time_window', lang);
 }
 
 async function handleTimeDay(client, jid, content, state, lang) {
-    const day = parseInt(content.trim());
-    if (isNaN(day) || day < 0 || day > 7) {
+    const rawDay = parseInt(content.trim());
+    if (isNaN(rawDay) || rawDay < 0 || rawDay > 7) {
         return t('ask_time_day', lang);
     }
+
+    // UX mapping: 1-7 = Sunday-Saturday, 0 = Every day
+    const day = rawDay === 0 ? 7 : (rawDay - 1);
+
     await saveState(jid, { ...state, step: 'time_start', timeDay: day });
     return t('ask_time_start', lang);
 }
 
 async function handleTimeStart(client, jid, content, state, lang) {
-    const hour = parseInt(content.trim());
-    if (isNaN(hour) || hour < 0 || hour > 23) {
+    const minutes = parseTimeToMinutes(content);
+    if (minutes === null) {
         return t('ask_time_start', lang);
     }
-    await saveState(jid, { ...state, step: 'time_end', timeStartHour: hour });
+    await saveState(jid, { ...state, step: 'time_end', timeStartMinutes: minutes });
     return t('ask_time_end', lang);
 }
 
 async function handleTimeEnd(client, jid, content, state, lang) {
-    const hour = parseInt(content.trim());
-    if (isNaN(hour) || hour < 0 || hour > 23) {
+    const endMinutes = parseTimeToMinutes(content);
+    if (endMinutes === null) {
         return t('ask_time_end', lang);
     }
 
-    const dayNames = { 0: 'Sunday', 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday', 6: 'Saturday', 7: 'Every day' };
     const dayKey = `day_${state.timeDay}`;
+    const startMinutes = (typeof state.timeStartMinutes === 'number')
+        ? state.timeStartMinutes
+        : (Number(state.timeStartHour) * 60);
+    if (!Number.isFinite(startMinutes) || startMinutes < 0 || startMinutes > 1439) {
+        return t('ask_time_start', lang);
+    }
+    const range = {
+        day: state.timeDay,
+        startMinute: startMinutes,
+        endMinute: endMinutes,
+        // Backward compatibility fields
+        startHour: Math.floor(startMinutes / 60),
+        endHour: Math.floor(endMinutes / 60)
+    };
+    const nextWindows = [...(state.timeWindows || []), range];
 
     await saveState(jid, {
         ...state,
-        step: 'antispam',
-        timeEndHour: hour,
-        timeWindow: { day: state.timeDay, startHour: state.timeStartHour, endHour: hour }
+        step: 'time_more',
+        timeEndMinutes: endMinutes,
+        timeWindow: range,
+        timeWindows: nextWindows
     });
-    return t('time_window_saved', lang, {
+
+    return t('time_range_added', lang, {
         day: t(dayKey, lang),
-        start: state.timeStartHour.toString(),
-        end: hour.toString()
-    }) + '\n\n' + t('ask_antispam', lang);
+        start: formatMinutes(startMinutes),
+        end: formatMinutes(endMinutes)
+    }) + '\n\n' + t('ask_time_more', lang);
+}
+
+async function handleTimeMore(client, jid, content, state, lang) {
+    const choice = content.trim();
+    if (choice === '1' || choice.includes('כן') || choice.toLowerCase() === 'yes') {
+        await saveState(jid, { ...state, step: 'time_day' });
+        return t('ask_time_day', lang);
+    }
+    if (choice === '2' || choice.includes('לא') || choice.toLowerCase() === 'no') {
+        await saveState(jid, { ...state, step: 'antispam' });
+        return t('ask_antispam', lang);
+    }
+    return t('ask_time_more', lang);
 }
 
 async function handleAntiSpam(client, jid, content, state, lang) {
@@ -377,6 +602,24 @@ async function handleEnforcement(client, jid, content, state, lang) {
     return t('enforcement_saved', lang) + '\n\n' + t('ask_warnings', lang);
 }
 
+async function handleQuickEnforcement(client, jid, content, state, lang) {
+    const choices = content.trim().split(/[\s,]+/).map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+    if (choices.length === 0) {
+        return t('quick_enforcement_intro', lang) + '\n\n' + buildEnforcementQuestion(lang);
+    }
+
+    const enforcementConfig = {
+        deleteMessage: choices.includes(1),
+        privateWarning: choices.includes(2),
+        removeFromGroup: choices.includes(3),
+        blockUser: choices.includes(4),
+        sendReport: choices.includes(5)
+    };
+
+    await saveState(jid, { ...state, step: 'quick_warnings', enforcementConfig });
+    return t('enforcement_saved', lang) + '\n\n' + t('ask_warnings', lang);
+}
+
 async function handleWarnings(client, jid, content, state, lang) {
     const count = parseInt(content.trim());
     if (isNaN(count) || count < 0 || count > 99) {
@@ -384,6 +627,24 @@ async function handleWarnings(client, jid, content, state, lang) {
     }
     await saveState(jid, { ...state, step: 'exempt', warningCount: count });
     return t('warnings_saved', lang, { count: count.toString() }) + '\n\n' + t('ask_exempt', lang);
+}
+
+async function handleQuickWarnings(client, jid, content, state, lang) {
+    const count = parseInt(content.trim());
+    if (isNaN(count) || count < 0 || count > 99) {
+        return t('ask_warnings', lang);
+    }
+
+    if (!state.groupId) {
+        await saveState(jid, { step: 'done' });
+        return t('error_generic', lang, { error: lang === 'he' ? 'קבוצה לא נמצאה' : 'Group not found' });
+    }
+
+    await database.setEnforcement(state.groupId, state.enforcementConfig);
+    await database.updateGroupWarningCount(state.groupId, count);
+    await saveState(jid, { step: 'done' });
+
+    return t('quick_enforcement_saved', lang);
 }
 
 async function handleExempt(client, jid, content, state, lang) {
@@ -450,6 +711,17 @@ async function handleMgmtGroupName(client, jid, content, state, lang) {
             return t('group_not_found', lang);
         }
 
+        // A management group cannot be the enforced group itself
+        if (match.id._serialized === state.groupId) {
+            return t('mgmt_group_cannot_be_enforced', lang);
+        }
+
+        // A management group cannot be another enforced group
+        const existingManaged = await database.getGroup(match.id._serialized);
+        if (existingManaged) {
+            return t('mgmt_group_cannot_be_enforced', lang);
+        }
+
         const count = match.participants ? match.participants.length : 0;
         await saveState(jid, {
             ...state,
@@ -467,12 +739,36 @@ async function handleMgmtGroupName(client, jid, content, state, lang) {
 async function handleMgmtGroupConfirm(client, jid, content, state, lang) {
     const choice = content.trim();
     if (choice === '1' || choice.includes('כן') || choice.toLowerCase() === 'yes') {
-        const reportTarget = 'mgmt_group';
-        await saveState(jid, { ...state, step: 'summary', reportTarget, mgmtGroupConfirmed: true });
-        return await buildSummary(state, reportTarget, state.mgmtGroupId, lang);
+        await saveState(jid, { ...state, step: 'mgmt_group_verify_count' });
+        return t('ask_mgmt_group_verify_count', lang);
     } else {
         await saveState(jid, { ...state, step: 'mgmt_group_name' });
         return t('ask_mgmt_group_name', lang);
+    }
+}
+
+async function handleMgmtGroupVerifyCount(client, jid, content, state, lang) {
+    const expected = parseInt(content.trim(), 10);
+    if (isNaN(expected) || expected < 1) {
+        return t('ask_mgmt_group_verify_count', lang);
+    }
+
+    try {
+        const chat = await client.getChatById(state.mgmtGroupId);
+        const actual = chat.participants ? chat.participants.length : 0;
+        if (actual !== expected) {
+            return t('mgmt_group_verify_count_failed', lang, {
+                expected: expected.toString(),
+                actual: actual.toString()
+            });
+        }
+
+        const reportTarget = 'mgmt_group';
+        await saveState(jid, { ...state, step: 'summary', reportTarget, mgmtGroupConfirmed: true });
+        return t('mgmt_group_verify_count_success', lang) + '\n\n' + await buildSummary(state, reportTarget, state.mgmtGroupId, lang);
+    } catch (e) {
+        logger.error('Failed to verify management group count', e);
+        return t('error_generic', lang, { error: e.message });
     }
 }
 
@@ -483,8 +779,19 @@ async function buildSummary(state, reportTarget, mgmtGroupId, lang) {
         'none': lang === 'he' ? 'ללא חוקי תוכן' : 'No content rules'
     };
 
-    const timeStr = state.timeWindow
-        ? `${t(`day_${state.timeWindow.day}`, lang)}, ${state.timeWindow.startHour}:00 - ${state.timeWindow.endHour}:00`
+    const rulesMode = state.rulesType === 'none'
+        ? (lang === 'he' ? 'לא רלוונטי' : 'N/A')
+        : getRuleMatchModeLabel(state.rulesMatchMode || 'contains', lang);
+
+    const windows = (state.timeWindows && state.timeWindows.length > 0)
+        ? state.timeWindows
+        : (state.timeWindow ? [state.timeWindow] : []);
+
+    const getWindowStart = (w) => (typeof w.startMinute === 'number' ? w.startMinute : (w.startHour || 0) * 60);
+    const getWindowEnd = (w) => (typeof w.endMinute === 'number' ? w.endMinute : (w.endHour || 0) * 60);
+
+    const timeStr = windows.length > 0
+        ? windows.map(w => `${t(`day_${w.day}`, lang)}, ${formatMinutes(getWindowStart(w))} - ${formatMinutes(getWindowEnd(w))}`).join('\n')
         : (lang === 'he' ? 'ללא הגבלה' : 'No restriction');
 
     const spamStr = state.antiSpam
@@ -504,6 +811,12 @@ async function buildSummary(state, reportTarget, mgmtGroupId, lang) {
             ? (lang === 'he' ? `טלפון: ${reportTarget.split(':')[1]}` : `Phone: ${reportTarget.split(':')[1]}`)
             : (lang === 'he' ? 'קבוצת הנהלה' : 'Management group');
 
+    const nonTextStr = state.blockNonText
+        ? ((state.blockedNonTextTypes && state.blockedNonTextTypes.length > 0)
+            ? state.blockedNonTextTypes.map(tKey => getNonTextTypeLabel(tKey, lang)).join(', ')
+            : (lang === 'he' ? 'חסום' : 'Blocked'))
+        : (lang === 'he' ? 'מותר' : 'Allowed');
+
     const exemptStr = (state.exemptNumbers && state.exemptNumbers.length > 0)
         ? state.exemptNumbers.length.toString()
         : (lang === 'he' ? 'אין' : 'None');
@@ -511,6 +824,8 @@ async function buildSummary(state, reportTarget, mgmtGroupId, lang) {
     return t('setup_summary', lang, {
         groupName: state.groupName,
         rulesType: rulesTypeMap[state.rulesType] || state.rulesType,
+        rulesMode,
+        nonTextRule: nonTextStr,
         timeWindow: timeStr,
         antiSpam: spamStr,
         enforcement: enfSteps.join('\n'),
@@ -527,6 +842,26 @@ async function handleSummary(client, jid, content, state, lang) {
         try {
             const groupId = state.groupId;
 
+            const canClaim = await database.canOwnerClaimGroup(groupId, jid);
+            if (!canClaim) {
+                return t('group_already_managed', lang);
+            }
+
+            const usedAsMgmt = await database.isGroupUsedAsMgmt(groupId);
+            if (usedAsMgmt) {
+                return t('group_used_as_mgmt', lang);
+            }
+
+            if (state.mgmtGroupId) {
+                if (state.mgmtGroupId === groupId) {
+                    return t('mgmt_group_cannot_be_enforced', lang);
+                }
+                const mgmtIsManaged = await database.getGroup(state.mgmtGroupId);
+                if (mgmtIsManaged && mgmtIsManaged.groupId !== groupId) {
+                    return t('mgmt_group_cannot_be_enforced', lang);
+                }
+            }
+
             // 1. Create group
             await database.createGroup(groupId, jid, state.groupName);
             await database.updateUserGroup(jid, groupId);
@@ -534,12 +869,27 @@ async function handleSummary(client, jid, content, state, lang) {
             // 2. Save rules
             await database.clearRules(groupId);
             if (state.rulesType === 'allowed' && state.rulesMessages) {
-                await database.addRule(groupId, 'allowed_messages', { messages: state.rulesMessages });
+                await database.addRule(groupId, 'allowed_messages', {
+                    messages: state.rulesMessages,
+                    matchMode: state.rulesMatchMode || 'contains'
+                });
             } else if (state.rulesType === 'forbidden' && state.rulesMessages) {
-                await database.addRule(groupId, 'forbidden_messages', { messages: state.rulesMessages });
+                await database.addRule(groupId, 'forbidden_messages', {
+                    messages: state.rulesMessages,
+                    matchMode: state.rulesMatchMode || 'contains'
+                });
             }
-            if (state.timeWindow) {
+            if (state.timeWindows && state.timeWindows.length > 0) {
+                await database.addRule(groupId, 'time_window', { windows: state.timeWindows });
+            } else if (state.timeWindow) {
+                // Backward-compatible fallback
                 await database.addRule(groupId, 'time_window', state.timeWindow);
+            }
+            if (state.blockNonText) {
+                await database.addRule(groupId, 'block_non_text', {
+                    enabled: true,
+                    blockedTypes: state.blockedNonTextTypes || ['other_non_text']
+                });
             }
             if (state.antiSpam) {
                 await database.addRule(groupId, 'anti_spam', state.antiSpam);
@@ -591,12 +941,12 @@ async function handleSummary(client, jid, content, state, lang) {
  */
 async function isInSetup(jid) {
     const user = await database.getUser(jid);
-    if (!user || !user.setupState) return true; // New user → start setup
+    if (!user || !user.setupState) return false;
     try {
         const state = JSON.parse(user.setupState);
-        return state.step !== 'done';
+        return !!state.step && state.step !== 'done';
     } catch {
-        return true;
+        return false;
     }
 }
 
@@ -607,8 +957,45 @@ async function resetSetup(jid) {
     await saveState(jid, { step: 'welcome' });
 }
 
+function isSetupTrigger(content) {
+    const normalized = (content || '').trim().toLowerCase();
+    const triggers = [
+        'התחל',
+        'התחל הגדרה',
+        'התחל setup',
+        'setup',
+        'start setup',
+        'start'
+    ];
+    return triggers.includes(normalized);
+}
+
+async function startSetup(jid, preferredLang = 'he') {
+    let user = await database.getUser(jid);
+    if (!user) {
+        user = await database.createUser(jid, preferredLang);
+    }
+    await saveState(jid, { step: 'welcome' });
+    return t('welcome', user.language || preferredLang);
+}
+
+async function startQuickEnforcementUpdate(jid) {
+    const user = await database.getUser(jid);
+    if (!user || !user.groupId) {
+        const lang = user ? (user.language || 'he') : 'he';
+        return t('no_group_linked', lang);
+    }
+
+    const lang = user.language || 'he';
+    await saveState(jid, { step: 'quick_enforcement', groupId: user.groupId });
+    return t('quick_enforcement_intro', lang) + '\n\n' + buildEnforcementQuestion(lang);
+}
+
 module.exports = {
     processSetupMessage,
     isInSetup,
-    resetSetup
+    resetSetup,
+    isSetupTrigger,
+    startSetup,
+    startQuickEnforcementUpdate
 };

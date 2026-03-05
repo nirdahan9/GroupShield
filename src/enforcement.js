@@ -2,7 +2,7 @@
 const database = require('./database');
 const logger = require('./logger');
 const { t } = require('./i18n');
-const { extractNumber, getNormalizedJid } = require('./utils');
+const { extractNumber, withRetry } = require('./utils');
 const path = require('path');
 const config = require('./config');
 
@@ -33,11 +33,28 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
     const formattedTime = new Date().toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' });
     const groupId = groupConfig.groupId;
     const maxWarnings = groupConfig.warningCount || 0;
+    const actionId = `ENF-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 
     // If already being removed, skip
     if (pendingRemovals.has(targetJid)) return;
 
+    // Global protection fail-safe
+    if (await database.isGlobalProtected(senderJid)) {
+        logger.info(`Skipped enforcement for globally protected user ${number}`);
+        return;
+    }
+
     logger.warn(`🚨 Violation: ${number} in ${groupConfig.groupName} | Reason: ${reason}`);
+
+    await database.createEnforcementAction({
+        actionId,
+        groupId,
+        userJid: senderJid,
+        reason,
+        content,
+        msgType,
+        status: 'started'
+    });
 
     // Check if we should warn or enforce
     if (maxWarnings > 0 && enforcementConfig.privateWarning) {
@@ -50,6 +67,9 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
             // Step 1: Delete message (if enabled, even during warning phase)
             if (enforcementConfig.deleteMessage) {
                 await deleteMessage(client, msg);
+                await database.updateEnforcementActionStep(actionId, 'deleteStatus', 'success');
+            } else {
+                await database.updateEnforcementActionStep(actionId, 'deleteStatus', 'skipped');
             }
 
             // Send warning to user
@@ -63,15 +83,22 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
                 });
                 await client.sendMessage(targetJid, warnText);
                 logger.info(`Warning ${newCount}/${maxWarnings} sent to ${number}`);
+                await database.updateEnforcementActionStep(actionId, 'warningStatus', 'success');
             } catch (e) {
                 logger.error(`Failed to send warning to ${number}`, e);
+                await database.updateEnforcementActionStep(actionId, 'warningStatus', 'failed', e.message);
             }
 
             // Report warning if reporting is enabled
             if (enforcementConfig.sendReport) {
-                const warningReport = `⚠️ *${lang === 'he' ? 'אזהרה' : 'Warning'}* (${newCount}/${maxWarnings})\n👤 ${number}\n📝 ${reason}`;
+                const warningReport = `⚠️ *${lang === 'he' ? 'אזהרה' : 'Warning'}* (${newCount}/${maxWarnings})\n🏷️ ${groupConfig.groupName}\n👤 ${number}\n📝 ${reason}`;
                 await sendReport(client, groupConfig, warningReport, lang);
+                await database.updateEnforcementActionStep(actionId, 'reportStatus', 'success');
+            } else {
+                await database.updateEnforcementActionStep(actionId, 'reportStatus', 'skipped');
             }
+
+            await database.completeEnforcementAction(actionId, 'warning_phase');
 
             return; // Don't enforce yet
         }
@@ -88,6 +115,9 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
         // STEP 1: Delete message
         if (enforcementConfig.deleteMessage) {
             await deleteMessage(client, msg);
+            await database.updateEnforcementActionStep(actionId, 'deleteStatus', 'success');
+        } else {
+            await database.updateEnforcementActionStep(actionId, 'deleteStatus', 'skipped');
         }
 
         // STEP 2: Private warning/notification
@@ -101,24 +131,32 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
                 await client.sendMessage(targetJid, warnText);
                 privateStatus = '✅';
                 logger.info(`Removal notice sent to ${number}`);
+                await database.updateEnforcementActionStep(actionId, 'warningStatus', 'success');
                 await new Promise(r => setTimeout(r, 2000));
             } catch (e) {
                 logger.error(`Warning failed for ${number}`, e);
+                await database.updateEnforcementActionStep(actionId, 'warningStatus', 'failed', e.message);
             }
+        } else {
+            await database.updateEnforcementActionStep(actionId, 'warningStatus', 'skipped');
         }
 
         // STEP 3: Remove from group
         if (enforcementConfig.removeFromGroup) {
             try {
                 await rateLimiter.throttle(async () => {
-                    const chat = await client.getChatById(groupId);
+                    const chat = await withRetry(() => client.getChatById(groupId), 3, 800);
                     await chat.removeParticipants([targetJid]);
                     logger.info(`Removed ${number} from ${groupConfig.groupName}`);
                     removeStatus = '✅';
                 }, 'removal');
+                await database.updateEnforcementActionStep(actionId, 'removeStatus', 'success');
             } catch (e) {
                 logger.error(`Remove failed for ${number}`, e);
+                await database.updateEnforcementActionStep(actionId, 'removeStatus', 'failed', e.message);
             }
+        } else {
+            await database.updateEnforcementActionStep(actionId, 'removeStatus', 'skipped');
         }
 
         // STEP 4: Block user
@@ -128,9 +166,13 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
                 await contact.block();
                 blockStatus = '✅';
                 logger.info(`Blocked ${number}`);
+                await database.updateEnforcementActionStep(actionId, 'blockStatus', 'success');
             } catch (e) {
                 logger.error(`Block failed for ${number}`, e);
+                await database.updateEnforcementActionStep(actionId, 'blockStatus', 'failed', e.message);
             }
+        } else {
+            await database.updateEnforcementActionStep(actionId, 'blockStatus', 'skipped');
         }
 
         // STEP 5: Send report
@@ -142,6 +184,7 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
             } catch (e) { }
 
             const report = t('violation_report', lang, {
+                groupName: groupConfig.groupName,
                 pushname,
                 number,
                 reason,
@@ -149,9 +192,13 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
                 privateStatus,
                 removeStatus,
                 blockStatus,
-                time: formattedTime
+                time: formattedTime,
+                violationId: actionId
             });
             await sendReport(client, groupConfig, report, lang);
+            await database.updateEnforcementActionStep(actionId, 'reportStatus', 'success');
+        } else {
+            await database.updateEnforcementActionStep(actionId, 'reportStatus', 'skipped');
         }
 
         // Reset warnings after enforcement
@@ -159,7 +206,11 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
 
         // Log removal
         logger.appendLog(REMOVALS_LOG_FILE, `REMOVED: ${number} from ${groupConfig.groupName} - ${reason}`);
+        await database.completeEnforcementAction(actionId, 'completed');
 
+    } catch (e) {
+        await database.completeEnforcementAction(actionId, 'failed', e.message || 'Unknown error');
+        throw e;
     } finally {
         pendingRemovals.delete(targetJid);
     }
@@ -218,7 +269,9 @@ async function handleUndo(client, msg, groupConfig, lang) {
         return t('undo_not_report', lang);
     }
 
-    // Extract phone number from report
+    // Extract action ID + phone number from report
+    const idMatch = quotedContent.match(/(?:ID|מזהה):\s*(ENF-[\w-]+)/i);
+    const actionId = idMatch ? idMatch[1] : null;
     const match = quotedContent.match(/(?:מספר|Number):\s*(\d+)/i);
     if (!match) {
         return t('undo_failed', lang, { error: lang === 'he' ? 'לא זוהה מספר' : 'Number not found' });
@@ -236,7 +289,7 @@ async function handleUndo(client, msg, groupConfig, lang) {
 
         // 2. Add back to group
         try {
-            const chat = await client.getChatById(groupConfig.groupId);
+            const chat = await withRetry(() => client.getChatById(groupConfig.groupId), 3, 800);
             await chat.addParticipants([targetJid]);
         } catch (e) {
             logger.error(`Failed to re-add ${targetNumber}`, e);
@@ -246,6 +299,9 @@ async function handleUndo(client, msg, groupConfig, lang) {
         await database.resetWarnings(groupConfig.groupId, targetJid);
 
         logger.auditLog(msg.author || msg.from, 'UNDO', `User: ${targetNumber}`, true);
+        if (actionId) {
+            await database.completeEnforcementAction(actionId, 'undone');
+        }
         return t('undo_success', lang, { number: targetNumber });
     } catch (e) {
         logger.error(`Undo failed for ${targetNumber}`, e);

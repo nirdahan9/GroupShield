@@ -96,6 +96,20 @@ async function startBot() {
         // Schedule restarts and status messages
         scheduleRestarts();
         scheduleStatusMessages(client);
+        scheduleWarningsCleanup();
+        scheduleOrphanGroupCleanup(client);
+
+        // Mark stale enforcement actions after restart and start group-name refresh loop
+        await database.markStaleEnforcementActionsFailed(15);
+        const cleanedWarnings = await database.cleanupExpiredWarnings();
+        if (cleanedWarnings > 0) {
+            logger.info(`Expired warnings cleanup removed ${cleanedWarnings} rows`);
+        }
+        await handlers.refreshManagedGroupNames(client);
+        const groupNameRefreshMs = config.get('scheduling.groupNameRefreshIntervalMs', 300000);
+        setInterval(async () => {
+            await handlers.refreshManagedGroupNames(client);
+        }, groupNameRefreshMs);
 
         // Send startup notification to developer
         handleStartupNotification(client);
@@ -158,6 +172,57 @@ function scheduleStatusMessages(client) {
     const schedule = config.get('scheduling.statusMessages', '0 8,12,16,20 * * *');
     cron.schedule(schedule, async () => {
         await sendStatusToDeveloper(client);
+    });
+}
+
+function scheduleWarningsCleanup() {
+    const schedule = config.get('scheduling.warningsCleanup', '15 4 * * *');
+    cron.schedule(schedule, async () => {
+        try {
+            const removed = await database.cleanupExpiredWarnings();
+            if (removed > 0) {
+                logger.info(`Scheduled warnings cleanup removed ${removed} rows`);
+            }
+        } catch (e) {
+            logger.error('Scheduled warnings cleanup failed', e);
+        }
+    });
+}
+
+function scheduleOrphanGroupCleanup(client) {
+    const schedule = config.get('scheduling.orphanGroupCleanup', '30 4 * * *');
+    cron.schedule(schedule, async () => {
+        try {
+            const activeGroups = await database.getAllActiveGroups();
+            const allowedGroupIds = new Set();
+            activeGroups.forEach(g => {
+                allowedGroupIds.add(g.groupId);
+                if (g.mgmtGroupId) allowedGroupIds.add(g.mgmtGroupId);
+            });
+
+            const chats = await client.getChats();
+            const groups = chats.filter(c => c.isGroup);
+
+            let leftCount = 0;
+            for (const g of groups) {
+                const gid = g.id && g.id._serialized;
+                if (!gid) continue;
+                if (!allowedGroupIds.has(gid)) {
+                    try {
+                        await g.leave();
+                        leftCount++;
+                    } catch (e) {
+                        logger.warn(`Failed leaving orphan group ${gid}`);
+                    }
+                }
+            }
+
+            if (leftCount > 0) {
+                logger.info(`Orphan cleanup left ${leftCount} groups`);
+            }
+        } catch (e) {
+            logger.error('Orphan group cleanup failed', e);
+        }
     });
 }
 

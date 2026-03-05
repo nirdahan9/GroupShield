@@ -2,7 +2,7 @@
 const config = require('./config');
 const logger = require('./logger');
 const database = require('./database');
-const { getNormalizedJid, extractNumber, resolveContactToPhone } = require('./utils');
+const { getNormalizedJid, extractNumber, resolveContactToPhone, withRetry } = require('./utils');
 const { t } = require('./i18n');
 const { evaluateMessage, checkAntiSpam } = require('./ruleEngine');
 const { executeEnforcement, handleUndo, isPendingRemoval } = require('./enforcement');
@@ -48,6 +48,15 @@ async function handleDM(client, msg, senderJid, content) {
     const user = await database.getUser(senderJid);
     const lang = user ? user.language || 'he' : 'he';
 
+    // Explicit setup start trigger
+    if (setupFlow.isSetupTrigger(content)) {
+        const response = await setupFlow.startSetup(senderJid, lang);
+        if (response) {
+            await client.sendMessage(msg.from, response);
+        }
+        return;
+    }
+
     // Check if user is in setup flow
     const inSetup = await setupFlow.isInSetup(senderJid);
     if (inSetup) {
@@ -55,6 +64,12 @@ async function handleDM(client, msg, senderJid, content) {
         if (response) {
             await client.sendMessage(msg.from, response);
         }
+        return;
+    }
+
+    // User has not started setup yet
+    if (!user || !user.groupId) {
+        await client.sendMessage(msg.from, t('setup_start_hint', lang));
         return;
     }
 
@@ -77,21 +92,37 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
     const ignoredTypes = ['call_log', 'e2e_notification', 'notification_template', 'revoked'];
     if (ignoredTypes.includes(msgType)) return;
 
-    // Check if this is a managed group
-    const groupConfig = await database.getGroup(groupJid);
-    if (!groupConfig || !groupConfig.active) return; // Not a managed group
+    // Check if this is a managed group or a configured management group
+    let groupConfig = await database.getGroup(groupJid);
+    const isDirectManagedGroup = !!groupConfig;
+
+    if (!groupConfig) {
+        groupConfig = await database.getGroupByMgmtGroup(groupJid);
+    }
+
+    if (!groupConfig || !groupConfig.active) return; // Not a managed/mgmt group
 
     const ownerUser = await database.getUser(groupConfig.ownerJid);
     const lang = ownerUser ? ownerUser.language || 'he' : 'he';
 
+    // Global immunity: users who started setup flow are never enforced
+    if (await database.isGlobalProtected(senderJid)) return;
+
     // Check if this is the management group — handle undo
-    if (groupConfig.mgmtGroupId === groupJid) {
+    if (!isDirectManagedGroup && groupConfig.mgmtGroupId === groupJid) {
         const undoWords = ['בטל', 'undo'];
         if (msg.hasQuotedMsg && undoWords.includes(content.trim().toLowerCase())) {
             const response = await handleUndo(client, msg, groupConfig, lang);
             if (response) {
                 await msg.reply(response);
             }
+            return;
+        }
+
+        // Allow management group to approve/reject group-name change requests
+        const mgmtResponse = await commands.executeCommand(client, senderJid, content, lang);
+        if (mgmtResponse) {
+            await msg.reply(mgmtResponse);
         }
         return; // Don't enforce rules in management group
     }
@@ -100,7 +131,7 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
 
     // Check if sender is group admin
     try {
-        const chat = await client.getChatById(groupJid);
+        const chat = await withRetry(() => client.getChatById(groupJid), 3, 700);
         const participant = chat.participants.find(p =>
             getNormalizedJid(p.id._serialized) === senderJid
         );
@@ -121,7 +152,7 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
     // Check if sender is in management group (if configured)
     if (groupConfig.mgmtGroupId) {
         try {
-            const mgmtChat = await client.getChatById(groupConfig.mgmtGroupId);
+            const mgmtChat = await withRetry(() => client.getChatById(groupConfig.mgmtGroupId), 3, 700);
             const isMgmtMember = mgmtChat.participants.some(p =>
                 getNormalizedJid(p.id._serialized) === senderJid
             );
@@ -140,7 +171,8 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
     // Check anti-spam first
     const spamRule = rules.find(r => r.ruleType === 'anti_spam');
     if (spamRule) {
-        const spamResult = checkAntiSpam(spamMap, senderJid, spamRule.ruleData);
+        const spamKey = `${groupJid}:${senderJid}`;
+        const spamResult = checkAntiSpam(spamMap, spamKey, spamRule.ruleData);
         if (spamResult.isWarning) {
             // Send warning emoji reaction
             try { await msg.react('⚠️'); } catch (e) { }
@@ -229,8 +261,54 @@ async function buildStatusMessage(client) {
     return status;
 }
 
+/**
+ * Periodically verify group names and request confirmation on detected changes
+ */
+async function refreshManagedGroupNames(client) {
+    const groups = await database.getAllActiveGroups();
+
+    for (const g of groups) {
+        try {
+            const chat = await withRetry(() => client.getChatById(g.groupId), 3, 800);
+            const detectedName = (chat && chat.name ? chat.name.trim() : '');
+            const storedName = (g.groupName || '').trim();
+
+            if (!detectedName || detectedName === storedName) continue;
+
+            const alreadyPending = await database.hasPendingGroupNameRequest(g.groupId, detectedName);
+            if (alreadyPending) continue;
+
+            const requestId = `GN-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+            await database.createGroupNameChangeRequest(requestId, g.groupId, storedName, detectedName, g.reportTarget || 'dm');
+
+            const ownerUser = await database.getUser(g.ownerJid);
+            const lang = ownerUser ? ownerUser.language || 'he' : 'he';
+
+            const prompt = t('group_name_change_detected', lang, {
+                oldName: storedName || (lang === 'he' ? 'לא ידוע' : 'Unknown'),
+                newName: detectedName,
+                requestId
+            });
+
+            if (g.reportTarget === 'mgmt_group' && g.mgmtGroupId) {
+                await client.sendMessage(g.mgmtGroupId, prompt);
+            } else if (g.reportTarget && g.reportTarget.startsWith('phone:')) {
+                const phone = g.reportTarget.split(':')[1];
+                await client.sendMessage(phone + '@s.whatsapp.net', prompt);
+            } else {
+                await client.sendMessage(g.ownerJid, prompt);
+            }
+
+            logger.info(`Detected group name change for ${storedName} -> ${detectedName} (request ${requestId})`);
+        } catch (e) {
+            logger.error(`Group name refresh failed for ${g.groupId}`, e);
+        }
+    }
+}
+
 module.exports = {
     processMessage,
     handleGroupUpdate,
-    buildStatusMessage
+    buildStatusMessage,
+    refreshManagedGroupNames
 };

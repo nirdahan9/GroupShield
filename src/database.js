@@ -24,6 +24,45 @@ class Database {
                 createdAt TEXT
             )`);
 
+            // Global protected users — never enforce remove/block on these users
+            this.db.run(`CREATE TABLE IF NOT EXISTS global_protected_users (
+                jid TEXT PRIMARY KEY,
+                addedAt TEXT,
+                source TEXT DEFAULT 'setup_flow'
+            )`);
+
+            // Group name change approval requests
+            this.db.run(`CREATE TABLE IF NOT EXISTS group_name_change_requests (
+                requestId TEXT PRIMARY KEY,
+                groupId TEXT NOT NULL,
+                oldName TEXT,
+                newName TEXT NOT NULL,
+                reportTarget TEXT,
+                status TEXT DEFAULT 'pending',
+                responderJid TEXT,
+                createdAt TEXT,
+                respondedAt TEXT
+            )`);
+
+            // Enforcement action log (transaction-like trace)
+            this.db.run(`CREATE TABLE IF NOT EXISTS enforcement_actions (
+                actionId TEXT PRIMARY KEY,
+                groupId TEXT NOT NULL,
+                userJid TEXT NOT NULL,
+                reason TEXT,
+                content TEXT,
+                msgType TEXT,
+                status TEXT DEFAULT 'started',
+                deleteStatus TEXT DEFAULT 'pending',
+                warningStatus TEXT DEFAULT 'pending',
+                removeStatus TEXT DEFAULT 'pending',
+                blockStatus TEXT DEFAULT 'pending',
+                reportStatus TEXT DEFAULT 'pending',
+                error TEXT,
+                createdAt TEXT,
+                updatedAt TEXT
+            )`);
+
             // Managed groups
             this.db.run(`CREATE TABLE IF NOT EXISTS groups (
                 groupId TEXT PRIMARY KEY,
@@ -80,6 +119,25 @@ class Database {
                 value TEXT
             )`);
 
+            // Backfill: every known setup user is globally protected
+            this.db.run(`INSERT OR IGNORE INTO global_protected_users (jid, addedAt, source)
+                         SELECT jid, COALESCE(createdAt, datetime('now')), 'setup_flow'
+                         FROM users`);
+
+            // Helpful indexes
+            this.db.run('CREATE INDEX IF NOT EXISTS idx_rules_group ON rules(groupId)');
+            this.db.run('CREATE INDEX IF NOT EXISTS idx_rules_group_type ON rules(groupId, ruleType)');
+            this.db.run('CREATE INDEX IF NOT EXISTS idx_warnings_group ON warnings(groupId)');
+            this.db.run('CREATE INDEX IF NOT EXISTS idx_warnings_last_time ON warnings(lastWarningAt)');
+            this.db.run('CREATE INDEX IF NOT EXISTS idx_exempt_group ON exempt_users(groupId)');
+            this.db.run('CREATE INDEX IF NOT EXISTS idx_users_group ON users(groupId)');
+            this.db.run('CREATE INDEX IF NOT EXISTS idx_groups_owner ON groups(ownerJid)');
+            this.db.run('CREATE INDEX IF NOT EXISTS idx_groups_mgmt_group ON groups(mgmtGroupId)');
+            this.db.run('CREATE INDEX IF NOT EXISTS idx_name_change_group_status ON group_name_change_requests(groupId, status)');
+            this.db.run('CREATE INDEX IF NOT EXISTS idx_name_change_status_time ON group_name_change_requests(status, createdAt)');
+            this.db.run('CREATE INDEX IF NOT EXISTS idx_enforcement_group_status ON enforcement_actions(groupId, status)');
+            this.db.run('CREATE INDEX IF NOT EXISTS idx_enforcement_status_time ON enforcement_actions(status, createdAt)');
+
             logger.info('Database initialized successfully');
         });
     }
@@ -113,6 +171,26 @@ class Database {
         });
     }
 
+    _getWarningsResetDays() {
+        const raw = Number(config.get('warnings.resetAfterDays', 60));
+        if (!Number.isFinite(raw) || raw < 1) return 60;
+        return Math.floor(raw);
+    }
+
+    _getWarningsExpiryThresholdIso() {
+        const days = this._getWarningsResetDays();
+        const ms = days * 24 * 60 * 60 * 1000;
+        return new Date(Date.now() - ms).toISOString();
+    }
+
+    _isWarningExpired(lastWarningAt) {
+        if (!lastWarningAt) return true;
+        const last = new Date(lastWarningAt).getTime();
+        if (Number.isNaN(last)) return true;
+        const threshold = new Date(this._getWarningsExpiryThresholdIso()).getTime();
+        return last < threshold;
+    }
+
     // ── User Operations ──────────────────────────────────────────────────
 
     async getUser(jid) {
@@ -124,6 +202,12 @@ class Database {
             'INSERT OR IGNORE INTO users (jid, language, createdAt) VALUES (?, ?, ?)',
             [jid, language, new Date().toISOString()]
         );
+
+        await this._run(
+            'INSERT OR IGNORE INTO global_protected_users (jid, addedAt, source) VALUES (?, ?, ?)',
+            [jid, new Date().toISOString(), 'setup_flow']
+        );
+
         return this.getUser(jid);
     }
 
@@ -144,6 +228,51 @@ class Database {
         return this._get('SELECT * FROM users WHERE groupId = ?', [groupId]);
     }
 
+    async isGlobalProtected(jid) {
+        const row = await this._get(
+            'SELECT jid FROM global_protected_users WHERE jid = ?',
+            [jid]
+        );
+        return !!row;
+    }
+
+    async getGlobalProtectedUsers() {
+        return this._all('SELECT * FROM global_protected_users ORDER BY addedAt ASC');
+    }
+
+    // ── Group Name Change Requests ──────────────────────────────────────
+
+    async hasPendingGroupNameRequest(groupId, newName) {
+        const row = await this._get(
+            `SELECT requestId FROM group_name_change_requests
+             WHERE groupId = ? AND newName = ? AND status = 'pending'`,
+            [groupId, newName]
+        );
+        return !!row;
+    }
+
+    async createGroupNameChangeRequest(requestId, groupId, oldName, newName, reportTarget) {
+        await this._run(
+            `INSERT OR REPLACE INTO group_name_change_requests
+             (requestId, groupId, oldName, newName, reportTarget, status, createdAt)
+             VALUES (?, ?, ?, ?, ?, 'pending', ?)`,
+            [requestId, groupId, oldName || '', newName, reportTarget || 'dm', new Date().toISOString()]
+        );
+    }
+
+    async getGroupNameChangeRequest(requestId) {
+        return this._get('SELECT * FROM group_name_change_requests WHERE requestId = ?', [requestId]);
+    }
+
+    async resolveGroupNameChangeRequest(requestId, status, responderJid) {
+        await this._run(
+            `UPDATE group_name_change_requests
+             SET status = ?, responderJid = ?, respondedAt = ?
+             WHERE requestId = ?`,
+            [status, responderJid, new Date().toISOString(), requestId]
+        );
+    }
+
     // ── Group Operations ─────────────────────────────────────────────────
 
     async getGroup(groupId) {
@@ -154,9 +283,38 @@ class Database {
         return this._get('SELECT * FROM groups WHERE ownerJid = ?', [ownerJid]);
     }
 
+    async getGroupByMgmtGroup(mgmtGroupId) {
+        return this._get('SELECT * FROM groups WHERE mgmtGroupId = ? AND active = 1', [mgmtGroupId]);
+    }
+
+    async isGroupUsedAsMgmt(groupId) {
+        const row = await this._get('SELECT groupId FROM groups WHERE mgmtGroupId = ? AND active = 1', [groupId]);
+        return !!row;
+    }
+
+    async canOwnerClaimGroup(groupId, ownerJid) {
+        const existing = await this.getGroup(groupId);
+        if (!existing) return true;
+        return existing.ownerJid === ownerJid;
+    }
+
     async createGroup(groupId, ownerJid, groupName) {
+        const existing = await this.getGroup(groupId);
+
+        if (existing && existing.ownerJid !== ownerJid) {
+            throw new Error('Group is already managed by another owner');
+        }
+
+        if (existing) {
+            await this._run(
+                'UPDATE groups SET groupName = ?, verified = 1, active = 1 WHERE groupId = ?',
+                [groupName, groupId]
+            );
+            return;
+        }
+
         await this._run(
-            'INSERT OR REPLACE INTO groups (groupId, ownerJid, groupName, verified, createdAt) VALUES (?, ?, ?, 1, ?)',
+            'INSERT INTO groups (groupId, ownerJid, groupName, verified, createdAt) VALUES (?, ?, ?, 1, ?)',
             [groupId, ownerJid, groupName, new Date().toISOString()]
         );
     }
@@ -187,6 +345,10 @@ class Database {
             'UPDATE groups SET active = ? WHERE groupId = ?',
             [active ? 1 : 0, groupId]
         );
+    }
+
+    async updateGroupName(groupId, groupName) {
+        await this._run('UPDATE groups SET groupName = ? WHERE groupId = ?', [groupName, groupId]);
     }
 
     async getAllActiveGroups() {
@@ -261,6 +423,58 @@ class Database {
         };
     }
 
+    async createEnforcementAction(payload) {
+        await this._run(
+            `INSERT INTO enforcement_actions
+             (actionId, groupId, userJid, reason, content, msgType, status, createdAt, updatedAt)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                payload.actionId,
+                payload.groupId,
+                payload.userJid,
+                payload.reason || '',
+                payload.content || '',
+                payload.msgType || '',
+                payload.status || 'started',
+                new Date().toISOString(),
+                new Date().toISOString()
+            ]
+        );
+    }
+
+    async updateEnforcementActionStep(actionId, stepName, stepStatus, error = '') {
+        const allowedSteps = ['deleteStatus', 'warningStatus', 'removeStatus', 'blockStatus', 'reportStatus'];
+        if (!allowedSteps.includes(stepName)) return;
+
+        await this._run(
+            `UPDATE enforcement_actions
+             SET ${stepName} = ?, error = CASE WHEN ? <> '' THEN ? ELSE error END, updatedAt = ?
+             WHERE actionId = ?`,
+            [stepStatus, error, error, new Date().toISOString(), actionId]
+        );
+    }
+
+    async completeEnforcementAction(actionId, status, error = '') {
+        await this._run(
+            `UPDATE enforcement_actions
+             SET status = ?, error = CASE WHEN ? <> '' THEN ? ELSE error END, updatedAt = ?
+             WHERE actionId = ?`,
+            [status, error, error, new Date().toISOString(), actionId]
+        );
+    }
+
+    async markStaleEnforcementActionsFailed(maxAgeMinutes = 15) {
+        const threshold = new Date(Date.now() - maxAgeMinutes * 60000).toISOString();
+        await this._run(
+            `UPDATE enforcement_actions
+             SET status = 'failed_stale',
+                 error = CASE WHEN error IS NULL OR error = '' THEN 'Marked stale after restart' ELSE error END,
+                 updatedAt = ?
+             WHERE status IN ('started', 'warning_phase') AND createdAt < ?`,
+            [new Date().toISOString(), threshold]
+        );
+    }
+
     // ── Exempt Users Operations ──────────────────────────────────────────
 
     async addExemptUser(groupId, jid) {
@@ -298,10 +512,17 @@ class Database {
 
     async getWarningCount(groupId, userJid) {
         const row = await this._get(
-            'SELECT count FROM warnings WHERE groupId = ? AND userJid = ?',
+            'SELECT count, lastWarningAt FROM warnings WHERE groupId = ? AND userJid = ?',
             [groupId, userJid]
         );
-        return row ? row.count : 0;
+        if (!row) return 0;
+
+        if (this._isWarningExpired(row.lastWarningAt)) {
+            await this.resetWarnings(groupId, userJid);
+            return 0;
+        }
+
+        return row.count;
     }
 
     async incrementWarning(groupId, userJid) {
@@ -310,6 +531,14 @@ class Database {
             [groupId, userJid]
         );
         if (existing) {
+            if (this._isWarningExpired(existing.lastWarningAt)) {
+                await this._run(
+                    'UPDATE warnings SET count = 1, lastWarningAt = ? WHERE groupId = ? AND userJid = ?',
+                    [new Date().toISOString(), groupId, userJid]
+                );
+                return 1;
+            }
+
             await this._run(
                 'UPDATE warnings SET count = count + 1, lastWarningAt = ? WHERE groupId = ? AND userJid = ?',
                 [new Date().toISOString(), groupId, userJid]
@@ -332,11 +561,21 @@ class Database {
     }
 
     async getActiveWarningsCount(groupId) {
+        const threshold = this._getWarningsExpiryThresholdIso();
         const row = await this._get(
-            'SELECT COUNT(*) as cnt FROM warnings WHERE groupId = ? AND count > 0',
-            [groupId]
+            'SELECT COUNT(*) as cnt FROM warnings WHERE groupId = ? AND count > 0 AND lastWarningAt >= ?',
+            [groupId, threshold]
         );
         return row ? row.cnt : 0;
+    }
+
+    async cleanupExpiredWarnings() {
+        const threshold = this._getWarningsExpiryThresholdIso();
+        const result = await this._run(
+            'DELETE FROM warnings WHERE lastWarningAt IS NULL OR lastWarningAt < ?',
+            [threshold]
+        );
+        return result.changes || 0;
     }
 
     // ── Settings Operations ──────────────────────────────────────────────
