@@ -9,6 +9,9 @@ const { executeEnforcement, handleUndo, isPendingRemoval } = require('./enforcem
 const setupFlow = require('./setupFlow');
 const commands = require('./commands');
 
+const ADMIN_CACHE_TTL_MS = config.get('performance.adminCacheTtlMs', 60000);
+const groupAdminCache = new Map();
+
 /**
  * Process incoming message
  */
@@ -126,10 +129,19 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
             return;
         }
 
-        // Allow management group to approve/reject group-name change requests
-        const mgmtResponse = await commands.executeCommand(client, senderJid, content, lang);
-        if (mgmtResponse) {
-            await msg.reply(mgmtResponse);
+        // In management groups, allow only group-name approval/rejection commands
+        const mgmtCommand = (content || '').trim().toLowerCase();
+        const isNameApprovalCommand =
+            mgmtCommand.startsWith('אשר שם ') ||
+            mgmtCommand.startsWith('confirm name ') ||
+            mgmtCommand.startsWith('דחה שם ') ||
+            mgmtCommand.startsWith('reject name ');
+
+        if (isNameApprovalCommand) {
+            const mgmtResponse = await commands.executeCommand(client, senderJid, content, lang);
+            if (mgmtResponse) {
+                await msg.reply(mgmtResponse);
+            }
         }
         return; // Don't enforce rules in management group
     }
@@ -141,11 +153,8 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
 
     // Check if sender is group admin
     try {
-        const chat = await withRetry(() => client.getChatById(groupJid), 3, 700);
-        const participant = chat.participants.find(p =>
-            getNormalizedJid(p.id._serialized) === senderJid
-        );
-        if (participant && (participant.isAdmin || participant.isSuperAdmin)) {
+        const isAdmin = await isGroupAdminCached(client, groupJid, senderJid);
+        if (isAdmin) {
             return; // Group admins are always immune
         }
     } catch (e) {
@@ -209,6 +218,25 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
             );
         }
     }
+}
+
+async function isGroupAdminCached(client, groupJid, senderJid) {
+    const now = Date.now();
+    const cached = groupAdminCache.get(groupJid);
+    if (cached && (now - cached.fetchedAt) < ADMIN_CACHE_TTL_MS) {
+        return cached.admins.has(senderJid);
+    }
+
+    const chat = await withRetry(() => client.getChatById(groupJid), 3, 700);
+    const admins = new Set();
+    for (const p of (chat.participants || [])) {
+        if (p.isAdmin || p.isSuperAdmin) {
+            admins.add(getNormalizedJid(p.id._serialized));
+        }
+    }
+
+    groupAdminCache.set(groupJid, { admins, fetchedAt: now });
+    return admins.has(senderJid);
 }
 
 async function buildMgmtGroupStatusResponse(client, content, groups, lang) {

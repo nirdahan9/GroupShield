@@ -14,7 +14,7 @@ function setRestartReason(reason, details = '') {
         };
         fs.writeFileSync(RESTART_REASON_FILE, JSON.stringify(data, null, 2));
     } catch (e) {
-        console.error('Failed to write restart reason:', e);
+        process.stderr.write(`Failed to write restart reason: ${e.message}\n`);
     }
 }
 
@@ -26,7 +26,7 @@ function getRestartReason() {
             return data;
         }
     } catch (e) {
-        console.error('Failed to read restart reason:', e);
+        process.stderr.write(`Failed to read restart reason: ${e.message}\n`);
     }
     return null;
 }

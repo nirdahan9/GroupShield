@@ -2,6 +2,14 @@
 const logger = require('./logger');
 const { t } = require('./i18n');
 
+const JERUSALEM_PARTS_FORMATTER = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Jerusalem',
+    hour12: false,
+    weekday: 'long',
+    hour: 'numeric',
+    minute: 'numeric'
+});
+
 /**
  * Evaluate a message against group rules
  * @param {Array} rules - Rules from database (parsed ruleData)
@@ -125,9 +133,7 @@ function checkTimeWindow(ruleData, lang) {
     const violations = [];
 
     const now = new Date();
-    const options = { timeZone: 'Asia/Jerusalem', hour12: false, weekday: 'long', hour: 'numeric', minute: 'numeric' };
-    const fmt = new Intl.DateTimeFormat('en-US', options);
-    const parts = fmt.formatToParts(now);
+    const parts = JERUSALEM_PARTS_FORMATTER.formatToParts(now);
 
     const currentDayName = parts.find(p => p.type === 'weekday').value;
     const currentHour = parseInt(parts.find(p => p.type === 'hour').value, 10);

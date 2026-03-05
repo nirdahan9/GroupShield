@@ -15,6 +15,8 @@ class Database {
 
     initialize() {
         this.db.serialize(() => {
+            this.db.run('PRAGMA foreign_keys = ON');
+
             // Users — people who configure the bot via DM
             this.db.run(`CREATE TABLE IF NOT EXISTS users (
                 jid TEXT PRIMARY KEY,
@@ -365,6 +367,8 @@ class Database {
         await this._run('DELETE FROM enforcement WHERE groupId = ?', [groupId]);
         await this._run('DELETE FROM exempt_users WHERE groupId = ?', [groupId]);
         await this._run('DELETE FROM warnings WHERE groupId = ?', [groupId]);
+        await this._run('DELETE FROM group_name_change_requests WHERE groupId = ?', [groupId]);
+        await this._run('DELETE FROM enforcement_actions WHERE groupId = ?', [groupId]);
     }
 
     // ── Rules Operations ─────────────────────────────────────────────────

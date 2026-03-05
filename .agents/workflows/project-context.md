@@ -77,6 +77,32 @@ It was transformed from a specific "ShabbatBot" into a fully configurable enforc
 	- in shared management groups, requires quoted report to include `Group ID` to prevent cross-group misrouting.
 - Management-group detection now checks all linked enforced groups via `getGroupsByMgmtGroup`, improving consistency.
 
+### Latest Hardening & Performance Update
+- Added strict developer-only controls for sensitive manual operations:
+	- `restart`, `backup`, and `cleanup` are now developer-only commands.
+- Management-group command surface is restricted:
+	- group messages in management groups now accept `status` (all/specific), `undo`, and group-name approval commands only.
+	- system commands are no longer generally executed from management groups.
+- Added scheduler/runtime init guard in `ready` flow to prevent duplicate cron/interval registration on repeated ready events.
+- Added periodic anti-spam map cleanup (stale key pruning) to prevent in-memory growth over time.
+- Enforcement step observability improved:
+	- delete/report step statuses now reflect actual success/failure instead of assumed success.
+- Logging writes were made non-blocking (`appendFile` instead of sync appends) to reduce event-loop blocking.
+- Removed direct `console.*` usage in config/restart modules; switched to safer stderr writes.
+- Database cleanup hardening:
+	- `PRAGMA foreign_keys = ON` enabled.
+	- deleting a group now also removes linked name-change requests and enforcement action rows.
+- Performance optimization:
+	- added short-lived group-admin cache for immunity checks.
+	- reused Jerusalem time formatter in rule engine instead of rebuilding formatter per message.
+
+## Mandatory Workflow Instruction
+- For **every** new prompt that includes code/config changes:
+	1. apply and validate changes,
+	2. update this `.agents` context file,
+	3. commit and push to GitHub (`main`),
+	4. report back with commit hash and what was updated.
+
 ## Architecture
 
 ### Entry Point

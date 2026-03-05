@@ -18,6 +18,11 @@ const backup = require('./src/backup');
 const AUTH_DIR = path.join(__dirname, '.wwebjs_auth');
 const VERSION = config.get('bot.version', '1.0.0');
 const DEVELOPER_JID = config.get('developer.jid');
+const runtime = {
+    readyInitialized: false,
+    intervals: [],
+    cronTasks: []
+};
 
 // ── Chrome Cache Cleanup ─────────────────────────────────────────────────
 function cleanChromeCache() {
@@ -87,6 +92,12 @@ async function startBot() {
 
     // ── Ready ────────────────────────────────────────────────────────
     client.on('ready', async () => {
+        if (runtime.readyInitialized) {
+            logger.warn('Ready event received again - skipping duplicate scheduler/interval initialization');
+            return;
+        }
+        runtime.readyInitialized = true;
+
         logger.info('✅ GroupShield is ready!');
 
         // Initialize subsystems
@@ -94,10 +105,10 @@ async function startBot() {
         backup.initialize();
 
         // Schedule restarts and status messages
-        scheduleRestarts();
-        scheduleStatusMessages(client);
-        scheduleWarningsCleanup();
-        scheduleOrphanGroupCleanup(client);
+        runtime.cronTasks.push(scheduleRestarts());
+        runtime.cronTasks.push(scheduleStatusMessages(client));
+        runtime.cronTasks.push(scheduleWarningsCleanup());
+        runtime.cronTasks.push(scheduleOrphanGroupCleanup(client));
 
         // Mark stale enforcement actions after restart and start group-name refresh loop
         await database.markStaleEnforcementActionsFailed(15);
@@ -107,15 +118,19 @@ async function startBot() {
         }
         await handlers.refreshManagedGroupNames(client);
         const groupNameRefreshMs = config.get('scheduling.groupNameRefreshIntervalMs', 300000);
-        setInterval(async () => {
+        const groupNameRefreshHandle = setInterval(async () => {
             await handlers.refreshManagedGroupNames(client);
         }, groupNameRefreshMs);
+        runtime.intervals.push(groupNameRefreshHandle);
+
+        const spamCleanupHandle = scheduleSpamMapCleanup(spamMap);
+        runtime.intervals.push(spamCleanupHandle);
 
         // Send startup notification to developer
         handleStartupNotification(client);
 
         // Memory monitor
-        setInterval(() => {
+        const memoryMonitorHandle = setInterval(() => {
             const mem = process.memoryUsage().rss / 1024 / 1024;
             const maxMem = config.get('memory.maxMemoryMB', 400);
             if (mem > maxMem) {
@@ -124,6 +139,7 @@ async function startBot() {
                 process.exit(0);
             }
         }, config.get('memory.checkIntervalMs', 300000));
+        runtime.intervals.push(memoryMonitorHandle);
     });
 
     // ── Disconnected ─────────────────────────────────────────────────
@@ -161,7 +177,7 @@ async function startBot() {
 
 function scheduleRestarts() {
     const schedule = config.get('scheduling.dailyRestart', '0 4 * * *');
-    cron.schedule(schedule, () => {
+    return cron.schedule(schedule, () => {
         logger.info('Scheduled restart');
         setRestartReason('scheduled', schedule);
         process.exit(0);
@@ -170,14 +186,14 @@ function scheduleRestarts() {
 
 function scheduleStatusMessages(client) {
     const schedule = config.get('scheduling.statusMessages', '0 8,12,16,20 * * *');
-    cron.schedule(schedule, async () => {
+    return cron.schedule(schedule, async () => {
         await sendStatusToDeveloper(client);
     });
 }
 
 function scheduleWarningsCleanup() {
     const schedule = config.get('scheduling.warningsCleanup', '15 4 * * *');
-    cron.schedule(schedule, async () => {
+    return cron.schedule(schedule, async () => {
         try {
             const removed = await database.cleanupExpiredWarnings();
             if (removed > 0) {
@@ -191,7 +207,7 @@ function scheduleWarningsCleanup() {
 
 function scheduleOrphanGroupCleanup(client) {
     const schedule = config.get('scheduling.orphanGroupCleanup', '30 4 * * *');
-    cron.schedule(schedule, async () => {
+    return cron.schedule(schedule, async () => {
         try {
             const activeGroups = await database.getAllActiveGroups();
             const allowedGroupIds = new Set();
@@ -226,6 +242,41 @@ function scheduleOrphanGroupCleanup(client) {
     });
 }
 
+function scheduleSpamMapCleanup(spamMap) {
+    const intervalMs = config.get('scheduling.spamMapCleanupIntervalMs', 600000);
+    const ttlMs = config.get('scheduling.spamMapEntryTtlMs', 1800000);
+
+    return setInterval(() => {
+        const now = Date.now();
+        let removed = 0;
+        for (const [key, value] of spamMap.entries()) {
+            if (!value || !value.time || (now - value.time) > ttlMs) {
+                spamMap.delete(key);
+                removed++;
+            }
+        }
+        if (removed > 0) {
+            logger.debug(`Spam map cleanup removed ${removed} stale entries`);
+        }
+    }, intervalMs);
+}
+
+function cleanupRuntimeResources() {
+    for (const task of runtime.cronTasks) {
+        try {
+            task && task.stop && task.stop();
+        } catch (e) {
+            logger.warn('Failed stopping cron task during shutdown');
+        }
+    }
+    runtime.cronTasks = [];
+
+    for (const handle of runtime.intervals) {
+        clearInterval(handle);
+    }
+    runtime.intervals = [];
+}
+
 async function sendStatusToDeveloper(client) {
     try {
         const status = await handlers.buildStatusMessage(client);
@@ -252,12 +303,14 @@ function handleStartupNotification(client) {
 process.on('SIGINT', () => {
     logger.info('SIGINT received');
     setRestartReason('sigint', 'Manual stop');
+    cleanupRuntimeResources();
     database.close();
     process.exit(0);
 });
 
 process.on('SIGTERM', () => {
     logger.info('SIGTERM received');
+    cleanupRuntimeResources();
     database.close();
     process.exit(0);
 });

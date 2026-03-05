@@ -328,6 +328,22 @@ const strings = {
         he: '🔄 מאתחל...',
         en: '🔄 Restarting...'
     },
+    'developer_only_command': {
+        he: '⛔ הפקודה זמינה רק למפתח הבוט.',
+        en: '⛔ This command is available to the bot developer only.'
+    },
+    'backup_done': {
+        he: '✅ גיבוי ידני הושלם ({{count}} קבצים).',
+        en: '✅ Manual backup completed ({{count}} files).'
+    },
+    'backup_failed': {
+        he: '❌ גיבוי נכשל: {{error}}',
+        en: '❌ Backup failed: {{error}}'
+    },
+    'cleanup_done': {
+        he: '✅ ניקוי הושלם. נמחקו {{removed}} אזהרות שפג תוקפן.',
+        en: '✅ Cleanup completed. Removed {{removed}} expired warnings.'
+    },
 
     // ── Violation reasons ────────────────────────────────────────────────
     'reason_forbidden_type': {

@@ -66,8 +66,8 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
 
             // Step 1: Delete message (if enabled, even during warning phase)
             if (enforcementConfig.deleteMessage) {
-                await deleteMessage(client, msg);
-                await database.updateEnforcementActionStep(actionId, 'deleteStatus', 'success');
+                const deleted = await deleteMessage(client, msg);
+                await database.updateEnforcementActionStep(actionId, 'deleteStatus', deleted ? 'success' : 'failed');
             } else {
                 await database.updateEnforcementActionStep(actionId, 'deleteStatus', 'skipped');
             }
@@ -92,8 +92,8 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
             // Report warning if reporting is enabled
             if (enforcementConfig.sendReport) {
                 const warningReport = `⚠️ *${lang === 'he' ? 'אזהרה' : 'Warning'}* (${newCount}/${maxWarnings})\n🏷️ ${groupConfig.groupName}\n👤 ${number}\n📝 ${reason}`;
-                await sendReport(client, groupConfig, warningReport, lang);
-                await database.updateEnforcementActionStep(actionId, 'reportStatus', 'success');
+                const reportSent = await sendReport(client, groupConfig, warningReport, lang);
+                await database.updateEnforcementActionStep(actionId, 'reportStatus', reportSent ? 'success' : 'failed');
             } else {
                 await database.updateEnforcementActionStep(actionId, 'reportStatus', 'skipped');
             }
@@ -114,8 +114,8 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
     try {
         // STEP 1: Delete message
         if (enforcementConfig.deleteMessage) {
-            await deleteMessage(client, msg);
-            await database.updateEnforcementActionStep(actionId, 'deleteStatus', 'success');
+            const deleted = await deleteMessage(client, msg);
+            await database.updateEnforcementActionStep(actionId, 'deleteStatus', deleted ? 'success' : 'failed');
         } else {
             await database.updateEnforcementActionStep(actionId, 'deleteStatus', 'skipped');
         }
@@ -196,8 +196,8 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
                 time: formattedTime,
                 violationId: actionId
             });
-            await sendReport(client, groupConfig, report, lang);
-            await database.updateEnforcementActionStep(actionId, 'reportStatus', 'success');
+            const reportSent = await sendReport(client, groupConfig, report, lang);
+            await database.updateEnforcementActionStep(actionId, 'reportStatus', reportSent ? 'success' : 'failed');
         } else {
             await database.updateEnforcementActionStep(actionId, 'reportStatus', 'skipped');
         }
@@ -225,9 +225,12 @@ async function deleteMessage(client, msg) {
         if (msg) {
             await msg.delete(true);
             logger.debug('Message deleted');
+            return true;
         }
+        return false;
     } catch (e) {
-        logger.error('Delete failed', e);
+        logger.warn(`Delete failed: ${e.message}`);
+        return false;
     }
 }
 
@@ -251,8 +254,10 @@ async function sendReport(client, groupConfig, report, lang) {
             await client.sendMessage(groupConfig.ownerJid, report);
         }
         logger.info('Report sent');
+        return true;
     } catch (e) {
         logger.error('Report failed', e);
+        return false;
     }
 }
 

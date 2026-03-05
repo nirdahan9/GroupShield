@@ -55,7 +55,11 @@ if (config.get('logging.file.enabled', true)) {
 
 function appendLog(filePath, text) {
     const time = new Date().toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' });
-    fs.appendFileSync(filePath, `[${time}] ${text}\n`, 'utf8');
+    fs.appendFile(filePath, `[${time}] ${text}\n`, 'utf8', (err) => {
+        if (err) {
+            logger.error(`Failed to append log file ${filePath}: ${err.message}`);
+        }
+    });
 }
 
 let criticalErrorCallback = null;
@@ -78,7 +82,11 @@ function auditLog(adminJid, action, details, success = true) {
     const status = success ? 'SUCCESS' : 'FAILED';
     const adminNumber = adminJid ? adminJid.split('@')[0] : 'system';
     const logLine = `[${time}] [${adminNumber}] [${action}] ${details} - ${status}`;
-    fs.appendFileSync(auditFile, logLine + '\n', 'utf8');
+    fs.appendFile(auditFile, logLine + '\n', 'utf8', (err) => {
+        if (err) {
+            logger.error(`Failed to append audit log: ${err.message}`);
+        }
+    });
     logger.info(`AUDIT: ${action} by ${adminNumber}`);
 }
 

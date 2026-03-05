@@ -14,9 +14,8 @@ class ConfigManager {
             const raw = fs.readFileSync(this.configPath, 'utf8');
             this.config = JSON.parse(raw);
             this.validate();
-            console.log('✅ Configuration loaded successfully');
         } catch (error) {
-            console.error(`❌ Failed to load config: ${error.message}`);
+            process.stderr.write(`❌ Failed to load config: ${error.message}\n`);
             process.exit(1);
         }
     }
@@ -28,7 +27,6 @@ class ConfigManager {
                 throw new Error(`Missing required config: ${key}`);
             }
         }
-        console.log('✅ Configuration validation passed');
     }
 
     get(key, defaultValue = null) {

@@ -6,6 +6,7 @@ const database = require('./database');
 const { t } = require('./i18n');
 const { extractNumber, parsePhoneNumber, getNormalizedJid } = require('./utils');
 const setupFlow = require('./setupFlow');
+const backup = require('./backup');
 
 /**
  * Parse and execute admin commands (from DM or management group)
@@ -14,6 +15,8 @@ const setupFlow = require('./setupFlow');
 async function executeCommand(client, senderJid, command, lang) {
     const cmd = command.trim();
     const cmdLower = cmd.toLowerCase();
+    const normalizedSender = getNormalizedJid(senderJid);
+    const isDeveloper = config.isDeveloper(normalizedSender);
 
     // Get user's group config
     const user = await database.getUser(senderJid);
@@ -97,7 +100,25 @@ async function executeCommand(client, senderJid, command, lang) {
         }
 
         // ── Restart ──────────────────────────────────────────────────
+        if (cmdLower === 'גיבוי' || cmdLower === 'backup') {
+            if (!isDeveloper) return t('developer_only_command', lang);
+            const result = await backup.createBackup();
+            if (result.success) {
+                const count = Array.isArray(result.files) ? result.files.length : 0;
+                return t('backup_done', lang, { count: String(count) });
+            }
+            return t('backup_failed', lang, { error: result.error || (lang === 'he' ? 'שגיאה לא ידועה' : 'Unknown error') });
+        }
+
+        if (cmdLower === 'ניקוי' || cmdLower === 'cleanup') {
+            if (!isDeveloper) return t('developer_only_command', lang);
+            const removed = await database.cleanupExpiredWarnings();
+            await database.markStaleEnforcementActionsFailed(15);
+            return t('cleanup_done', lang, { removed: String(removed) });
+        }
+
         if (cmdLower === 'ריסטארט' || cmdLower === 'restart') {
+            if (!isDeveloper) return t('developer_only_command', lang);
             logger.auditLog(senderJid, 'RESTART', 'Manual restart', true);
             setRestartReason('manual_restart', 'Admin command');
             setTimeout(() => process.exit(0), 1000);
