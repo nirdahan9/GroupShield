@@ -113,6 +113,12 @@ It was transformed from a specific "ShabbatBot" into a fully configurable enforc
 - Command UX split:
 	- help menu is now role-aware (`help_user` vs `help_developer`), exposing developer-only commands only to developer users.
 
+### Latest Follow-up (Current Prompt)
+- Automatic orphan-group leaving was removed from scheduled runtime maintenance.
+	- Bot now leaves groups only through explicit `stop enforcement` command flow.
+- Admin cache correctness improved:
+	- group admin cache is invalidated on group update events to reduce stale-permission windows.
+
 ## Mandatory Workflow Instruction
 - For **every** new prompt that includes code/config changes:
 	1. apply and validate changes,

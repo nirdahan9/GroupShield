@@ -278,6 +278,10 @@ async function buildMgmtGroupStatusResponse(client, content, groups, lang) {
  * Handle group participant updates (joins/leaves)
  */
 async function handleGroupUpdate(client, update) {
+    if (update && update.id) {
+        invalidateGroupAdminCache(update.id);
+    }
+
     const groupConfig = await database.getGroup(update.id);
     if (!groupConfig) return; // Not a managed group
 
@@ -299,6 +303,10 @@ async function handleGroupUpdate(client, update) {
             await database.resetWarnings(groupConfig.groupId, jid);
         }
     }
+}
+
+function invalidateGroupAdminCache(groupJid) {
+    groupAdminCache.delete(groupJid);
 }
 
 /**
