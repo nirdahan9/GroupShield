@@ -276,11 +276,19 @@ const strings = {
         he: '❌ ניתן להגיב "בטל" רק לדו"ח הסרה של GroupShield.',
         en: '❌ You can only reply "undo" to a GroupShield removal report.'
     },
+    'undo_expired': {
+        he: '❌ לא ניתן לבצע ביטול לפעולה שבוצעה לפני יותר מ-24 שעות.',
+        en: '❌ Undo is not available for actions older than 24 hours.'
+    },
 
     // ── Commands ─────────────────────────────────────────────────────────
-    'help': {
+    'help_user': {
         he: '🛡️ *פקודות GroupShield*\n\n📊 *מידע:*\n• *עזרה* — תפריט זה\n• *סטטוס* — מצב הבוט והקבוצה\n\n🛡️ *חסינים:*\n• *הוסף חסין 05X-XXX-XXXX* — הוסף חסין\n• *הסר חסין 05X-XXX-XXXX* — הסר חסין\n• *רשימת חסינים* — הצג חסינים\n\n⚠️ *אזהרות:*\n• *אפס אזהרות 05X-XXX-XXXX* — אפס אזהרות\n\n🔄 *שינוי שם קבוצה:*\n• *אשר שם <requestId>* — אישור שם חדש\n• *דחה שם <requestId>* — דחיית שם חדש\n\n⚙️ *מערכת:*\n• *התחל* — התחלת setup\n• *הגדרות* — שינוי הגדרות מלא\n• *עדכן אכיפה* — שינוי מהיר של אכיפה ואזהרות\n• *איפוס* — איפוס מלא\n• *הפסק אכיפה* — עצירת אכיפה ויציאה מקבוצות\n• *שפה* — החלף שפה\n• *ריסטארט* — אתחל בוט',
-        en: '🛡️ *GroupShield Commands*\n\n📊 *Info:*\n• *help* — this menu\n• *status* — bot and group status\n\n🛡️ *Exemptions:*\n• *exempt add 05X-XXX-XXXX* — add exempt\n• *exempt remove 05X-XXX-XXXX* — remove exempt\n• *exempt list* — list exempt users\n\n⚠️ *Warnings:*\n• *warnings reset 05X-XXX-XXXX* — reset warnings\n\n🔄 *Group name changes:*\n• *confirm name <requestId>* — approve new name\n• *reject name <requestId>* — reject new name\n\n⚙️ *System:*\n• *start* — begin setup\n• *settings* — full reconfiguration\n• *update enforcement* — quick enforcement + warnings update\n• *reset* — full reset\n• *stop enforcement* — stop enforcement and leave groups\n• *language* — switch language\n• *restart* — restart bot'
+        en: '🛡️ *GroupShield Commands*\n\n📊 *Info:*\n• *help* — this menu\n• *status* — bot and group status\n\n🛡️ *Exemptions:*\n• *exempt add 05X-XXX-XXXX* — add exempt\n• *exempt remove 05X-XXX-XXXX* — remove exempt\n• *exempt list* — list exempt users\n\n⚠️ *Warnings:*\n• *warnings reset 05X-XXX-XXXX* — reset warnings\n\n🔄 *Group name changes:*\n• *confirm name <requestId>* — approve new name\n• *reject name <requestId>* — reject new name\n\n⚙️ *System:*\n• *start* — begin setup\n• *settings* — full reconfiguration\n• *update enforcement* — quick enforcement + warnings update\n• *reset* — full reset\n• *stop enforcement* — stop enforcement and leave groups\n• *language* — switch language'
+    },
+    'help_developer': {
+        he: '🛡️ *פקודות GroupShield (מפתח)*\n\n📊 *מידע ותפעול:*\n• *עזרה* — תפריט זה\n• *סטטוס* — מצב הבוט והקבוצה\n\n🛡️ *ניהול קבוצה:*\n• *הוסף חסין 05X-XXX-XXXX*\n• *הסר חסין 05X-XXX-XXXX*\n• *רשימת חסינים*\n• *אפס אזהרות 05X-XXX-XXXX*\n• *אשר שם <requestId>*\n• *דחה שם <requestId>*\n• *התחל* / *הגדרות* / *עדכן אכיפה* / *איפוס* / *הפסק אכיפה* / *שפה*\n\n🧰 *מפתח בלבד:*\n• *גיבוי* — יצירת גיבוי מיידי\n• *ניקוי* — ניקוי אזהרות שפג תוקפן ופעולות תקועות\n• *ריסטארט* — אתחול הבוט',
+        en: '🛡️ *GroupShield Commands (Developer)*\n\n📊 *Info & Operations:*\n• *help* — this menu\n• *status* — bot and group status\n\n🛡️ *Group management:*\n• *exempt add 05X-XXX-XXXX*\n• *exempt remove 05X-XXX-XXXX*\n• *exempt list*\n• *warnings reset 05X-XXX-XXXX*\n• *confirm name <requestId>*\n• *reject name <requestId>*\n• *start* / *settings* / *update enforcement* / *reset* / *stop enforcement* / *language*\n\n🧰 *Developer only:*\n• *backup* — create immediate backup\n• *cleanup* — clear expired warnings and stale actions\n• *restart* — restart bot'
     },
     'status_message': {
         he: '📊 *סטטוס GroupShield*\n🟢 פעיל\n🛡️ *קבוצה:* {{groupName}} ({{memberCount}} חברים)\n⚠️ *אזהרות פעילות:* {{activeWarnings}}\n🕒 {{time}}',

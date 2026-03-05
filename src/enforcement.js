@@ -293,6 +293,30 @@ async function handleUndo(client, msg, groupConfig, lang) {
     const targetNumber = match[1];
     const targetJid = targetNumber + '@s.whatsapp.net';
 
+    if (!actionId) {
+        return t('undo_failed', lang, { error: lang === 'he' ? 'דו"ח ישן ללא מזהה פעולה' : 'Old report without action ID' });
+    }
+
+    const action = await database.getEnforcementAction(actionId);
+    if (!action) {
+        return t('undo_failed', lang, { error: lang === 'he' ? 'פעולת אכיפה לא נמצאה' : 'Enforcement action not found' });
+    }
+
+    if (action.status !== 'completed') {
+        return t('undo_failed', lang, {
+            error: lang === 'he' ? 'הפעולה כבר בוטלה או לא במצב שניתן לבטל' : 'Action already undone or not in a reversible state'
+        });
+    }
+
+    const createdAtMs = new Date(action.createdAt).getTime();
+    if (!Number.isNaN(createdAtMs)) {
+        const ageMs = Date.now() - createdAtMs;
+        const maxUndoMs = 24 * 60 * 60 * 1000;
+        if (ageMs > maxUndoMs) {
+            return t('undo_expired', lang);
+        }
+    }
+
     let effectiveGroupConfig = groupConfig;
 
     // In shared management groups, group ID is mandatory for safe undo routing

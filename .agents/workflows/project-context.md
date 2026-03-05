@@ -96,6 +96,23 @@ It was transformed from a specific "ShabbatBot" into a fully configurable enforc
 	- added short-lived group-admin cache for immunity checks.
 	- reused Jerusalem time formatter in rule engine instead of rebuilding formatter per message.
 
+### Latest Security & Reliability Update (Current Prompt)
+- Critical protection-scope fix:
+	- setup-start no longer grants immediate global immunity.
+	- users are added to `global_protected_users` only after an actual group link is persisted (`updateUserGroup` with non-null group).
+	- added startup cleanup for legacy over-protected setup users without linked groups.
+- Undo safety window:
+	- undo now requires a valid `ENF-*` action ID,
+	- only actions in `completed` status are reversible,
+	- undo is blocked for actions older than 24 hours.
+- Backup robustness:
+	- database backup moved from raw file copy to SQLite `VACUUM INTO` snapshot flow.
+- Cron validation hardening:
+	- scheduler expressions are validated before registration with fallbacks and warning logs.
+	- applied in both main runtime schedulers and backup scheduler.
+- Command UX split:
+	- help menu is now role-aware (`help_user` vs `help_developer`), exposing developer-only commands only to developer users.
+
 ## Mandatory Workflow Instruction
 - For **every** new prompt that includes code/config changes:
 	1. apply and validate changes,

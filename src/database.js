@@ -124,7 +124,13 @@ class Database {
             // Backfill: every known setup user is globally protected
             this.db.run(`INSERT OR IGNORE INTO global_protected_users (jid, addedAt, source)
                          SELECT jid, COALESCE(createdAt, datetime('now')), 'setup_flow'
-                         FROM users`);
+                                                 FROM users
+                                                 WHERE groupId IS NOT NULL`);
+
+                        // Cleanup legacy over-protection: users without linked group should not stay setup_flow protected
+                        this.db.run(`DELETE FROM global_protected_users
+                                                 WHERE source = 'setup_flow'
+                                                     AND jid IN (SELECT jid FROM users WHERE groupId IS NULL)`);
 
             // Helpful indexes
             this.db.run('CREATE INDEX IF NOT EXISTS idx_rules_group ON rules(groupId)');
@@ -205,11 +211,6 @@ class Database {
             [jid, language, new Date().toISOString()]
         );
 
-        await this._run(
-            'INSERT OR IGNORE INTO global_protected_users (jid, addedAt, source) VALUES (?, ?, ?)',
-            [jid, new Date().toISOString(), 'setup_flow']
-        );
-
         return this.getUser(jid);
     }
 
@@ -224,6 +225,13 @@ class Database {
 
     async updateUserGroup(jid, groupId) {
         await this._run('UPDATE users SET groupId = ? WHERE jid = ?', [groupId, jid]);
+
+        if (groupId) {
+            await this._run(
+                'INSERT OR IGNORE INTO global_protected_users (jid, addedAt, source) VALUES (?, ?, ?)',
+                [jid, new Date().toISOString(), 'setup_flow']
+            );
+        }
     }
 
     async getUserByGroup(groupId) {
@@ -469,6 +477,10 @@ class Database {
              WHERE actionId = ?`,
             [status, error, error, new Date().toISOString(), actionId]
         );
+    }
+
+    async getEnforcementAction(actionId) {
+        return this._get('SELECT * FROM enforcement_actions WHERE actionId = ?', [actionId]);
     }
 
     async markStaleEnforcementActionsFailed(maxAgeMinutes = 15) {

@@ -2,6 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const cron = require('node-cron');
+const sqlite3 = require('sqlite3').verbose();
 const config = require('./config');
 const logger = require('./logger');
 
@@ -26,13 +27,18 @@ class BackupSystem {
         });
 
         const schedule = config.get('backup.schedule', '0 3 * * *');
-        cron.schedule(schedule, () => {
+        const safeSchedule = cron.validate(schedule) ? schedule : '0 3 * * *';
+        if (safeSchedule !== schedule) {
+            logger.warn(`Invalid backup cron schedule "${schedule}" - using fallback "${safeSchedule}"`);
+        }
+
+        cron.schedule(safeSchedule, () => {
             logger.info('Scheduled backup triggered');
             this.createBackup();
         });
 
         this.initialized = true;
-        logger.info(`Backup system initialized (schedule: ${schedule})`);
+        logger.info(`Backup system initialized (schedule: ${safeSchedule})`);
     }
 
     async createBackup() {
@@ -47,7 +53,7 @@ class BackupSystem {
             const dbFile = path.join(__dirname, '../', config.get('database.file', 'groupshield.db'));
             if (fs.existsSync(dbFile)) {
                 const dbBackup = path.join(this.backupDir, 'db', `groupshield_${timestamp}.db`);
-                fs.copyFileSync(dbFile, dbBackup);
+                await this.createAtomicSqliteBackup(dbFile, dbBackup);
                 files.push(`DB: ${path.basename(dbBackup)}`);
             }
 
@@ -91,6 +97,23 @@ class BackupSystem {
     getTimestamp() {
         const now = new Date();
         return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+    }
+
+    async createAtomicSqliteBackup(sourceDbPath, backupPath) {
+        return new Promise((resolve, reject) => {
+            const db = new sqlite3.Database(sourceDbPath, sqlite3.OPEN_READWRITE, (openErr) => {
+                if (openErr) return reject(openErr);
+
+                const escapedBackupPath = String(backupPath).replace(/'/g, "''");
+                db.run(`VACUUM INTO '${escapedBackupPath}'`, (err) => {
+                    db.close((closeErr) => {
+                        if (err) return reject(err);
+                        if (closeErr) return reject(closeErr);
+                        resolve();
+                    });
+                });
+            });
+        });
     }
 }
 

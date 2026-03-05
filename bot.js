@@ -176,7 +176,7 @@ async function startBot() {
 // ── Scheduling ───────────────────────────────────────────────────────────
 
 function scheduleRestarts() {
-    const schedule = config.get('scheduling.dailyRestart', '0 4 * * *');
+    const schedule = getValidCronOrDefault('scheduling.dailyRestart', '0 4 * * *');
     return cron.schedule(schedule, () => {
         logger.info('Scheduled restart');
         setRestartReason('scheduled', schedule);
@@ -185,14 +185,14 @@ function scheduleRestarts() {
 }
 
 function scheduleStatusMessages(client) {
-    const schedule = config.get('scheduling.statusMessages', '0 8,12,16,20 * * *');
+    const schedule = getValidCronOrDefault('scheduling.statusMessages', '0 8,12,16,20 * * *');
     return cron.schedule(schedule, async () => {
         await sendStatusToDeveloper(client);
     });
 }
 
 function scheduleWarningsCleanup() {
-    const schedule = config.get('scheduling.warningsCleanup', '15 4 * * *');
+    const schedule = getValidCronOrDefault('scheduling.warningsCleanup', '15 4 * * *');
     return cron.schedule(schedule, async () => {
         try {
             const removed = await database.cleanupExpiredWarnings();
@@ -206,7 +206,7 @@ function scheduleWarningsCleanup() {
 }
 
 function scheduleOrphanGroupCleanup(client) {
-    const schedule = config.get('scheduling.orphanGroupCleanup', '30 4 * * *');
+    const schedule = getValidCronOrDefault('scheduling.orphanGroupCleanup', '30 4 * * *');
     return cron.schedule(schedule, async () => {
         try {
             const activeGroups = await database.getAllActiveGroups();
@@ -240,6 +240,13 @@ function scheduleOrphanGroupCleanup(client) {
             logger.error('Orphan group cleanup failed', e);
         }
     });
+}
+
+function getValidCronOrDefault(configKey, fallback) {
+    const configured = config.get(configKey, fallback);
+    if (cron.validate(configured)) return configured;
+    logger.warn(`Invalid cron for ${configKey}: "${configured}". Using fallback "${fallback}"`);
+    return fallback;
 }
 
 function scheduleSpamMapCleanup(spamMap) {

@@ -25,7 +25,7 @@ async function executeCommand(client, senderJid, command, lang) {
     try {
         // ── Help ─────────────────────────────────────────────────────
         if (cmdLower === '?' || cmdLower === 'עזרה' || cmdLower === 'help') {
-            return t('help', lang);
+            return t(isDeveloper ? 'help_developer' : 'help_user', lang);
         }
 
         // ── Status ───────────────────────────────────────────────────
