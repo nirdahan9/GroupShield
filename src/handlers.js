@@ -2,7 +2,7 @@
 const config = require('./config');
 const logger = require('./logger');
 const database = require('./database');
-const { getNormalizedJid, extractNumber, resolveContactToPhone, withRetry } = require('./utils');
+const { getNormalizedJid, extractNumber, resolveContactToPhone, withRetry, buildGroupRulesSummary } = require('./utils');
 const { t } = require('./i18n');
 const { evaluateMessage, checkAntiSpam } = require('./ruleEngine');
 const { executeEnforcement, handleUndo, isPendingRemoval } = require('./enforcement');
@@ -58,6 +58,38 @@ async function handleDM(client, msg, senderJid, content) {
             await client.sendMessage(msg.from, response);
         }
         return;
+    }
+
+    // Check if user is responding to a Welcome Message DM
+    const lowerContent = content.trim().toLowerCase();
+    const isAgree = lowerContent === '1' || lowerContent.includes('מסכים') || lowerContent === 'agree';
+    const isDisagree = lowerContent === '2' || lowerContent.includes('לא מסכים') || lowerContent === 'disagree';
+
+    if (isAgree || isDisagree) {
+        const pendingRows = await database.getPendingMember(senderJid);
+        if (pendingRows && pendingRows.length > 0) {
+            for (const row of pendingRows) {
+                const groupConfig = await database.getGroup(row.groupId);
+                if (!groupConfig) continue;
+
+                if (isAgree) {
+                    await database.removePendingMember(row.groupId, senderJid);
+                    await client.sendMessage(msg.from, t('welcome_agreed', lang, { groupName: groupConfig.groupName }));
+                    logger.info(`User ${extractNumber(senderJid)} agreed to rules in ${groupConfig.groupName}`);
+                } else if (isDisagree) {
+                    await client.sendMessage(msg.from, t('welcome_disagreed', lang));
+                    try {
+                        const chat = await client.getChatById(row.groupId);
+                        await chat.removeParticipants([senderJid]);
+                    } catch (e) {
+                        logger.error(`Failed to remove disagreeing user ${senderJid} from ${groupConfig.groupName}`, e);
+                    }
+                    await database.removePendingMember(row.groupId, senderJid);
+                    logger.info(`User ${extractNumber(senderJid)} disagreed to rules and was removed from ${groupConfig.groupName}`);
+                }
+            }
+            return;
+        }
     }
 
     // Check if user is in setup flow
@@ -181,6 +213,47 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
         }
     }
 
+    // ── Welcome Message Strict Enforcement ──────────────────────────
+
+    // If user is pending agreement, reject their message and remove them
+    const isPending = await database.isPendingMember(groupJid, senderJid);
+    if (isPending) {
+        try { await msg.delete(true); } catch (e) { }
+
+        // Notify DM
+        const dmMsg = t('welcome_unapproved_message', lang);
+        try { await client.sendMessage(senderJid, dmMsg); } catch (e) { }
+
+        // Remove from group
+        try {
+            const chat = await client.getChatById(groupJid);
+            await chat.removeParticipants([senderJid]);
+        } catch (e) {
+            logger.error(`Failed to remove unapproved user ${senderJid}`, e);
+        }
+
+        // Cleanup DB and log action
+        await database.removePendingMember(groupJid, senderJid);
+
+        const actionId = `ACT-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+        await database.createEnforcementAction({
+            actionId,
+            groupId: groupJid,
+            userJid: senderJid,
+            reason: t('reason_unapproved_welcome', lang),
+            content,
+            msgType,
+            status: 'completed'
+        });
+
+        await database.updateEnforcementActionStep(actionId, 'deleteStatus', 'success');
+        await database.updateEnforcementActionStep(actionId, 'warningStatus', 'skipped');
+        await database.updateEnforcementActionStep(actionId, 'removeStatus', 'success');
+
+        logger.info(`Removed user ${extractNumber(senderJid)} from ${groupConfig.groupName} for sending message before rule approval`);
+        return;
+    }
+
     // ── Rule Evaluation ─────────────────────────────────────────────
 
     // Get rules for this group
@@ -293,6 +366,37 @@ async function handleGroupUpdate(client, update) {
             const addedJid = getNormalizedJid(pId);
             const addedNum = extractNumber(addedJid);
             logger.info(`JOIN: ${addedNum} joined ${groupConfig.groupName}`);
+
+            // Welcome Message Logic
+            if (groupConfig.welcomeMessageEnabled) {
+                // Determine if user is exempt/immune
+                let shouldSendWelcome = true;
+                if (groupConfig.ownerJid === addedJid) shouldSendWelcome = false;
+                if (shouldSendWelcome && await database.isGlobalProtected(addedJid)) shouldSendWelcome = false;
+                if (shouldSendWelcome && await database.isExempt(groupConfig.groupId, addedJid)) shouldSendWelcome = false;
+
+                if (shouldSendWelcome) {
+                    try {
+                        const rules = await database.getRules(groupConfig.groupId);
+                        const enf = await database.getEnforcement(groupConfig.groupId);
+                        const rulesSummary = buildGroupRulesSummary(groupConfig, rules, enf, t, lang);
+
+                        const welcomeText = t('welcome_dm', lang, {
+                            groupName: groupConfig.groupName,
+                            rulesSummary
+                        });
+
+                        await database.addPendingMember(groupConfig.groupId, addedJid);
+                        await client.sendMessage(addedJid, welcomeText);
+                        await database.markPendingMemberNotified(groupConfig.groupId, addedJid);
+                        logger.info(`Sent welcome rules DM to ${addedNum} for group ${groupConfig.groupName}`);
+                    } catch (e) {
+                        logger.error(`Failed to send welcome message to ${addedNum}`, e);
+                        // If we can't DM them, we might be blocked by privacy settings.
+                        // We leave them in pending_group_members so the 24h cron evicts them if they never agree.
+                    }
+                }
+            }
         }
     }
 

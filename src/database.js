@@ -74,6 +74,7 @@ class Database {
                 mgmtGroupId TEXT,
                 mgmtGroupVerified INTEGER DEFAULT 0,
                 reportTarget TEXT DEFAULT 'dm',
+                welcomeMessageEnabled INTEGER DEFAULT 0,
                 warningCount INTEGER DEFAULT 3,
                 active INTEGER DEFAULT 1,
                 createdAt TEXT
@@ -127,10 +128,30 @@ class Database {
                                                  FROM users
                                                  WHERE groupId IS NOT NULL`);
 
-                        // Cleanup legacy over-protection: users without linked group should not stay setup_flow protected
-                        this.db.run(`DELETE FROM global_protected_users
+            // Cleanup legacy over-protection: users without linked group should not stay setup_flow protected
+            this.db.run(`DELETE FROM global_protected_users
                                                  WHERE source = 'setup_flow'
                                                      AND jid IN (SELECT jid FROM users WHERE groupId IS NULL)`);
+
+            // Pending group members (for welcome message)
+            this.db.run(`CREATE TABLE IF NOT EXISTS pending_group_members (
+                groupId TEXT NOT NULL,
+                userJid TEXT NOT NULL,
+                joinedAt TEXT NOT NULL,
+                notified INTEGER DEFAULT 0,
+                PRIMARY KEY (groupId, userJid)
+            )`);
+
+            // Check if welcomeMessageEnabled column exists, if not, add it (schema migration)
+            this.db.all("PRAGMA table_info(groups)", (err, rows) => {
+                if (!err && rows) {
+                    const hasWelcomeCol = rows.some(r => r.name === 'welcomeMessageEnabled');
+                    if (!hasWelcomeCol) {
+                        this.db.run("ALTER TABLE groups ADD COLUMN welcomeMessageEnabled INTEGER DEFAULT 0");
+                        logger.info("Migrated schema: Added welcomeMessageEnabled to groups");
+                    }
+                }
+            });
 
             // Helpful indexes
             this.db.run('CREATE INDEX IF NOT EXISTS idx_rules_group ON rules(groupId)');
@@ -145,6 +166,8 @@ class Database {
             this.db.run('CREATE INDEX IF NOT EXISTS idx_name_change_status_time ON group_name_change_requests(status, createdAt)');
             this.db.run('CREATE INDEX IF NOT EXISTS idx_enforcement_group_status ON enforcement_actions(groupId, status)');
             this.db.run('CREATE INDEX IF NOT EXISTS idx_enforcement_status_time ON enforcement_actions(status, createdAt)');
+            this.db.run('CREATE INDEX IF NOT EXISTS idx_pending_members_group ON pending_group_members(groupId)');
+            this.db.run('CREATE INDEX IF NOT EXISTS idx_pending_members_joined_time ON pending_group_members(joinedAt)');
 
             logger.info('Database initialized successfully');
         });
@@ -354,6 +377,13 @@ class Database {
         );
     }
 
+    async updateGroupWelcomeMessage(groupId, enabled) {
+        await this._run(
+            'UPDATE groups SET welcomeMessageEnabled = ? WHERE groupId = ?',
+            [enabled ? 1 : 0, groupId]
+        );
+    }
+
     async setGroupActive(groupId, active) {
         await this._run(
             'UPDATE groups SET active = ? WHERE groupId = ?',
@@ -377,6 +407,7 @@ class Database {
         await this._run('DELETE FROM warnings WHERE groupId = ?', [groupId]);
         await this._run('DELETE FROM group_name_change_requests WHERE groupId = ?', [groupId]);
         await this._run('DELETE FROM enforcement_actions WHERE groupId = ?', [groupId]);
+        await this._run('DELETE FROM pending_group_members WHERE groupId = ?', [groupId]);
     }
 
     // ── Rules Operations ─────────────────────────────────────────────────
@@ -596,6 +627,47 @@ class Database {
             [threshold]
         );
         return result.changes || 0;
+    }
+
+    // ── Pending Group Members (Welcome Message) ──────────────────────────
+
+    async addPendingMember(groupId, userJid) {
+        await this._run(
+            `INSERT OR IGNORE INTO pending_group_members (groupId, userJid, joinedAt, notified)
+             VALUES (?, ?, ?, 0)`,
+            [groupId, userJid, new Date().toISOString()]
+        );
+    }
+
+    async getPendingMember(userJid) {
+        return this._all('SELECT * FROM pending_group_members WHERE userJid = ?', [userJid]);
+    }
+
+    async isPendingMember(groupId, userJid) {
+        const row = await this._get('SELECT * FROM pending_group_members WHERE groupId = ? AND userJid = ?', [groupId, userJid]);
+        return !!row;
+    }
+
+    async markPendingMemberNotified(groupId, userJid) {
+        await this._run(
+            'UPDATE pending_group_members SET notified = 1 WHERE groupId = ? AND userJid = ?',
+            [groupId, userJid]
+        );
+    }
+
+    async removePendingMember(groupId, userJid) {
+        await this._run(
+            'DELETE FROM pending_group_members WHERE groupId = ? AND userJid = ?',
+            [groupId, userJid]
+        );
+    }
+
+    async getExpiredPendingMembers(hours = 24) {
+        const threshold = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
+        return this._all(
+            'SELECT * FROM pending_group_members WHERE joinedAt < ?',
+            [threshold]
+        );
     }
 
     // ── Settings Operations ──────────────────────────────────────────────

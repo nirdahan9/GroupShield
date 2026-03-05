@@ -152,6 +152,59 @@ async function withRetry(fn, attempts = 3, delayMs = 800) {
     throw lastError;
 }
 
+/**
+ * Build dynamic group rules summary text based on config and rules
+ */
+function buildGroupRulesSummary(groupConfig, rules, enforceConfig, t, lang) {
+    let text = '';
+
+    // Non-text rules
+    const nonTextRule = rules.find(r => r.ruleType === 'block_non_text');
+    if (nonTextRule) {
+        if (nonTextRule.ruleData.includes('all_non_text')) {
+            text += `• ${t('rules_summary_no_media', lang)}\n`;
+        } else {
+            const types = nonTextRule.ruleData.map(type => t(`type_${type}`, lang)).join(', ');
+            text += `• ${t('rules_summary_blocked_media', lang, { types })}\n`;
+        }
+    }
+
+    // Content rules (Allowed vs Forbidden)
+    const allowedRules = rules.find(r => r.ruleType === 'allowed_messages');
+    if (allowedRules) {
+        text += `• ${t('rules_summary_allowed_only', lang)}\n`;
+    }
+
+    const forbiddenRules = rules.find(r => r.ruleType === 'forbidden_messages');
+    if (forbiddenRules) {
+        text += `• ${t('rules_summary_forbidden', lang, { count: forbiddenRules.ruleData.length })}\n`;
+    }
+
+    if (!nonTextRule && !allowedRules && !forbiddenRules) {
+        text += `• ${t('rules_summary_no_content_rules', lang)}\n`;
+    }
+
+    // Time window
+    const timeRule = rules.find(r => r.ruleType === 'time_window');
+    if (timeRule) {
+        text += `\n⏰ ${t('rules_summary_time_window_title', lang)}\n`;
+        timeRule.ruleData.forEach(tw => {
+            const dayName = t(`day_${tw.day}`, lang);
+            text += `• ${dayName}: ${tw.start} - ${tw.end}\n`;
+        });
+    }
+
+    // Warnings
+    const maxWarnings = groupConfig.warningCount || 0;
+    text += `\n⚠️ ${t('rules_summary_enforcement_title', lang)}\n`;
+    text += `${t('rules_summary_warnings', lang, { maxWarnings })}\n`;
+    if (enforceConfig.deleteMessage) {
+        text += `• ${t('rules_summary_enforce_delete', lang)}\n`;
+    }
+
+    return text.trim();
+}
+
 module.exports = {
     getNormalizedJid,
     extractNumber,
@@ -159,5 +212,6 @@ module.exports = {
     parsePhoneNumber,
     RateLimiter,
     resolveContactToPhone,
-    withRetry
+    withRetry,
+    buildGroupRulesSummary
 };

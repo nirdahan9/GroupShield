@@ -235,10 +235,20 @@ const strings = {
         en: '✅ Report target saved.'
     },
 
+    // ── Welcome Message (Onboarding) ─────────────────────────────────────
+    'ask_welcome_msg': {
+        he: '👋 *שלב 9: קבלת פנים (Welcome Message)*\n\nהאם תרצה שהבוט ישלח הודעת קבלת פנים לכל משתמש חדש שמצטרף?\nההודעה תכיל את חוקי הקבוצה (כפי שהגדרת) והוראה לאשר אותם.\n⚠️ משתמש שלא יאשר לא יוכל לכתוב בקבוצה (ויורחק בהודעה הראשונה, או לאחר 24 שעות).\n\n1️⃣ כן, שלח הודעת קבלת פנים ודרוש אישור ✅\n2️⃣ לא, בלי הודעת קבלת פנים ❌',
+        en: '👋 *Step 9: Welcome Message*\n\nDo you want the bot to send a welcome message to new users joining the group?\nThe message will include the rules and require them to agree.\n⚠️ Unapproved users cannot message the group (removed on first message, or after 24h).\n\n1️⃣ Yes, send welcome message & require agreement ✅\n2️⃣ No, don\'t send welcome message ❌'
+    },
+    'welcome_msg_saved': {
+        he: '✅ הגדרות קבלת פנים נשמרו.',
+        en: '✅ Welcome message settings saved.'
+    },
+
     // ── Summary & Completion ─────────────────────────────────────────────
     'setup_summary': {
-        he: '📋 *סיכום הגדרות GroupShield*\n\n🏷️ *קבוצה:* {{groupName}}\n📏 *חוקי תוכן:* {{rulesType}}\n🧠 *התאמת תוכן:* {{rulesMode}}\n🖼️ *הודעות לא-טקסט:* {{nonTextRule}}\n⏰ *חלון זמנים:* {{timeWindow}}\n🔁 *אנטי-ספאם:* {{antiSpam}}\n⚖️ *שלבי אכיפה:* {{enforcement}}\n⚠️ *אזהרות:* {{warnings}}\n🛡️ *חסינים:* {{exempt}}\n📨 *דיווח:* {{report}}\n\nלאשר ולהפעיל?\n\n1️⃣ אשר ✅\n2️⃣ התחל מחדש 🔄',
-        en: '📋 *GroupShield Configuration Summary*\n\n🏷️ *Group:* {{groupName}}\n📏 *Content rules:* {{rulesType}}\n🧠 *Match mode:* {{rulesMode}}\n🖼️ *Non-text messages:* {{nonTextRule}}\n⏰ *Time window:* {{timeWindow}}\n🔁 *Anti-spam:* {{antiSpam}}\n⚖️ *Enforcement:* {{enforcement}}\n⚠️ *Warnings:* {{warnings}}\n🛡️ *Exempt:* {{exempt}}\n📨 *Reports:* {{report}}\n\nConfirm and activate?\n\n1️⃣ Confirm ✅\n2️⃣ Start over 🔄'
+        he: '📋 *סיכום הגדרות GroupShield*\n\n🏷️ *קבוצה:* {{groupName}}\n📏 *חוקי תוכן:* {{rulesType}}\n🧠 *התאמת תוכן:* {{rulesMode}}\n🖼️ *הודעות לא-טקסט:* {{nonTextRule}}\n⏰ *חלון זמנים:* {{timeWindow}}\n🔁 *אנטי-ספאם:* {{antiSpam}}\n⚖️ *שלבי אכיפה:* {{enforcement}}\n⚠️ *אזהרות:* {{warnings}}\n🛡️ *חסינים:* {{exempt}}\n📨 *דיווח:* {{report}}\n👋 *הודעת קבלת פנים:* {{welcome}}\n\nלאשר ולהפעיל?\n\n1️⃣ אשר ✅\n2️⃣ התחל מחדש 🔄',
+        en: '📋 *GroupShield Configuration Summary*\n\n🏷️ *Group:* {{groupName}}\n📏 *Content rules:* {{rulesType}}\n🧠 *Match mode:* {{rulesMode}}\n🖼️ *Non-text messages:* {{nonTextRule}}\n⏰ *Time window:* {{timeWindow}}\n🔁 *Anti-spam:* {{antiSpam}}\n⚖️ *Enforcement:* {{enforcement}}\n⚠️ *Warnings:* {{warnings}}\n🛡️ *Exempt:* {{exempt}}\n📨 *Reports:* {{report}}\n👋 *Welcome Message:* {{welcome}}\n\nConfirm and activate?\n\n1️⃣ Confirm ✅\n2️⃣ Start over 🔄'
     },
     'setup_complete': {
         he: '🛡️✅ *GroupShield פעיל!*\n\nהבוט מאכוף כעת את החוקים בקבוצה *{{groupName}}*.\n\nשלח *"עזרה"* לרשימת פקודות.',
@@ -258,6 +268,39 @@ const strings = {
         he: '🛡️ *דו"ח GroupShield*\n\n🏷️ *קבוצה:* {{groupName}}\n🆔 *מזהה:* {{violationId}}\n🧾 *מזהה קבוצה:* {{groupId}}\n👤 *שם:* {{pushname}}\n📱 *מספר:* {{number}}\n📝 *סיבה:* {{reason}}\n📝 *תוכן:* "{{content}}"\n📩 *הודעה פרטית:* {{privateStatus}}\n🚫 *הסרה:* {{removeStatus}}\n🔒 *חסימה:* {{blockStatus}}\n🕒 *זמן:* {{time}}',
         en: '🛡️ *GroupShield Report*\n\n🏷️ *Group:* {{groupName}}\n🆔 *ID:* {{violationId}}\n🧾 *Group ID:* {{groupId}}\n👤 *Name:* {{pushname}}\n📱 *Number:* {{number}}\n📝 *Reason:* {{reason}}\n📝 *Content:* "{{content}}"\n📩 *Private msg:* {{privateStatus}}\n🚫 *Removal:* {{removeStatus}}\n🔒 *Block:* {{blockStatus}}\n🕒 *Time:* {{time}}'
     },
+
+    // ── Welcome Flow & Rules Summary ─────────────────────────────────────
+    'welcome_dm': {
+        he: '👋 *ברוך הבא לקבוצה {{groupName}}!*\n\nרגע לפני שמתחילים לשלוח הודעות, הנה כללי הקבוצה בקצרה כדי לשמור על סביבה נעימה לכולם:\n\n{{rulesSummary}}\n\n⚠️ חובה לאשר את החוקים כדי להיות חלק מהקבוצה.\nאם לא תאשר ותשלח הודעה, ההודעה תימחק ותוסר מיידית.\n\nכדי להתחיל לשלוח הודעות בקבוצה, האם אתה מסכים לתקנון?\n\n1️⃣ מסכים ✅\n2️⃣ לא מסכים ❌',
+        en: '👋 *Welcome to {{groupName}}!*\n\nJust before you start chatting, here are the group rules to keep this a great place:\n\n{{rulesSummary}}\n\n⚠️ You must agree to the rules to participate.\nIf you send a message without agreeing, it will be deleted and you will be removed immediately.\n\nDo you agree to the group rules?\n\n1️⃣ Agree ✅\n2️⃣ Disagree ❌'
+    },
+    'welcome_agreed': {
+        he: '✅ מעולה! אישרת את תקנון הקבוצה *{{groupName}}* ואתה יכול להתחיל לשלוח הודעות.',
+        en: '✅ Great! You agreed to the rules of *{{groupName}}* and can now send messages.'
+    },
+    'welcome_disagreed': {
+        he: '❌ בחרת שלא להסכים לתקנון הקבוצה, ולכן תוסר ממנה כעת.',
+        en: '❌ You chose not to agree to the group rules, so you will be removed now.'
+    },
+    'welcome_unapproved_message': {
+        he: '⛔ אינך יכול לשלוח הודעות בקבוצה לפני שתאשר את התקנון (הודעתך בקבוצה הוסרה, ותוסר מהקבוצה בשל כך).\nאם לא ראית את התקנון, חפש אותו בהודעות קודמות בשיחה זו.',
+        en: '⛔ You cannot send messages before agreeing to the rules (your message was deleted, and you will be removed).\nIf you missed the rules, check the previous messages in this chat.'
+    },
+    'rules_summary_no_media': { he: 'אין לשלוח שום קובץ מדיה (רק הודעות טקסט)', en: 'No media allowed (text messages only)' },
+    'rules_summary_blocked_media': { he: 'אין לשלוח קבצי: {{types}}', en: 'Do not send: {{types}}' },
+    'rules_summary_allowed_only': { he: 'מותר לשלוח רק הודעות טקסט שהוגדרו מראש (אחרות יימחקו)', en: 'Only specific allowed text messages can be sent' },
+    'rules_summary_forbidden': { he: 'ישנן {{count}} מילים/ביטויים שאסור לכתוב בקבוצה', en: 'There are {{count}} forbidden words/phrases' },
+    'rules_summary_no_content_rules': { he: 'אין הגבלות על תוכן ההודעות', en: 'No content restrictions' },
+    'rules_summary_time_window_title': { he: 'שעות פעילות:', en: 'Active Hours:' },
+    'rules_summary_enforcement_title': { he: 'אכיפה (GroupShield):', en: 'Enforcement (GroupShield):' },
+    'rules_summary_warnings': { he: 'אזהרות מותרות: {{maxWarnings}} (ולאחר מכן הרחקה)', en: 'Max warnings: {{maxWarnings}} (before removal)' },
+    'rules_summary_enforce_delete': { he: 'הודעות מפרות יימחקו אוטומטית', en: 'Violating messages are auto-deleted' },
+    'type_image': { he: 'תמונה', en: 'image' },
+    'type_video': { he: 'וידאו', en: 'video' },
+    'type_sticker': { he: 'סטיקר', en: 'sticker' },
+    'type_document': { he: 'מסמך', en: 'document' },
+    'type_audio': { he: 'הודעות קוליות (אודיו)', en: 'audio/voice' },
+    'type_other_non_text': { he: 'מיקום, איש קשר, סקר וכו׳', en: 'location/contact/poll etc' },
 
     // ── Undo ─────────────────────────────────────────────────────────────
     'undo_success': {
@@ -354,6 +397,10 @@ const strings = {
     },
 
     // ── Violation reasons ────────────────────────────────────────────────
+    'reason_unapproved_welcome': {
+        he: 'שליחת הודעה ללא אישור תקנון',
+        en: 'Message sent without agreeing to rules'
+    },
     'reason_forbidden_type': {
         he: 'סוג הודעה אסור ({{type}})',
         en: 'Forbidden message type ({{type}})'

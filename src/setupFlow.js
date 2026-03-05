@@ -87,6 +87,8 @@ async function processSetupMessage(client, senderJid, content) {
             return await handleMgmtGroupConfirm(client, senderJid, content, state, lang);
         case 'mgmt_group_verify_count':
             return await handleMgmtGroupVerifyCount(client, senderJid, content, state, lang);
+        case 'welcome_msg':
+            return await handleWelcomeMsg(client, senderJid, content, state, lang);
         case 'summary':
             return await handleSummary(client, senderJid, content, state, lang);
         default:
@@ -652,8 +654,8 @@ async function handleExempt(client, jid, content, state, lang) {
 async function handleReportTarget(client, jid, content, state, lang) {
     const choice = content.trim();
     if (choice === '1') {
-        await saveState(jid, { ...state, step: 'summary', reportTarget: 'dm' });
-        return await buildSummary(state, 'dm', null, lang);
+        await saveState(jid, { ...state, step: 'welcome_msg', reportTarget: 'dm' });
+        return t('ask_welcome_msg', lang);
     } else if (choice === '2') {
         await saveState(jid, { ...state, step: 'report_phone' });
         return t('ask_report_phone', lang);
@@ -670,8 +672,8 @@ async function handleReportPhone(client, jid, content, state, lang) {
         return t('invalid_input', lang) + '\n\n' + t('ask_report_phone', lang);
     }
     const reportTarget = `phone:${parsed}`;
-    await saveState(jid, { ...state, step: 'summary', reportTarget });
-    return await buildSummary(state, reportTarget, null, lang);
+    await saveState(jid, { ...state, step: 'welcome_msg', reportTarget });
+    return t('ask_welcome_msg', lang);
 }
 
 async function handleMgmtGroupName(client, jid, content, state, lang) {
@@ -743,12 +745,24 @@ async function handleMgmtGroupVerifyCount(client, jid, content, state, lang) {
         }
 
         const reportTarget = 'mgmt_group';
-        await saveState(jid, { ...state, step: 'summary', reportTarget, mgmtGroupConfirmed: true });
-        return t('mgmt_group_verify_count_success', lang) + '\n\n' + await buildSummary(state, reportTarget, state.mgmtGroupId, lang);
+        await saveState(jid, { ...state, step: 'welcome_msg', reportTarget, mgmtGroupConfirmed: true });
+        return t('mgmt_group_verify_count_success', lang) + '\n\n' + t('ask_welcome_msg', lang);
     } catch (e) {
         logger.error('Failed to verify management group count', e);
         return t('error_generic', lang, { error: e.message });
     }
+}
+
+async function handleWelcomeMsg(client, jid, content, state, lang) {
+    const choice = content.trim();
+    if (choice === '1' || choice.includes('כן') || choice.toLowerCase() === 'yes') {
+        await saveState(jid, { ...state, step: 'summary', welcomeMessageEnabled: true });
+        return t('welcome_msg_saved', lang) + '\n\n' + await buildSummary({ ...state, welcomeMessageEnabled: true }, state.reportTarget, state.mgmtGroupId, lang);
+    } else if (choice === '2' || choice.includes('לא') || choice.toLowerCase() === 'no') {
+        await saveState(jid, { ...state, step: 'summary', welcomeMessageEnabled: false });
+        return t('welcome_msg_saved', lang) + '\n\n' + await buildSummary({ ...state, welcomeMessageEnabled: false }, state.reportTarget, state.mgmtGroupId, lang);
+    }
+    return t('ask_welcome_msg', lang);
 }
 
 async function buildSummary(state, reportTarget, mgmtGroupId, lang) {
@@ -803,6 +817,10 @@ async function buildSummary(state, reportTarget, mgmtGroupId, lang) {
         ? state.exemptNumbers.length.toString()
         : (lang === 'he' ? 'אין' : 'None');
 
+    const welcomeStr = state.welcomeMessageEnabled
+        ? (lang === 'he' ? 'מופעל (דורש אישור משתמש)' : 'Enabled (requires agreement)')
+        : (lang === 'he' ? 'כבוי' : 'Disabled');
+
     return t('setup_summary', lang, {
         groupName: state.groupName,
         rulesType: rulesTypeMap[state.rulesType] || state.rulesType,
@@ -813,7 +831,8 @@ async function buildSummary(state, reportTarget, mgmtGroupId, lang) {
         enforcement: enfSteps.join('\n'),
         warnings: (state.warningCount || 0).toString(),
         exempt: exemptStr,
-        report: reportStr
+        report: reportStr,
+        welcome: welcomeStr
     });
 }
 
@@ -883,7 +902,10 @@ async function handleSummary(client, jid, content, state, lang) {
             // 4. Save warning count
             await database.updateGroupWarningCount(groupId, state.warningCount || 0);
 
-            // 5. Save exempt users
+            // 5. Save welcome message setting
+            await database.updateGroupWelcomeMessage(groupId, !!state.welcomeMessageEnabled);
+
+            // 6. Save exempt users
             await database.clearExemptUsers(groupId);
             if (state.exemptNumbers && state.exemptNumbers.length > 0) {
                 for (const num of state.exemptNumbers) {
@@ -891,10 +913,10 @@ async function handleSummary(client, jid, content, state, lang) {
                 }
             }
 
-            // 6. Save report target
+            // 7. Save report target
             await database.updateGroupReportTarget(groupId, state.reportTarget || 'dm');
 
-            // 7. Save management group if applicable
+            // 8. Save management group if applicable
             if (state.mgmtGroupId && state.mgmtGroupConfirmed) {
                 await database.updateGroupMgmt(groupId, state.mgmtGroupId);
             }

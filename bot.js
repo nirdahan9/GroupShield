@@ -109,6 +109,7 @@ async function startBot() {
         runtime.cronTasks.push(scheduleStatusMessages(client));
         runtime.cronTasks.push(scheduleWarningsCleanup());
         runtime.cronTasks.push(scheduleUnknownGroupExit(client));
+        runtime.cronTasks.push(schedulePendingMembersCleanup(client));
 
         // Mark stale enforcement actions after restart and start group-name refresh loop
         await database.markStaleEnforcementActionsFailed(15);
@@ -246,6 +247,32 @@ function scheduleUnknownGroupExit(client) {
             logger.info(`Unknown-group daily cleanup finished (left ${leftCount} groups)`);
         } catch (e) {
             logger.error('Unknown-group daily cleanup failed', e);
+        }
+    });
+}
+
+function schedulePendingMembersCleanup(client) {
+    const schedule = getValidCronOrDefault('scheduling.pendingMembersCleanup', '0 * * * *'); // Run every hour
+    return cron.schedule(schedule, async () => {
+        try {
+            const expiredMembers = await database.getExpiredPendingMembers(24);
+            if (!expiredMembers || expiredMembers.length === 0) return;
+
+            logger.info(`Found ${expiredMembers.length} expired pending members to remove`);
+
+            for (const member of expiredMembers) {
+                try {
+                    const chat = await client.getChatById(member.groupId);
+                    await chat.removeParticipants([member.userJid]);
+                    logger.info(`Removed expired pending member ${member.userJid} from group ${member.groupId}`);
+                } catch (e) {
+                    logger.error(`Failed removing expired pending member ${member.userJid} from ${member.groupId}`, e);
+                }
+                // Always remove from DB so we don't keep retrying if the bot lacks permissions
+                await database.removePendingMember(member.groupId, member.userJid);
+            }
+        } catch (e) {
+            logger.error('Pending members cleanup failed', e);
         }
     });
 }
