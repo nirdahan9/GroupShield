@@ -1,0 +1,46 @@
+{
+    "bot": {
+        "name": "GroupShield",
+        "version": "1.0.0"
+    },
+    "developer": {
+        "jid": "972526980000@s.whatsapp.net",
+        "phone": "972526980000"
+    },
+    "memory": {
+        "maxMemoryMB": 400,
+        "checkIntervalMs": 300000
+    },
+    "health": {
+        "checkIntervalMs": 300000,
+        "enableSelfHealing": true
+    },
+    "logging": {
+        "level": "info",
+        "console": true,
+        "file": {
+            "enabled": true,
+            "generalLog": "logs/bot.log",
+            "errorLog": "logs/error.log",
+            "auditLog": "audit_log.txt"
+        }
+    },
+    "database": {
+        "file": "groupshield.db"
+    },
+    "backup": {
+        "enabled": true,
+        "schedule": "0 3 * * *",
+        "keepBackups": 7,
+        "backupDir": "backups"
+    },
+    "rateLimiting": {
+        "enabled": true,
+        "delayBetweenRemovalsMs": 2500,
+        "maxRemovalsPerMinute": 15
+    },
+    "scheduling": {
+        "dailyRestart": "0 4 * * *",
+        "statusMessages": "0 8,12,16,20 * * *"
+    }
+}

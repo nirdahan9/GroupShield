@@ -1,0 +1,13 @@
+node_modules/
+.wwebjs_auth/
+.wwebjs_cache/
+auth_info_baileys/
+*.db
+*.log
+logs/
+backups/
+*.zip
+.DS_Store
+.vscode/
+*.txt
+!README.md
