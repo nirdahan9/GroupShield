@@ -47,7 +47,6 @@
         "statusMessages": "0 8,12,16,20 * * *",
         "groupNameRefreshIntervalMs": 300000,
         "warningsCleanup": "15 4 * * *",
-        "orphanGroupCleanup": "30 4 * * *",
         "unknownGroupExitEnabled": true,
         "unknownGroupExit": "30 4 * * *"
     }

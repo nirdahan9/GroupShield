@@ -41,7 +41,6 @@ It was transformed from a specific "ShabbatBot" into a fully configurable enforc
 
 ### Operational Automation
 - Periodic group-name refresh every 5 minutes with approval workflow (`confirm/reject name <requestId>`).
-- Daily orphan-group cleanup: bot leaves groups that are neither enforced nor management groups.
 - Warning TTL and cleanup:
 	- default reset after 60 days,
 	- scheduled cleanup job.
@@ -125,6 +124,7 @@ It was transformed from a specific "ShabbatBot" into a fully configurable enforc
 	- policy is configurable via:
 		- `scheduling.unknownGroupExitEnabled` (default: true)
 		- `scheduling.unknownGroupExit` cron expression (default: `30 4 * * *`)
+- Deprecated/orphan cleanup mode was removed from active configuration (`orphanGroupCleanup` key removed from config).
 - Added safety guard for missing database file:
 	- if the SQLite DB file is missing, unknown-group cleanup is skipped entirely (bot does not leave any group).
 
