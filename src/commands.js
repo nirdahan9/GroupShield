@@ -126,13 +126,13 @@ async function executeCommand(client, senderJid, command, lang) {
         }
 
         // ── Group Name Change Approvals ─────────────────────────────
-        if (cmdLower.startsWith('אשר שם ') || cmdLower.startsWith('confirm name ')) {
+        if (cmdLower.startsWith('אימות שם ') || cmdLower.startsWith('verify name ')) {
             const requestId = cmd.split(/\s+/).slice(2).join(' ').trim();
             return await approveGroupNameChange(client, senderJid, requestId, lang);
         }
 
-        if (cmdLower.startsWith('דחה שם ') || cmdLower.startsWith('reject name ')) {
-            const requestId = cmd.split(/\s+/).slice(2).join(' ').trim();
+        if (cmdLower.startsWith('לא אימות שם ') || cmdLower.startsWith('verify_not name ')) {
+            const requestId = cmd.split(/\s+/).slice(3).join(' ').trim();
             return await rejectGroupNameChange(client, senderJid, requestId, lang);
         }
 

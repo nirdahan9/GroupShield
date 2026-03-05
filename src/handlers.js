@@ -132,10 +132,10 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
         // In management groups, allow only group-name approval/rejection commands
         const mgmtCommand = (content || '').trim().toLowerCase();
         const isNameApprovalCommand =
-            mgmtCommand.startsWith('אשר שם ') ||
-            mgmtCommand.startsWith('confirm name ') ||
-            mgmtCommand.startsWith('דחה שם ') ||
-            mgmtCommand.startsWith('reject name ');
+            mgmtCommand.startsWith('אימות שם ') ||
+            mgmtCommand.startsWith('verify name ') ||
+            mgmtCommand.startsWith('לא אימות שם ') ||
+            mgmtCommand.startsWith('verify_not name ');
 
         if (isNameApprovalCommand) {
             const mgmtResponse = await commands.executeCommand(client, senderJid, content, lang);

@@ -40,7 +40,7 @@ It was transformed from a specific "ShabbatBot" into a fully configurable enforc
 - Added full reset and stop-enforcement operations.
 
 ### Operational Automation
-- Periodic group-name refresh every 5 minutes with approval workflow (`confirm/reject name <requestId>`).
+- Periodic group-name refresh every 5 minutes with verification workflow (`verify name <requestId>` / `verify_not name <requestId>`).
 - Warning TTL and cleanup:
 	- default reset after 60 days,
 	- scheduled cleanup job.
@@ -80,7 +80,7 @@ It was transformed from a specific "ShabbatBot" into a fully configurable enforc
 - Added strict developer-only controls for sensitive manual operations:
 	- `restart`, `backup`, and `cleanup` are now developer-only commands.
 - Management-group command surface is restricted:
-	- group messages in management groups now accept `status` (all/specific), `undo`, and group-name approval commands only.
+	- group messages in management groups now accept `status` (all/specific), `undo`, and group-name verify commands only.
 	- system commands are no longer generally executed from management groups.
 - Added scheduler/runtime init guard in `ready` flow to prevent duplicate cron/interval registration on repeated ready events.
 - Added periodic anti-spam map cleanup (stale key pruning) to prevent in-memory growth over time.

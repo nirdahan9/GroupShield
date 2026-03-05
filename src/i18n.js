@@ -283,12 +283,12 @@ const strings = {
 
     // ── Commands ─────────────────────────────────────────────────────────
     'help_user': {
-        he: '🛡️ *פקודות GroupShield*\n\n📊 *מידע:*\n• *עזרה* — תפריט זה\n• *סטטוס* — מצב הבוט והקבוצה\n\n🛡️ *חסינים:*\n• *הוסף חסין 05X-XXX-XXXX* — הוסף חסין\n• *הסר חסין 05X-XXX-XXXX* — הסר חסין\n• *רשימת חסינים* — הצג חסינים\n\n⚠️ *אזהרות:*\n• *אפס אזהרות 05X-XXX-XXXX* — אפס אזהרות\n\n🔄 *שינוי שם קבוצה:*\n• *אשר שם <requestId>* — אישור שם חדש\n• *דחה שם <requestId>* — דחיית שם חדש\n\n⚙️ *מערכת:*\n• *התחל* — התחלת setup\n• *הגדרות* — שינוי הגדרות מלא\n• *עדכן אכיפה* — שינוי מהיר של אכיפה ואזהרות\n• *איפוס* — איפוס מלא\n• *הפסק אכיפה* — עצירת אכיפה ויציאה מקבוצות\n• *שפה* — החלף שפה\n• *ריסטארט* — אתחל בוט',
-        en: '🛡️ *GroupShield Commands*\n\n📊 *Info:*\n• *help* — this menu\n• *status* — bot and group status\n\n🛡️ *Exemptions:*\n• *exempt add 05X-XXX-XXXX* — add exempt\n• *exempt remove 05X-XXX-XXXX* — remove exempt\n• *exempt list* — list exempt users\n\n⚠️ *Warnings:*\n• *warnings reset 05X-XXX-XXXX* — reset warnings\n\n🔄 *Group name changes:*\n• *confirm name <requestId>* — approve new name\n• *reject name <requestId>* — reject new name\n\n⚙️ *System:*\n• *start* — begin setup\n• *settings* — full reconfiguration\n• *update enforcement* — quick enforcement + warnings update\n• *reset* — full reset\n• *stop enforcement* — stop enforcement and leave groups\n• *language* — switch language'
+        he: '🛡️ *פקודות GroupShield*\n\n📊 *מידע:*\n• *עזרה* — תפריט זה\n• *סטטוס* — מצב הבוט והקבוצה\n\n🛡️ *חסינים:*\n• *הוסף חסין 05X-XXX-XXXX* — הוסף חסין\n• *הסר חסין 05X-XXX-XXXX* — הסר חסין\n• *רשימת חסינים* — הצג חסינים\n\n⚠️ *אזהרות:*\n• *אפס אזהרות 05X-XXX-XXXX* — אפס אזהרות\n\n🔄 *שינוי שם קבוצה:*\n• *אימות שם <requestId>* — נכון, שונה לשם החדש\n• *לא אימות שם <requestId>* — לא נכון, השאר את הישן',
+        en: '🛡️ *GroupShield Commands*\n\n📊 *Info:*\n• *help* — this menu\n• *status* — bot and group status\n\n🛡️ *Exemptions:*\n• *exempt add 05X-XXX-XXXX* — add exempt\n• *exempt remove 05X-XXX-XXXX* — remove exempt\n• *exempt list* — list exempt users\n\n⚠️ *Warnings:*\n• *warnings reset 05X-XXX-XXXX* — reset warnings\n\n🔄 *Group name changes:*\n• *verify name <requestId>* — yes, name was changed\n• *verify_not name <requestId>* — no, keep old name\n\n⚙️ *System:*\n• *start* — begin setup\n• *settings* — full reconfiguration\n• *update enforcement* — quick enforcement + warnings update\n• *reset* — full reset\n• *stop enforcement* — stop enforcement and leave groups\n• *language* — switch language'
     },
     'help_developer': {
-        he: '🛡️ *פקודות GroupShield (מפתח)*\n\n📊 *מידע ותפעול:*\n• *עזרה* — תפריט זה\n• *סטטוס* — מצב הבוט והקבוצה\n\n🛡️ *ניהול קבוצה:*\n• *הוסף חסין 05X-XXX-XXXX*\n• *הסר חסין 05X-XXX-XXXX*\n• *רשימת חסינים*\n• *אפס אזהרות 05X-XXX-XXXX*\n• *אשר שם <requestId>*\n• *דחה שם <requestId>*\n• *התחל* / *הגדרות* / *עדכן אכיפה* / *איפוס* / *הפסק אכיפה* / *שפה*\n\n🧰 *מפתח בלבד:*\n• *גיבוי* — יצירת גיבוי מיידי\n• *ניקוי* — ניקוי אזהרות שפג תוקפן ופעולות תקועות\n• *ריסטארט* — אתחול הבוט',
-        en: '🛡️ *GroupShield Commands (Developer)*\n\n📊 *Info & Operations:*\n• *help* — this menu\n• *status* — bot and group status\n\n🛡️ *Group management:*\n• *exempt add 05X-XXX-XXXX*\n• *exempt remove 05X-XXX-XXXX*\n• *exempt list*\n• *warnings reset 05X-XXX-XXXX*\n• *confirm name <requestId>*\n• *reject name <requestId>*\n• *start* / *settings* / *update enforcement* / *reset* / *stop enforcement* / *language*\n\n🧰 *Developer only:*\n• *backup* — create immediate backup\n• *cleanup* — clear expired warnings and stale actions\n• *restart* — restart bot'
+        he: '🛡️ *פקודות GroupShield (מפתח)*\n\n📊 *מידע ותפעול:*\n• *עזרה* — תפריט זה\n• *סטטוס* — מצב הבוט והקבוצה\n\n🛡️ *ניהול קבוצה:*\n• *הוסף חסין 05X-XXX-XXXX*\n• *הסר חסין 05X-XXX-XXXX*\n• *רשימת חסינים*\n• *אפס אזהרות 05X-XXX-XXXX*\n• *אימות שם <requestId>*\n• *לא אימות שם <requestId>*\n• *התחל* / *הגדרות* / *עדכן אכיפה* / *איפוס* / *הפסק אכיפה* / *שפה*\n\n🧰 *מפתח בלבד:*\n• *גיבוי* — יצירת גיבוי מיידי\n• *ניקוי* — ניקוי אזהרות שפג תוקפן ופעולות תקועות\n• *ריסטארט* — אתחול הבוט',
+        en: '🛡️ *GroupShield Commands (Developer)*\n\n📊 *Info & Operations:*\n• *help* — this menu\n• *status* — bot and group status\n\n🛡️ *Group management:*\n• *exempt add 05X-XXX-XXXX*\n• *exempt remove 05X-XXX-XXXX*\n• *exempt list*\n• *warnings reset 05X-XXX-XXXX*\n• *verify name <requestId>*\n• *verify_not name <requestId>*\n• *start* / *settings* / *update enforcement* / *reset* / *stop enforcement* / *language*\n\n🧰 *Developer only:*\n• *backup* — create immediate backup\n• *cleanup* — clear expired warnings and stale actions\n• *restart* — restart bot'
     },
     'status_message': {
         he: '📊 *סטטוס GroupShield*\n🟢 פעיל\n🛡️ *קבוצה:* {{groupName}} ({{memberCount}} חברים)\n⚠️ *אזהרות פעילות:* {{activeWarnings}}\n🕒 {{time}}',
@@ -407,24 +407,24 @@ const strings = {
         en: '✅ Warnings reset for {{number}}.'
     },
     'group_name_change_detected': {
-        he: '🔄 *זוהה שינוי בשם קבוצה*\n\nשם קודם: *{{oldName}}*\nשם חדש שזוהה: *{{newName}}*\n\nאם השם החדש תקין, השב:\n*אשר שם {{requestId}}*\n\nאם לא תקין, השב:\n*דחה שם {{requestId}}*',
-        en: '🔄 *Group name change detected*\n\nOld name: *{{oldName}}*\nDetected new name: *{{newName}}*\n\nIf the new name is correct, reply:\n*confirm name {{requestId}}*\n\nIf not correct, reply:\n*reject name {{requestId}}*'
+        he: '🔄 *האם שם הקבוצה השתנה?*\n\nשם קודם: *{{oldName}}*\nשם חדש שזוהה: *{{newName}}*\n\nכדי שהבוט יתעדכן על השם החדש, השב:\n*אימות שם {{requestId}}*\n\nאם זו טעות, השב:\n*לא אימות שם {{requestId}}*',
+        en: '🔄 *Group name change detected*\n\nOld name: *{{oldName}}*\nDetected new name: *{{newName}}*\n\nTo update the bot, reply:\n*verify name {{requestId}}*\n\nIf incorrect, reply:\n*verify_not name {{requestId}}*'
     },
     'name_change_request_not_found': {
         he: '❌ בקשת עדכון שם לא נמצאה או שכבר טופלה ({{requestId}}).',
         en: '❌ Name-change request not found or already handled ({{requestId}}).'
     },
     'name_change_unauthorized': {
-        he: '⛔ אין לך הרשאה לאשר/לדחות את שינוי השם עבור קבוצה זו.',
-        en: '⛔ You are not authorized to approve/reject this group name change.'
+        he: '⛔ אין לך הרשאה לאמת את שינוי השם עבור קבוצה זו.',
+        en: '⛔ You are not authorized to verify this group name change.'
     },
     'name_change_approved': {
-        he: '✅ שינוי שם אושר.\n*{{oldName}}* → *{{newName}}*',
-        en: '✅ Name change approved.\n*{{oldName}}* → *{{newName}}*'
+        he: '✅ אימות שם קבוצה עודכן.\n*{{oldName}}* → *{{newName}}*',
+        en: '✅ Group name updated.\n*{{oldName}}* → *{{newName}}*'
     },
     'name_change_rejected': {
-        he: '✅ שינוי שם נדחה. השם יישאר:\n*{{oldName}}*\n(השם שזוהה: *{{newName}}*)',
-        en: '✅ Name change rejected. Stored name remains:\n*{{oldName}}*\n(detected: *{{newName}}*)'
+        he: '✅ אימות שם נדחה. הבוט יישאר בשם:\n*{{oldName}}*\n(השם שזוהה: *{{newName}}*)',
+        en: '✅ Group name change rejected. Stored name remains:\n*{{oldName}}*\n(detected: *{{newName}}*)'
     },
     'not_configured': {
         he: '❌ הבוט עדיין לא הוגדר. שלח הודעה כלשהי כדי להתחיל.',
