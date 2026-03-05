@@ -119,6 +119,13 @@ It was transformed from a specific "ShabbatBot" into a fully configurable enforc
 - Admin cache correctness improved:
 	- group admin cache is invalidated on group update events to reduce stale-permission windows.
 
+### Latest Follow-up (Unknown Group Exit)
+- Reintroduced a controlled daily leave policy for unknown groups by request:
+	- once per day, bot scans joined groups and exits groups that are not active enforced groups and not configured management groups.
+	- policy is configurable via:
+		- `scheduling.unknownGroupExitEnabled` (default: true)
+		- `scheduling.unknownGroupExit` cron expression (default: `30 4 * * *`)
+
 ## Mandatory Workflow Instruction
 - For **every** new prompt that includes code/config changes:
 	1. apply and validate changes,

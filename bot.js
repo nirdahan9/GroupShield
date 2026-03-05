@@ -108,6 +108,7 @@ async function startBot() {
         runtime.cronTasks.push(scheduleRestarts());
         runtime.cronTasks.push(scheduleStatusMessages(client));
         runtime.cronTasks.push(scheduleWarningsCleanup());
+        runtime.cronTasks.push(scheduleUnknownGroupExit(client));
 
         // Mark stale enforcement actions after restart and start group-name refresh loop
         await database.markStaleEnforcementActionsFailed(15);
@@ -200,6 +201,45 @@ function scheduleWarningsCleanup() {
             }
         } catch (e) {
             logger.error('Scheduled warnings cleanup failed', e);
+        }
+    });
+}
+
+function scheduleUnknownGroupExit(client) {
+    const enabled = config.get('scheduling.unknownGroupExitEnabled', true);
+    if (!enabled) return null;
+
+    const schedule = getValidCronOrDefault('scheduling.unknownGroupExit', '30 4 * * *');
+    return cron.schedule(schedule, async () => {
+        try {
+            const activeGroups = await database.getAllActiveGroups();
+            const allowedGroupIds = new Set();
+            activeGroups.forEach(g => {
+                allowedGroupIds.add(g.groupId);
+                if (g.mgmtGroupId) allowedGroupIds.add(g.mgmtGroupId);
+            });
+
+            const chats = await client.getChats();
+            const groups = chats.filter(c => c.isGroup);
+
+            let leftCount = 0;
+            for (const g of groups) {
+                const gid = g.id && g.id._serialized;
+                if (!gid) continue;
+
+                if (!allowedGroupIds.has(gid)) {
+                    try {
+                        await g.leave();
+                        leftCount++;
+                    } catch (e) {
+                        logger.warn(`Failed leaving unknown group ${gid}`);
+                    }
+                }
+            }
+
+            logger.info(`Unknown-group daily cleanup finished (left ${leftCount} groups)`);
+        } catch (e) {
+            logger.error('Unknown-group daily cleanup failed', e);
         }
     });
 }
