@@ -210,6 +210,8 @@ async function resetUserWarnings(groupConfig, rawPhone, lang) {
 
 async function stopEnforcement(client, senderJid, groupConfig, lang) {
     try {
+        const mgmtGroupId = groupConfig.mgmtGroupId;
+
         // Disable enforcement and cleanup DB config
         await database.setGroupActive(groupConfig.groupId, false);
         await database.deleteGroup(groupConfig.groupId);
@@ -223,13 +225,20 @@ async function stopEnforcement(client, senderJid, groupConfig, lang) {
             logger.warn(`Could not leave managed group ${groupConfig.groupId}`);
         }
 
-        // Leave management group (if configured)
-        if (groupConfig.mgmtGroupId) {
-            try {
-                const mgmtChat = await client.getChatById(groupConfig.mgmtGroupId);
-                await mgmtChat.leave();
-            } catch (e) {
-                logger.warn(`Could not leave management group ${groupConfig.mgmtGroupId}`);
+        // Leave management group only if no other active enforced groups still use it
+        if (mgmtGroupId) {
+            const stillLinked = await database.getGroupsByMgmtGroup(mgmtGroupId);
+            const stillUsedByOthers = stillLinked.some(g => g.groupId !== groupConfig.groupId);
+
+            if (stillUsedByOthers) {
+                logger.info(`Keeping management group ${mgmtGroupId} because it is shared by other enforced groups`);
+            } else {
+                try {
+                    const mgmtChat = await client.getChatById(mgmtGroupId);
+                    await mgmtChat.leave();
+                } catch (e) {
+                    logger.warn(`Could not leave management group ${mgmtGroupId}`);
+                }
             }
         }
 

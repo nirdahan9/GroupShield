@@ -69,6 +69,14 @@ It was transformed from a specific "ShabbatBot" into a fully configurable enforc
 - Undo in shared management groups resolves target enforced group from quoted report `Group ID`.
 - Violation report now includes both enforced group name and enforced group ID.
 
+### Shared Management Group Hardening (Follow-up)
+- Fixed `stop enforcement` behavior so bot does **not** leave a shared management group if other enforced groups still depend on it.
+- Moved global-immunity short-circuit to avoid blocking management-group command flows (undo/status) for protected users.
+- Undo hardening:
+	- requires quoted message to be bot-authored (`fromMe`),
+	- in shared management groups, requires quoted report to include `Group ID` to prevent cross-group misrouting.
+- Management-group detection now checks all linked enforced groups via `getGroupsByMgmtGroup`, improving consistency.
+
 ## Architecture
 
 ### Entry Point

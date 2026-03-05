@@ -95,8 +95,8 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
     // Check if this is a managed group or a configured management group
     let groupConfig = await database.getGroup(groupJid);
     const isDirectManagedGroup = !!groupConfig;
-    const mgmtLinkedGroups = !groupConfig ? await database.getGroupsByMgmtGroup(groupJid) : [];
-    const isMgmtGroup = !isDirectManagedGroup && mgmtLinkedGroups.length > 0;
+    const mgmtLinkedGroups = await database.getGroupsByMgmtGroup(groupJid);
+    const isMgmtGroup = mgmtLinkedGroups.length > 0;
 
     if (!groupConfig && !isMgmtGroup) return; // Not a managed/mgmt group
 
@@ -108,9 +108,6 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
     const senderUser = await database.getUser(senderJid);
     const ownerUser = await database.getUser(groupConfig.ownerJid);
     const lang = senderUser ? senderUser.language || 'he' : (ownerUser ? ownerUser.language || 'he' : 'he');
-
-    // Global immunity: users who started setup flow are never enforced
-    if (await database.isGlobalProtected(senderJid)) return;
 
     // Check if this is the management group — handle undo
     if (isMgmtGroup) {
@@ -136,6 +133,9 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
         }
         return; // Don't enforce rules in management group
     }
+
+    // Global immunity: users who started setup flow are never enforced
+    if (await database.isGlobalProtected(senderJid)) return;
 
     // ── Immunity Checks ─────────────────────────────────────────────
 

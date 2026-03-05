@@ -268,6 +268,10 @@ const strings = {
         he: '❌ פעולת הביטול נכשלה: {{error}}',
         en: '❌ Undo failed: {{error}}'
     },
+    'undo_requires_group_id': {
+        he: '❌ בקבוצת הנהלה משותפת חייבים לבצע "בטל" רק על דו״ח חדש שמכיל מזהה קבוצה (Group ID).',
+        en: '❌ In a shared management group, undo must reference a newer report that includes Group ID.'
+    },
     'undo_not_report': {
         he: '❌ ניתן להגיב "בטל" רק לדו"ח הסרה של GroupShield.',
         en: '❌ You can only reply "undo" to a GroupShield removal report.'

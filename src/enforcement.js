@@ -265,6 +265,11 @@ async function handleUndo(client, msg, groupConfig, lang) {
     const quotedMsg = await msg.getQuotedMessage();
     const quotedContent = quotedMsg.body || '';
 
+    // Must be a bot-authored report message
+    if (!quotedMsg.fromMe) {
+        return t('undo_not_report', lang);
+    }
+
     // Check if quoted message is a GroupShield report
     if (!quotedContent.includes('GroupShield') && !quotedContent.includes('דו"ח')) {
         return t('undo_not_report', lang);
@@ -284,6 +289,13 @@ async function handleUndo(client, msg, groupConfig, lang) {
     const targetJid = targetNumber + '@s.whatsapp.net';
 
     let effectiveGroupConfig = groupConfig;
+
+    // In shared management groups, group ID is mandatory for safe undo routing
+    const linked = await database.getGroupsByMgmtGroup(msg.from);
+    if (linked.length > 1 && !quotedGroupId) {
+        return t('undo_requires_group_id', lang);
+    }
+
     if (quotedGroupId) {
         const byQuoted = await database.getGroup(quotedGroupId);
         if (byQuoted) {
