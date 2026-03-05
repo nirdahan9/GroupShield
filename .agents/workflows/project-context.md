@@ -125,6 +125,8 @@ It was transformed from a specific "ShabbatBot" into a fully configurable enforc
 	- policy is configurable via:
 		- `scheduling.unknownGroupExitEnabled` (default: true)
 		- `scheduling.unknownGroupExit` cron expression (default: `30 4 * * *`)
+- Added safety guard for missing database file:
+	- if the SQLite DB file is missing, unknown-group cleanup is skipped entirely (bot does not leave any group).
 
 ## Mandatory Workflow Instruction
 - For **every** new prompt that includes code/config changes:

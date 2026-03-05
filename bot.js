@@ -212,6 +212,12 @@ function scheduleUnknownGroupExit(client) {
     const schedule = getValidCronOrDefault('scheduling.unknownGroupExit', '30 4 * * *');
     return cron.schedule(schedule, async () => {
         try {
+            const dbFilePath = path.join(__dirname, config.get('database.file', 'groupshield.db'));
+            if (!fs.existsSync(dbFilePath)) {
+                logger.warn(`Unknown-group daily cleanup skipped: database file not found at ${dbFilePath}`);
+                return;
+            }
+
             const activeGroups = await database.getAllActiveGroups();
             const allowedGroupIds = new Set();
             activeGroups.forEach(g => {
