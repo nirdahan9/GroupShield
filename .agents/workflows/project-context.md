@@ -54,6 +54,21 @@ It was transformed from a specific "ShabbatBot" into a fully configurable enforc
 ### Phone Handling
 - Phone parsing supports international formats (not Israel-only), including `+`, `00`, local formatting cleanup.
 
+### Latest Additions (Current Session)
+- Matching policy is now fixed globally:
+	- `forbidden_messages` => always `contains`
+	- `allowed_messages` => always `exact`
+- Verification flow for enforced group and management group is unified:
+	- both use participant-count verification
+	- on mismatch, bot re-asks same verification question (retry path)
+- Shared management group support:
+	- one management group can serve multiple enforced groups
+	- management-group status command now supports:
+		- all linked enforced groups summary
+		- specific group filter via command text (`status <group-name>`)
+- Undo in shared management groups resolves target enforced group from quoted report `Group ID`.
+- Violation report now includes both enforced group name and enforced group ID.
+
 ## Architecture
 
 ### Entry Point

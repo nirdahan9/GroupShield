@@ -253,26 +253,13 @@ async function handleGroupConfirm(client, jid, content, state, lang) {
                 return t('group_not_admin', lang);
             }
 
-            const adminNumbers = chat.participants
-                .filter(p => p.isAdmin || p.isSuperAdmin)
-                .map(p => extractNumber(getNormalizedJid(p.id._serialized)))
-                .filter(Boolean);
-
-            if (adminNumbers.length === 0) {
-                await saveState(jid, {
-                    step: 'rules_type',
-                    groupId: groupId,
-                    groupName: state.candidateGroupName
-                });
-                return t('group_admin_confirmed', lang) + '\n\n' + t('ask_rules_type', lang);
-            }
-
-            // Bot is admin — perform second verification by known admin number
+            // Bot is admin — perform second verification by participant count
+            const participantsCount = chat.participants ? chat.participants.length : 0;
             await saveState(jid, {
                 step: 'group_verify_admin',
                 groupId: groupId,
                 groupName: state.candidateGroupName,
-                candidateAdminNumbers: adminNumbers
+                candidateGroupExpectedCount: participantsCount
             });
             return t('group_admin_confirmed', lang) + '\n\n' + t('ask_group_verify_admin', lang);
         } catch (e) {
@@ -316,25 +303,12 @@ async function handleAdminCheck(client, jid, content, state, lang) {
                 return t('group_not_admin', lang);
             }
 
-            const adminNumbers = chat.participants
-                .filter(p => p.isAdmin || p.isSuperAdmin)
-                .map(p => extractNumber(getNormalizedJid(p.id._serialized)))
-                .filter(Boolean);
-
-            if (adminNumbers.length === 0) {
-                await saveState(jid, {
-                    step: 'rules_type',
-                    groupId: groupId,
-                    groupName: state.candidateGroupName
-                });
-                return t('group_admin_confirmed', lang) + '\n\n' + t('ask_rules_type', lang);
-            }
-
+            const participantsCount = chat.participants ? chat.participants.length : 0;
             await saveState(jid, {
                 step: 'group_verify_admin',
                 groupId: groupId,
                 groupName: state.candidateGroupName,
-                candidateAdminNumbers: adminNumbers
+                candidateGroupExpectedCount: participantsCount
             });
             return t('group_admin_confirmed', lang) + '\n\n' + t('ask_group_verify_admin', lang);
         } catch (e) {
@@ -346,16 +320,23 @@ async function handleAdminCheck(client, jid, content, state, lang) {
 }
 
 async function handleGroupVerifyAdmin(client, jid, content, state, lang) {
-    const parsed = parsePhoneNumber(content.trim());
-    if (!parsed) {
+    const expected = parseInt(content.trim(), 10);
+    if (isNaN(expected) || expected < 1) {
         return t('ask_group_verify_admin', lang);
     }
 
-    const candidates = state.candidateAdminNumbers || [];
-    const match = candidates.includes(parsed);
-
-    if (!match) {
-        return t('group_verify_admin_failed', lang);
+    try {
+        const chat = await client.getChatById(state.groupId || state.candidateGroupId);
+        const actual = chat.participants ? chat.participants.length : 0;
+        if (actual !== expected) {
+            return t('group_verify_admin_failed', lang, {
+                expected: expected.toString(),
+                actual: actual.toString()
+            }) + '\n\n' + t('ask_group_verify_admin', lang);
+        }
+    } catch (e) {
+        logger.error('Failed to verify enforced group participant count', e);
+        return t('error_generic', lang, { error: e.message });
     }
 
     await saveState(jid, {
@@ -392,23 +373,21 @@ async function handleRulesContent(client, jid, content, state, lang) {
 
     await saveState(jid, {
         ...state,
-        step: 'rules_match_mode',
-        rulesMessages: messages
+        step: 'non_text_rule',
+        rulesMessages: messages,
+        rulesMatchMode: state.rulesType === 'allowed' ? 'exact' : 'contains'
     });
-    return t('rules_content_saved', lang, { count: messages.length.toString() }) + '\n\n' + t('ask_rules_match_mode', lang);
+    return t('rules_content_saved', lang, { count: messages.length.toString() }) + '\n\n' + t('ask_non_text_rule', lang);
 }
 
 async function handleRulesMatchMode(client, jid, content, state, lang) {
-    const choice = content.trim();
-    if (choice === '1') {
-        await saveState(jid, { ...state, step: 'non_text_rule', rulesMatchMode: 'exact' });
-        return t('rules_match_mode_saved', lang, { mode: getRuleMatchModeLabel('exact', lang) }) + '\n\n' + t('ask_non_text_rule', lang);
-    }
-    if (choice === '2') {
-        await saveState(jid, { ...state, step: 'non_text_rule', rulesMatchMode: 'contains' });
-        return t('rules_match_mode_saved', lang, { mode: getRuleMatchModeLabel('contains', lang) }) + '\n\n' + t('ask_non_text_rule', lang);
-    }
-    return t('ask_rules_match_mode', lang);
+    // Deprecated step kept for backward compatibility with old setup states
+    await saveState(jid, {
+        ...state,
+        step: 'non_text_rule',
+        rulesMatchMode: state.rulesType === 'allowed' ? 'exact' : 'contains'
+    });
+    return t('ask_non_text_rule', lang);
 }
 
 async function handleNonTextRule(client, jid, content, state, lang) {
@@ -760,7 +739,7 @@ async function handleMgmtGroupVerifyCount(client, jid, content, state, lang) {
             return t('mgmt_group_verify_count_failed', lang, {
                 expected: expected.toString(),
                 actual: actual.toString()
-            });
+            }) + '\n\n' + t('ask_mgmt_group_verify_count', lang);
         }
 
         const reportTarget = 'mgmt_group';
@@ -779,9 +758,12 @@ async function buildSummary(state, reportTarget, mgmtGroupId, lang) {
         'none': lang === 'he' ? 'ללא חוקי תוכן' : 'No content rules'
     };
 
-    const rulesMode = state.rulesType === 'none'
+    const rulesModeValue = state.rulesType === 'allowed'
+        ? 'exact'
+        : (state.rulesType === 'forbidden' ? 'contains' : 'n/a');
+    const rulesMode = rulesModeValue === 'n/a'
         ? (lang === 'he' ? 'לא רלוונטי' : 'N/A')
-        : getRuleMatchModeLabel(state.rulesMatchMode || 'contains', lang);
+        : getRuleMatchModeLabel(rulesModeValue, lang);
 
     const windows = (state.timeWindows && state.timeWindows.length > 0)
         ? state.timeWindows
@@ -871,12 +853,12 @@ async function handleSummary(client, jid, content, state, lang) {
             if (state.rulesType === 'allowed' && state.rulesMessages) {
                 await database.addRule(groupId, 'allowed_messages', {
                     messages: state.rulesMessages,
-                    matchMode: state.rulesMatchMode || 'contains'
+                    matchMode: 'exact'
                 });
             } else if (state.rulesType === 'forbidden' && state.rulesMessages) {
                 await database.addRule(groupId, 'forbidden_messages', {
                     messages: state.rulesMessages,
-                    matchMode: state.rulesMatchMode || 'contains'
+                    matchMode: 'contains'
                 });
             }
             if (state.timeWindows && state.timeWindows.length > 0) {

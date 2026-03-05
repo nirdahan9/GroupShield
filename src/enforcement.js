@@ -185,6 +185,7 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
 
             const report = t('violation_report', lang, {
                 groupName: groupConfig.groupName,
+                groupId: groupConfig.groupId,
                 pushname,
                 number,
                 reason,
@@ -272,6 +273,8 @@ async function handleUndo(client, msg, groupConfig, lang) {
     // Extract action ID + phone number from report
     const idMatch = quotedContent.match(/(?:ID|מזהה):\s*(ENF-[\w-]+)/i);
     const actionId = idMatch ? idMatch[1] : null;
+    const groupIdMatch = quotedContent.match(/(?:Group ID|מזהה קבוצה):\s*([^\s\n]+)/i);
+    const quotedGroupId = groupIdMatch ? groupIdMatch[1] : null;
     const match = quotedContent.match(/(?:מספר|Number):\s*(\d+)/i);
     if (!match) {
         return t('undo_failed', lang, { error: lang === 'he' ? 'לא זוהה מספר' : 'Number not found' });
@@ -279,6 +282,14 @@ async function handleUndo(client, msg, groupConfig, lang) {
 
     const targetNumber = match[1];
     const targetJid = targetNumber + '@s.whatsapp.net';
+
+    let effectiveGroupConfig = groupConfig;
+    if (quotedGroupId) {
+        const byQuoted = await database.getGroup(quotedGroupId);
+        if (byQuoted) {
+            effectiveGroupConfig = byQuoted;
+        }
+    }
 
     try {
         // 1. Unblock
@@ -289,14 +300,14 @@ async function handleUndo(client, msg, groupConfig, lang) {
 
         // 2. Add back to group
         try {
-            const chat = await withRetry(() => client.getChatById(groupConfig.groupId), 3, 800);
+            const chat = await withRetry(() => client.getChatById(effectiveGroupConfig.groupId), 3, 800);
             await chat.addParticipants([targetJid]);
         } catch (e) {
             logger.error(`Failed to re-add ${targetNumber}`, e);
         }
 
         // 3. Reset warnings
-        await database.resetWarnings(groupConfig.groupId, targetJid);
+        await database.resetWarnings(effectiveGroupConfig.groupId, targetJid);
 
         logger.auditLog(msg.author || msg.from, 'UNDO', `User: ${targetNumber}`, true);
         if (actionId) {

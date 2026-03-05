@@ -95,27 +95,37 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
     // Check if this is a managed group or a configured management group
     let groupConfig = await database.getGroup(groupJid);
     const isDirectManagedGroup = !!groupConfig;
+    const mgmtLinkedGroups = !groupConfig ? await database.getGroupsByMgmtGroup(groupJid) : [];
+    const isMgmtGroup = !isDirectManagedGroup && mgmtLinkedGroups.length > 0;
 
-    if (!groupConfig) {
-        groupConfig = await database.getGroupByMgmtGroup(groupJid);
+    if (!groupConfig && !isMgmtGroup) return; // Not a managed/mgmt group
+
+    if (!groupConfig && isMgmtGroup) {
+        // Use first linked group only for language fallback; operations below are multi-group aware
+        groupConfig = mgmtLinkedGroups[0];
     }
 
-    if (!groupConfig || !groupConfig.active) return; // Not a managed/mgmt group
-
+    const senderUser = await database.getUser(senderJid);
     const ownerUser = await database.getUser(groupConfig.ownerJid);
-    const lang = ownerUser ? ownerUser.language || 'he' : 'he';
+    const lang = senderUser ? senderUser.language || 'he' : (ownerUser ? ownerUser.language || 'he' : 'he');
 
     // Global immunity: users who started setup flow are never enforced
     if (await database.isGlobalProtected(senderJid)) return;
 
     // Check if this is the management group — handle undo
-    if (!isDirectManagedGroup && groupConfig.mgmtGroupId === groupJid) {
+    if (isMgmtGroup) {
         const undoWords = ['בטל', 'undo'];
         if (msg.hasQuotedMsg && undoWords.includes(content.trim().toLowerCase())) {
             const response = await handleUndo(client, msg, groupConfig, lang);
             if (response) {
                 await msg.reply(response);
             }
+            return;
+        }
+
+        const statusResponse = await buildMgmtGroupStatusResponse(client, content, mgmtLinkedGroups, lang);
+        if (statusResponse) {
+            await msg.reply(statusResponse);
             return;
         }
 
@@ -199,6 +209,41 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
             );
         }
     }
+}
+
+async function buildMgmtGroupStatusResponse(client, content, groups, lang) {
+    const text = (content || '').trim();
+    const lower = text.toLowerCase();
+
+    const isStatusAll = (lower === 'סטטוס' || lower === 'status');
+    const isStatusSpecific = lower.startsWith('סטטוס ') || lower.startsWith('status ');
+    if (!isStatusAll && !isStatusSpecific) return null;
+
+    let targetGroups = groups;
+    if (isStatusSpecific) {
+        const query = text.split(/\s+/).slice(1).join(' ').trim().toLowerCase();
+        targetGroups = groups.filter(g => (g.groupName || '').toLowerCase().includes(query));
+    }
+
+    if (!targetGroups || targetGroups.length === 0) {
+        return lang === 'he' ? '❌ לא נמצאה קבוצה תואמת לסטטוס.' : '❌ No matching group found for status.';
+    }
+
+    const lines = [];
+    for (const g of targetGroups) {
+        let memberCount = 0;
+        try {
+            const chat = await withRetry(() => client.getChatById(g.groupId), 3, 700);
+            memberCount = chat.participants ? chat.participants.length : 0;
+        } catch (e) { }
+
+        const activeWarnings = await database.getActiveWarningsCount(g.groupId);
+        lines.push(`🛡️ ${g.groupName} | 👥 ${memberCount} | ⚠️ ${activeWarnings}`);
+    }
+
+    const time = new Date().toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' });
+    const title = lang === 'he' ? '📊 סטטוס קבוצות אכיפה (קבוצת הנהלה משותפת)' : '📊 Enforced Groups Status (Shared Management Group)';
+    return `${title}\n${lines.join('\n')}\n🕒 ${time}`;
 }
 
 /**

@@ -44,7 +44,6 @@ function evaluateMessage(rules, msgInfo, lang = 'he') {
 function checkAllowedMessages(ruleData, content, msgType, lang) {
     const violations = [];
     const allowedList = ruleData.messages || [];
-    const matchMode = ruleData.matchMode || 'contains';
 
     // Non-text is allowed by default (can be restricted via dedicated block_non_text rule)
     if (msgType !== 'chat') {
@@ -53,17 +52,12 @@ function checkAllowedMessages(ruleData, content, msgType, lang) {
 
     // Check if content matches any allowed message (exact or contains)
     const normalizedContent = content.trim();
-    const lcContent = normalizedContent.toLowerCase();
     const isAllowed = allowedList.some(allowed => {
         const target = allowed.trim();
         if (!target) return false;
 
-        if (matchMode === 'exact') {
-            const pattern = new RegExp(`^${escapeRegex(target)}\\s*$`, 'i');
-            return pattern.test(normalizedContent);
-        }
-
-        return lcContent.includes(target.toLowerCase());
+        const pattern = new RegExp(`^${escapeRegex(target)}\\s*$`, 'i');
+        return pattern.test(normalizedContent);
     });
 
     if (!isAllowed) {
@@ -107,16 +101,11 @@ function checkNonTextRule(ruleData, msgType, lang) {
 function checkForbiddenMessages(ruleData, content, lang) {
     const violations = [];
     const forbiddenList = ruleData.messages || [];
-    const matchMode = ruleData.matchMode || 'contains';
     const normalizedContent = content.trim().toLowerCase();
 
     const isForbidden = forbiddenList.some(forbidden => {
         const target = forbidden.trim().toLowerCase();
         if (!target) return false;
-
-        if (matchMode === 'exact') {
-            return normalizedContent === target;
-        }
 
         return normalizedContent.includes(target);
     });

@@ -287,6 +287,10 @@ class Database {
         return this._get('SELECT * FROM groups WHERE mgmtGroupId = ? AND active = 1', [mgmtGroupId]);
     }
 
+    async getGroupsByMgmtGroup(mgmtGroupId) {
+        return this._all('SELECT * FROM groups WHERE mgmtGroupId = ? AND active = 1', [mgmtGroupId]);
+    }
+
     async isGroupUsedAsMgmt(groupId) {
         const row = await this._get('SELECT groupId FROM groups WHERE mgmtGroupId = ? AND active = 1', [groupId]);
         return !!row;

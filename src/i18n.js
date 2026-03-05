@@ -35,8 +35,8 @@ const strings = {
         en: '✅ Great! I\'m an admin in the group. Let\'s set up the rules.'
     },
     'ask_group_verify_admin': {
-        he: '🔐 *אימות קבוצה נוסף*\n\nכדי לוודא שזו הקבוצה הנכונה, שלח מספר טלפון של *אחד ממנהלי הקבוצה* (בפורמט בינלאומי או מקומי).\n\n✳️ תשובה לדוגמה:\n+1 202-555-0187',
-        en: '🔐 *Additional group verification*\n\nTo verify this is the correct group, send the phone number of *one group admin* (international or local format).\n\n✳️ Example reply:\n+1 202-555-0187'
+        he: '🔐 *אימות קבוצה נוסף*\n\nכדי לוודא שזו הקבוצה הנכונה, שלח את *מספר המשתתפים* הנוכחי שאתה מצפה לראות בקבוצה.',
+        en: '🔐 *Additional group verification*\n\nTo verify this is the correct group, send the *current participant count* you expect in the group.'
     },
     'group_already_managed': {
         he: '⛔ הקבוצה הזו כבר מנוהלת על-ידי משתמש אחר, ולכן אי אפשר להגדיר עליה אכיפה מחדש.',
@@ -47,8 +47,8 @@ const strings = {
         en: '⛔ This group is already used as a management group, so it cannot be an enforced group.'
     },
     'group_verify_admin_failed': {
-        he: '❌ המספר לא זוהה כמנהל בקבוצה הזו. נסה מספר של מנהל אחר.',
-        en: '❌ This number was not identified as an admin in this group. Try another admin number.'
+        he: '❌ אימות נכשל: ציפית ל-{{expected}} משתתפים, אבל כרגע זוהו {{actual}}.',
+        en: '❌ Verification failed: expected {{expected}} participants, but detected {{actual}}.'
     },
     'group_verify_admin_success': {
         he: '✅ אימות הקבוצה הושלם בהצלחה.',
@@ -255,8 +255,8 @@ const strings = {
         en: '🚫 *You were removed from "{{groupName}}"*\n\n📝 *Reason:* {{reason}}\n📅 *Time:* {{time}}'
     },
     'violation_report': {
-        he: '🛡️ *דו"ח GroupShield*\n\n🏷️ *קבוצה:* {{groupName}}\n🆔 *מזהה:* {{violationId}}\n👤 *שם:* {{pushname}}\n📱 *מספר:* {{number}}\n📝 *סיבה:* {{reason}}\n📝 *תוכן:* "{{content}}"\n📩 *הודעה פרטית:* {{privateStatus}}\n🚫 *הסרה:* {{removeStatus}}\n🔒 *חסימה:* {{blockStatus}}\n🕒 *זמן:* {{time}}',
-        en: '🛡️ *GroupShield Report*\n\n🏷️ *Group:* {{groupName}}\n🆔 *ID:* {{violationId}}\n👤 *Name:* {{pushname}}\n📱 *Number:* {{number}}\n📝 *Reason:* {{reason}}\n📝 *Content:* "{{content}}"\n📩 *Private msg:* {{privateStatus}}\n🚫 *Removal:* {{removeStatus}}\n🔒 *Block:* {{blockStatus}}\n🕒 *Time:* {{time}}'
+        he: '🛡️ *דו"ח GroupShield*\n\n🏷️ *קבוצה:* {{groupName}}\n🆔 *מזהה:* {{violationId}}\n🧾 *מזהה קבוצה:* {{groupId}}\n👤 *שם:* {{pushname}}\n📱 *מספר:* {{number}}\n📝 *סיבה:* {{reason}}\n📝 *תוכן:* "{{content}}"\n📩 *הודעה פרטית:* {{privateStatus}}\n🚫 *הסרה:* {{removeStatus}}\n🔒 *חסימה:* {{blockStatus}}\n🕒 *זמן:* {{time}}',
+        en: '🛡️ *GroupShield Report*\n\n🏷️ *Group:* {{groupName}}\n🆔 *ID:* {{violationId}}\n🧾 *Group ID:* {{groupId}}\n👤 *Name:* {{pushname}}\n📱 *Number:* {{number}}\n📝 *Reason:* {{reason}}\n📝 *Content:* "{{content}}"\n📩 *Private msg:* {{privateStatus}}\n🚫 *Removal:* {{removeStatus}}\n🔒 *Block:* {{blockStatus}}\n🕒 *Time:* {{time}}'
     },
 
     // ── Undo ─────────────────────────────────────────────────────────────
