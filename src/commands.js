@@ -144,6 +144,17 @@ async function executeCommand(client, senderJid, command, lang, overrideGroupCon
             return t('cleanup_done', lang, { removed: String(removed) });
         }
 
+        if (cmdLower === 'סטטוס כל הקבוצות' || cmdLower === 'all groups status') {
+            if (!isDeveloper) return t('developer_only_command', lang);
+            return buildFullGroupsStatus(lang);
+        }
+
+        // ── View group rules ─────────────────────────────────────────
+        if (cmdLower === 'חוקי הקבוצה' || cmdLower === 'group rules') {
+            if (!groupConfig) return t('no_group_linked', lang);
+            return buildGroupRulesMessage(groupConfig, lang);
+        }
+
         if (cmdLower === 'ריסטארט' || cmdLower === 'restart') {
             if (!isDeveloper) return t('developer_only_command', lang);
             logger.auditLog(senderJid, 'RESTART', 'Manual restart', true);
@@ -281,6 +292,151 @@ async function pauseEnforcement(client, senderJid, groupConfig, hours, lang) {
         logger.error('Failed to pause enforcement', error);
         return t('error_generic', lang, { error: error.message });
     }
+}
+
+async function buildGroupRulesMessage(groupConfig, lang) {
+    const rules = await database.getRules(groupConfig.groupId);
+    const enforcement = await database.getEnforcement(groupConfig.groupId);
+
+    const header = t('group_rules_header', lang, { groupName: groupConfig.groupName });
+    if (!rules || rules.length === 0) {
+        return `${header}\n\n${t('group_rules_empty', lang)}`;
+    }
+
+    const lines = [header, ''];
+
+    for (const rule of rules) {
+        const rd = rule.ruleData || {};
+        switch (rule.ruleType) {
+            case 'time_window': {
+                const windows = Array.isArray(rd.windows) ? rd.windows : (rd.start ? [rd] : []);
+                if (windows.length > 0) {
+                    const wStrs = windows.map(w => `${w.start}–${w.end}`).join(', ');
+                    lines.push(lang === 'he' ? `⏰ *שעות פעילות:* ${wStrs}` : `⏰ *Active hours:* ${wStrs}`);
+                }
+                break;
+            }
+            case 'allowed_messages': {
+                const count = Array.isArray(rd.messages) ? rd.messages.length : 0;
+                lines.push(lang === 'he'
+                    ? `✅ *הודעות מותרות בלבד:* ${count} הודעות מוגדרות (התאמה מדויקת)`
+                    : `✅ *Allowed messages only:* ${count} defined (exact match)`);
+                break;
+            }
+            case 'forbidden_messages': {
+                const count = Array.isArray(rd.messages) ? rd.messages.length : 0;
+                lines.push(lang === 'he'
+                    ? `🚫 *ביטויים אסורים:* ${count} ביטויים (כל הכלה)`
+                    : `🚫 *Forbidden phrases:* ${count} phrases (contains match)`);
+                break;
+            }
+            case 'block_non_text': {
+                if (rd.mode === 'all_non_text') {
+                    lines.push(lang === 'he' ? '🖼️ *מדיה:* כל סוגי המדיה חסומים' : '🖼️ *Media:* all non-text blocked');
+                } else if (Array.isArray(rd.blockedTypes)) {
+                    lines.push(lang === 'he'
+                        ? `🖼️ *מדיה חסומה:* ${rd.blockedTypes.join(', ')}`
+                        : `🖼️ *Blocked media:* ${rd.blockedTypes.join(', ')}`);
+                }
+                break;
+            }
+            case 'anti_spam': {
+                lines.push(lang === 'he'
+                    ? `🔁 *אנטי-ספאם:* ${rd.maxConsecutive ?? '?'} הודעות זהות ברצף, ${rd.maxDaily ?? '?'} ביום`
+                    : `🔁 *Anti-spam:* ${rd.maxConsecutive ?? '?'} consecutive, ${rd.maxDaily ?? '?'}/day`);
+                break;
+            }
+            default:
+                lines.push(`📌 ${rule.ruleType}`);
+        }
+    }
+
+    // Enforcement summary
+    if (enforcement) {
+        const steps = [];
+        if (enforcement.deleteMsg)  steps.push(lang === 'he' ? 'מחיקה' : 'delete');
+        if (enforcement.warnPrivate) steps.push(lang === 'he' ? 'אזהרה' : 'warn');
+        if (enforcement.removeUser)  steps.push(lang === 'he' ? 'הסרה' : 'remove');
+        if (enforcement.blockUser)   steps.push(lang === 'he' ? 'חסימה' : 'block');
+        if (enforcement.reportAdmin) steps.push(lang === 'he' ? 'דיווח' : 'report');
+        const maxWarn = groupConfig.warningCount ?? 1;
+        lines.push('');
+        lines.push(lang === 'he'
+            ? `⚖️ *אכיפה:* ${steps.join(' → ')} | אזהרות מקסימלי: ${maxWarn}`
+            : `⚖️ *Enforcement:* ${steps.join(' → ')} | Max warnings: ${maxWarn}`);
+    }
+
+    return lines.join('\n');
+}
+
+async function buildFullGroupsStatus(lang) {
+    const allGroups = await database.getAllGroups();
+
+    if (!allGroups || allGroups.length === 0) {
+        return lang === 'he' ? '📋 אין קבוצות מוגדרות במערכת.' : '📋 No groups configured in the system.';
+    }
+
+    const lines = [];
+    lines.push(lang === 'he'
+        ? `📋 *סטטוס כל הקבוצות (${allGroups.length})*\n${'─'.repeat(30)}`
+        : `📋 *All Groups Status (${allGroups.length})*\n${'─'.repeat(30)}`);
+
+    for (const g of allGroups) {
+        // ── Status ────────────────────────────────────────────────────
+        const status = g.status || 'ACTIVE';
+        let statusLine;
+        if (!g.active) {
+            statusLine = lang === 'he' ? '🔴 לא פעיל' : '🔴 Inactive';
+        } else if (status === 'ACTIVE') {
+            statusLine = lang === 'he' ? '🟢 פעיל' : '🟢 Active';
+        } else if (status.startsWith('PAUSED_UNTIL:')) {
+            const until = new Date(status.split('PAUSED_UNTIL:')[1]);
+            const timeStr = until.toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem', hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' });
+            statusLine = lang === 'he' ? `⏸️ מושהה עד ${timeStr}` : `⏸️ Paused until ${timeStr}`;
+        } else if (status === 'PENDING_ADMIN_ACTION') {
+            statusLine = lang === 'he' ? '⚠️ הבוט הוסר / הורד — ממתין לפעולה' : '⚠️ Bot removed/demoted — awaiting action';
+        } else if (status === 'PENDING_ADMIN_RESUME') {
+            statusLine = lang === 'he' ? '🔄 ממתין לשחזור הרשאות אדמין' : '🔄 Waiting for admin rights to be restored';
+        } else {
+            statusLine = `❓ ${status}`;
+        }
+
+        // ── Reporter ──────────────────────────────────────────────────
+        const rt = g.reportTarget || 'dm';
+        let reporterLabel;
+        if (rt === 'dm') {
+            reporterLabel = lang === 'he' ? 'הודעה פרטית לבעלים' : 'Private DM to owner';
+        } else if (rt === 'mgmt_group') {
+            const shortId = g.mgmtGroupId ? g.mgmtGroupId.split('@')[0] : '?';
+            reporterLabel = lang === 'he' ? `קבוצת הנהלה (${shortId})` : `Management group (${shortId})`;
+        } else if (rt.startsWith('phone:')) {
+            reporterLabel = `📱 ${rt.replace('phone:', '')}`;
+        } else {
+            reporterLabel = rt;
+        }
+
+        // ── Extras ────────────────────────────────────────────────────
+        const warnCount = await database.getActiveWarningCount(g.groupId);
+        const pendingName = await database._get(
+            `SELECT requestId FROM group_name_change_requests WHERE groupId = ? AND status = 'pending'`,
+            [g.groupId]
+        );
+
+        const entry = [
+            `\n📌 *${g.groupName}*`,
+            (lang === 'he' ? `📊 סטטוס: ` : `📊 Status: `) + statusLine,
+            (lang === 'he' ? `📣 דיווח: ` : `📣 Reporter: `) + reporterLabel,
+            (lang === 'he' ? `⚠️ אזהרות: ` : `⚠️ Warnings: `) + warnCount,
+        ];
+        if (pendingName) {
+            entry.push(lang === 'he'
+                ? `🔔 ממתין לאישור שינוי שם (${pendingName.requestId})`
+                : `🔔 Pending name-change approval (${pendingName.requestId})`);
+        }
+        lines.push(entry.join('\n'));
+    }
+
+    return lines.join(`\n${'─'.repeat(30)}`);
 }
 
 async function stopEnforcement(client, senderJid, groupConfig, lang) {

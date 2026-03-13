@@ -141,6 +141,13 @@ It was transformed from a specific "ShabbatBot" into a fully configurable enforc
 	- `handleAdminActionResponse` takes the most recently pending group (not random) when multiple groups are in pending state.
 	- `getExpiredNameChangeRequests` DB method added for 12-hour timeout scanning.
 
+
+### Developer Status Commands and Group Rules View
+- **`סטטוס כל הקבוצות` / `all groups status`** (Developer only): Returns a formatted list of all enforced groups with: name, status (active/paused/pending), reporter target, active warning count, and any pending name-change approval requests.
+- **`חוקי הקבוצה` / `group rules`**: Available to all admins. Displays the configured rules for the group — time windows, allowed/forbidden messages, media blocking policy, anti-spam settings, and enforcement pipeline summary. Supports multi-group selection from shared management groups.
+- **New DB methods added:** `getAllGroups()`, `getActiveWarningCount(groupId)`, `cleanupExpiredPendingGroupActions()`, `getExpiredNameChangeRequests()`.
+- **i18n:** Added `group_rules_header`, `group_rules_empty` keys; updated `help_user` and `help_developer` menus to include both new commands.
+
 ## Mandatory Workflow Instruction
 - For **every** new prompt that includes code/config changes:
 	1. apply and validate changes,

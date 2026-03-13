@@ -430,6 +430,18 @@ class Database {
         return this._all("SELECT * FROM groups WHERE active = 1 AND verified = 1 AND status = 'ACTIVE'");
     }
 
+    async getAllGroups() {
+        return this._all('SELECT * FROM groups WHERE verified = 1 ORDER BY createdAt ASC');
+    }
+
+    async getActiveWarningCount(groupId) {
+        const row = await this._get(
+            'SELECT COUNT(*) as cnt FROM warnings WHERE groupId = ?',
+            [groupId]
+        );
+        return row ? row.cnt : 0;
+    }
+
     async deleteGroup(groupId) {
         await this._run('DELETE FROM groups WHERE groupId = ?', [groupId]);
         await this._run('DELETE FROM rules WHERE groupId = ?', [groupId]);

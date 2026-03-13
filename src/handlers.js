@@ -293,7 +293,8 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
             mgmtCommand === 'התחל' || mgmtCommand === 'start' || mgmtCommand === 'setup' || mgmtCommand === 'start setup' ||
             mgmtCommand === 'הגדרות' || mgmtCommand === 'settings' ||
             mgmtCommand === 'עדכן אכיפה' || mgmtCommand === 'update enforcement' ||
-            mgmtCommand === 'איפוס' || mgmtCommand === 'reset';
+            mgmtCommand === 'איפוס' || mgmtCommand === 'reset' ||
+            mgmtCommand === 'חוקי הקבוצה' || mgmtCommand === 'group rules';
 
         if (isGeneralMultiGroupCommand) {
             let targetGroupConf = null;
