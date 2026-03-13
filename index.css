@@ -127,44 +127,363 @@ body {
   margin-right: auto;
 }
 
-/* Chat Simulator */
-.chat-window {
-  height: 450px;
+.live-demo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(340px, 1fr));
+  gap: 1.4rem;
+  align-items: start;
+}
+
+.live-panel {
   display: flex;
   flex-direction: column;
-  padding: 1.5rem;
-  overflow-y: hidden;
+  gap: 0.75rem;
+}
+
+/* Chat Simulator */
+.chat-window {
+  height: 500px;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
   position: relative;
+  background: #0b141a;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+.setup-window,
+.group-window {
+  height: 560px;
+}
+
+.chat-header {
+  background: #202c33;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-bottom: 1px solid var(--glass-border);
+  z-index: 10;
+}
+
+/* Typing Indicator */
+.typing {
+  font-size: 0.75rem;
+  color: var(--secondary);
+  display: none;
+  align-items: center;
+  gap: 4px;
+}
+
+.typing span {
+  width: 4px;
+  height: 4px;
+  background: var(--secondary);
+  border-radius: 50%;
+  animation: typing 1s infinite ease-in-out;
+}
+
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing {
+  0%, 100% { transform: translateY(0); opacity: 0.3; }
+  50% { transform: translateY(-4px); opacity: 1; }
+}
+
+.chat-messages {
+  flex-grow: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+  background-blend-mode: overlay;
+  background-color: #0b141a;
+  scroll-behavior: smooth;
+}
+
+.chat-input-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem;
+  border-top: 1px solid var(--glass-border);
+  background: #202c33;
+}
+
+.chat-input-bar input {
+  width: 100%;
+  background: #111b21;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 999px;
+  color: var(--text-main);
+  font-size: 0.86rem;
+  padding: 0.58rem 0.85rem;
+  outline: none;
+}
+
+.chat-input-bar input:focus {
+  border-color: var(--primary);
+}
+
+.chat-send {
+  border: none;
+  border-radius: 999px;
+  padding: 0.55rem 1rem;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: #000;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.chat-send:hover {
+  transform: translateY(-1px);
+}
+
+.chat-send:disabled,
+.chat-input-bar input:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.group-input-bar {
+  display: grid;
+  grid-template-columns: 95px 1fr auto;
+}
+
+.setup-status {
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: var(--text-dim);
+  padding: 0.7rem 0.9rem;
+  font-size: 0.82rem;
+}
+
+.enforcement-log {
+  padding: 0.9rem;
+  max-height: 190px;
+  overflow: hidden;
+}
+
+.log-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--secondary);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.log-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-height: 140px;
+  overflow-y: auto;
+  padding-right: 0.2rem;
+}
+
+.log-item {
+  padding: 0.35rem 0.5rem;
+  border-radius: 8px;
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+.log-item.info {
+  background: rgba(148, 163, 184, 0.12);
+  color: #cbd5e1;
+}
+
+.log-item.ok {
+  background: rgba(16, 185, 129, 0.18);
+  color: #bbf7d0;
+}
+
+.log-item.violation {
+  background: rgba(239, 68, 68, 0.18);
+  color: #fecaca;
+}
+
+.chat-messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
 }
 
 .chat-bubble {
-  max-width: 80%;
-  padding: 0.8rem 1.2rem;
-  border-radius: 1rem;
-  margin-bottom: 1rem;
-  font-size: 0.95rem;
+  max-width: 84%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
   position: relative;
   opacity: 0;
-  transform: translateY(10px);
-  animation: messageIn 0.5s forwards;
+  box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
+  transform-origin: bottom;
+}
+
+.chat-bubble.incoming {
+  align-self: flex-start;
+  background: #202c33;
+  color: #e9edef;
+  border-top-left-radius: 3px;
+  animation: messageInLeft 0.35s forwards cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.chat-bubble.incoming::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -7px;
+  width: 0;
+  height: 0;
+  border-top: 8px solid #202c33;
+  border-left: 8px solid transparent;
+}
+
+.chat-bubble.outgoing {
+  align-self: flex-end;
+  background: #005c4b;
+  color: #e9edef;
+  border-top-right-radius: 3px;
+  animation: messageInRight 0.35s forwards cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.chat-bubble.outgoing::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -7px;
+  width: 0;
+  height: 0;
+  border-top: 8px solid #005c4b;
+  border-right: 8px solid transparent;
 }
 
 .chat-bubble.bot {
   align-self: flex-start;
-  background: rgba(255, 255, 255, 0.1);
-  border-bottom-left-radius: 0.2rem;
-  color: #fff;
+  background: rgba(0, 229, 255, 0.14);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  color: #d6f6ff;
+  border-top-left-radius: 3px;
+  animation: messageInLeft 0.35s forwards cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.chat-bubble.user {
-  align-self: flex-end;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  color: #000;
-  border-bottom-right-radius: 0.2rem;
+.chat-bubble.bot::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -7px;
+  width: 0;
+  height: 0;
+  border-top: 8px solid rgba(0, 229, 255, 0.14);
+  border-left: 8px solid transparent;
 }
 
-@keyframes messageIn {
-  to { opacity: 1; transform: translateY(0); }
+.chat-bubble.violation {
+  border: 1px solid rgba(248, 113, 113, 0.5);
+}
+
+.bubble-sender {
+  font-size: 0.72rem;
+  line-height: 1.2;
+  margin-bottom: 0.15rem;
+  font-weight: 600;
+  color: #86efac;
+}
+
+.chat-bubble.outgoing .bubble-sender {
+  color: #9ce8d8;
+}
+
+.chat-bubble.bot .bubble-sender {
+  color: var(--primary);
+}
+
+.bubble-text {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.bubble-meta {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.2rem;
+}
+
+.chat-bubble .timestamp,
+.chat-bubble .status {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.chat-bubble .status {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.system-note {
+  align-self: center;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  margin: 0.2rem 0;
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  animation: systemNoticeIn 0.3s ease forwards;
+}
+
+@keyframes messageInLeft {
+  0% { opacity: 0; transform: translate(-10px, 10px) scale(0.97); }
+  100% { opacity: 1; transform: translate(0, 0) scale(1); }
+}
+
+@keyframes messageInRight {
+  0% { opacity: 0; transform: translate(10px, 10px) scale(0.97); }
+  100% { opacity: 1; transform: translate(0, 0) scale(1); }
+}
+
+@keyframes systemNoticeIn {
+  0% { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Specific Sim Labels */
+.sim-label {
+    text-align: center;
+  font-size: 0.78rem;
+    color: var(--secondary);
+    text-transform: uppercase;
+  letter-spacing: 0.9px;
+    margin-top: 2rem;
+    font-weight: 800;
+}
+
+.sim-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+/* Group Simulation Header */
+.group-header {
+  background: #202c33;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--glass-border);
+  font-size: 0.78rem;
+  color: var(--secondary);
+  text-align: center;
 }
 
 /* Pipeline Simulator */
@@ -244,6 +563,10 @@ body {
 
 /* Responsive Extensions */
 @media (max-width: 600px) {
+  .live-demo-grid { grid-template-columns: 1fr; }
+  .group-input-bar { grid-template-columns: 1fr; }
+  .setup-window,
+  .group-window { height: 520px; }
   .pipeline-track { flex-direction: column; gap: 2rem; }
   .pipeline-connector { width: 2px; height: 40px; }
   .pipeline-pulse { top: -100%; left: 0; width: 100%; height: 100%; background: linear-gradient(180deg, transparent, var(--primary), transparent); }

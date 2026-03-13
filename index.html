@@ -65,19 +65,62 @@
         </div>
     </section>
 
-    <!-- Chat Simulation -->
+    <!-- Interactive Live Demo -->
     <section class="container" style="padding: 4rem 0;">
-        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;">Experience the Setup</h2>
-        <p style="text-align: center; color: var(--text-dim); margin-bottom: 3rem;">See how easy it is to configure GroupShield through a DM.</p>
-        <div class="sim-container glass chat-window" id="chat-simulator">
-            <!-- Bubbles injected by JS -->
+        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;">Live WhatsApp Setup + Enforcement</h2>
+        <p style="text-align: center; color: var(--text-dim); margin-bottom: 3rem;">Run setup in a real chat, then watch live enforcement in a group based on your own rules.</p>
+
+        <div class="live-demo-grid">
+            <div class="live-panel">
+                <div class="sim-label">1. Setup With GroupShield</div>
+                <div class="glass chat-window setup-window">
+                    <div class="chat-header">
+                        <div class="avatar" style="background: var(--primary); width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#000; font-weight:800;">GS</div>
+                        <div>
+                            <div style="font-weight: 600;">GroupShield Bot</div>
+                            <div style="font-size: 0.75rem; color: var(--text-dim);">צ׳אט setup אינטראקטיבי</div>
+                            <div class="typing" id="setup-typing"><span></span><span></span><span></span> מקליד...</div>
+                        </div>
+                    </div>
+                    <div class="chat-messages" id="setup-live-messages"></div>
+                    <form class="chat-input-bar" id="setup-form">
+                        <input id="setup-input" type="text" autocomplete="off" placeholder="כתוב תשובה לבוט..." />
+                        <button type="submit" class="chat-send">שלח</button>
+                    </form>
+                </div>
+                <div class="setup-status" id="setup-status">התחל לענות לבוט כדי להגדיר אכיפה אישית.</div>
+            </div>
+
+            <div class="live-panel">
+                <div class="sim-label">2. Live Group Enforcement</div>
+                <div class="glass chat-window group-window" id="group-window">
+                    <div class="chat-header">
+                        <div class="avatar" style="background: var(--secondary); width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#000; font-weight:800;">G</div>
+                        <div>
+                            <div style="font-weight: 600;" id="demo-group-name">קבוצת הדגמה</div>
+                            <div class="typing" id="group-typing"><span></span><span></span><span></span> GroupShield כותב...</div>
+                        </div>
+                    </div>
+                    <div class="group-header" id="group-rule-banner">השלם setup בצד שמאל כדי להפעיל את ההדגמה החיה.</div>
+                    <div class="chat-messages" id="group-live-messages"></div>
+                    <form class="chat-input-bar group-input-bar" id="group-form">
+                        <input id="group-member-input" type="text" autocomplete="off" placeholder="שם חבר" />
+                        <input id="group-message-input" type="text" autocomplete="off" placeholder="שלח הודעה לקבוצה..." />
+                        <button type="submit" class="chat-send">שלח</button>
+                    </form>
+                </div>
+
+                <div class="enforcement-log glass">
+                    <div class="log-title">לוג אכיפה חי</div>
+                    <div class="log-items" id="log-items"></div>
+                </div>
+            </div>
         </div>
     </section>
 
-    <!-- Enforcement Pipeline -->
-    <section class="container" style="padding: 4rem 0;">
-        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;">Enforcement Engine</h2>
-        <p style="text-align: center; color: var(--text-dim); margin-bottom: 3rem;">How GroupShield processes every message in milliseconds.</p>
+    <!-- Logic Engine & Footer -->
+    <section class="container" style="padding: 4rem 0 8rem;">
+        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;">The Logic Engine</h2>
         <div class="sim-container glass" style="padding: 3rem 1rem;">
             <div class="pipeline-track" id="pipeline-simulator">
                 <div class="pipeline-node glass" id="node-in"><span>📥 Message</span></div>
@@ -92,82 +135,808 @@
         </div>
     </section>
 
-    <!-- Architecture (Fixed) -->
-    <section class="container" style="padding: 4rem 0 8rem;">
-        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 4rem;">System Architecture</h2>
-        <div class="glass" style="padding: 2rem; overflow: hidden;">
-            <pre class="mermaid" style="display: flex; justify-content: center;">
-graph LR
-    User[Admin User] -- "DM (Setup)" --> SF[State Machine]
-    SF -- "Config" --> DB[(SQLite)]
-    
-    msg[Group Msg] --> H[Handler]
-    H --> RE{Rule Engine}
-    RE -- "Violated" --> EP[Pipeline]
-    
-    EP -- "Enforce" --> WA[WhatsApp]
-    EP -- "Report" --> MG[Mgmt Group]
-    
-    H -- "Healthy" --> HM[Health Monitor]
-            </pre>
-        </div>
-    </section>
-
     <footer style="text-align: center; padding: 4rem; color: var(--text-dim); border-top: 1px solid var(--glass-border);">
-        <p>© 2026 GroupShield - Built by Nirdahan</p>
+        <p>© 2026 GroupShield - Portfolio Showcase by Nirdahan</p>
     </footer>
 
     <script>
-        // Chat Simulation Data
-        const chatData = [
-            { type: 'bot', text: 'שלום! אני בוט האכיפה שלך. בחר שפה / Choose language:\n1. עברית\n2. English' },
-            { type: 'user', text: '1', delay: 1500 },
-            { type: 'bot', text: 'השפה הוגדרה לעברית. ✅\nמה שם הקבוצה שתרצה שאאכוף בה?', delay: 1000 },
-            { type: 'user', text: 'ועד הבית', delay: 1500 },
-            { type: 'bot', text: 'מצאתי את הקבוצה: "ועד הבית" (32 משתתפים). \nהאם זו הקבוצה הנכונה? (1. כן / 2. לא)', delay: 1200 },
-            { type: 'user', text: '1', delay: 1000 },
-            { type: 'bot', text: 'מעולה! עכשיו בוא נגדיר את החוקים...', delay: 800 }
-        ];
-
-        async function runChatSim() {
-            const container = document.getElementById('chat-simulator');
-            container.innerHTML = '';
-            for (const msg of chatData) {
-                await new Promise(r => setTimeout(r, msg.delay || 500));
-                const bubble = document.createElement('div');
-                bubble.className = `chat-bubble ${msg.type}`;
-                bubble.innerText = msg.text;
-                container.appendChild(bubble);
-                container.scrollTop = container.scrollHeight;
-            }
-            setTimeout(runChatSim, 5000);
+        function createBubble({ text, type, sender = '', displayTime = true, status = '' }) {
+            const bubble = document.createElement('div');
+            bubble.className = `chat-bubble ${type}`;
+            const time = new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+            const senderBlock = sender ? `<div class="bubble-sender">${sender}</div>` : '';
+            const meta = displayTime
+                ? `<div class="bubble-meta"><span class="timestamp">${time}</span>${status ? `<span class="status">${status}</span>` : ''}</div>`
+                : '';
+            bubble.innerHTML = `${senderBlock}<div class="bubble-text">${text.replace(/\n/g, '<br>')}</div>${meta}`;
+            return bubble;
         }
 
-        // Pipeline Simulation Data
-        const nodes = ['node-in', 'node-rule', 'node-action', 'node-report'];
-        const statuses = [
-            'Incoming message detected...',
-            'Evaluating against active rules...',
-            'Rule violation! Executing enforcement path...',
-            'Action logged and reported to management.'
-        ];
+        function createSystemNote(text) {
+            const note = document.createElement('div');
+            note.className = 'system-note';
+            note.innerText = text;
+            return note;
+        }
 
-        async function runPipelineSim() {
-            const statusEl = document.getElementById('pipeline-status');
-            for (let i = 0; i < nodes.length; i++) {
-                const node = document.getElementById(nodes[i]);
-                node.classList.add('active-node');
-                statusEl.innerText = statuses[i];
-                await new Promise(r => setTimeout(r, 2000));
-                node.classList.remove('active-node');
+        function appendAndScroll(container, node) {
+            container.appendChild(node);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function normalizeText(value) {
+            return (value || '').trim().replace(/\s+/g, ' ').toLowerCase();
+        }
+
+        function parseListInput(value) {
+            return (value || '')
+                .split(/,|\n/)
+                .map(item => item.trim())
+                .filter(Boolean);
+        }
+
+        function parseYesNo(value) {
+            const normalized = normalizeText(value);
+            if (['1', 'כן', 'yes', 'y', 'true', 'אשר'].includes(normalized)) return true;
+            if (['2', 'לא', 'no', 'n', 'false', 'דלג', 'skip'].includes(normalized)) return false;
+            return null;
+        }
+
+        function parseChoiceList(value) {
+            return (value || '')
+                .split(/[\s,]+/)
+                .map(part => parseInt(part.trim(), 10))
+                .filter(number => Number.isInteger(number));
+        }
+
+        function parseTimeInput(value) {
+            const raw = (value || '').trim();
+            if (/^\d{1,2}$/.test(raw)) {
+                const h = parseInt(raw, 10);
+                if (h >= 0 && h <= 23) return `${String(h).padStart(2, '0')}:00`;
             }
-            statusEl.innerText = '';
-            setTimeout(runPipelineSim, 1000);
+            const match = raw.match(/^(\d{1,2}):(\d{2})$/);
+            if (!match) return null;
+            const h = parseInt(match[1], 10);
+            const m = parseInt(match[2], 10);
+            if (h < 0 || h > 23 || m < 0 || m > 59) return null;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        }
+
+        async function showTyping(id, duration) {
+            const typing = document.getElementById(id);
+            if (!typing) return;
+            typing.style.display = 'flex';
+            await new Promise(resolve => setTimeout(resolve, duration));
+            typing.style.display = 'none';
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            runChatSim();
-            runPipelineSim();
+            const setupMessages = document.getElementById('setup-live-messages');
+            const setupForm = document.getElementById('setup-form');
+            const setupInput = document.getElementById('setup-input');
+            const setupStatus = document.getElementById('setup-status');
+
+            const groupMessages = document.getElementById('group-live-messages');
+            const groupForm = document.getElementById('group-form');
+            const groupMemberInput = document.getElementById('group-member-input');
+            const groupMessageInput = document.getElementById('group-message-input');
+            const groupBanner = document.getElementById('group-rule-banner');
+            const groupNameLabel = document.getElementById('demo-group-name');
+            const logItems = document.getElementById('log-items');
+
+            const stepLabels = {
+                language: 'בחירת שפה',
+                group_name: 'בחירת קבוצת אכיפה',
+                group_confirm: 'אישור קבוצה',
+                group_verify_admin: 'אימות מנהל',
+                rules_type: 'סוג חוקי תוכן',
+                rules_content: 'תוכן חוקים',
+                non_text_rule: 'חוקי מדיה',
+                non_text_types: 'סוגי מדיה חסומים',
+                time_window: 'חלונות זמן',
+                time_day: 'יום לאכיפה',
+                time_start: 'שעת התחלה',
+                time_end: 'שעת סיום',
+                time_more: 'הוספת חלון נוסף',
+                antispam: 'אנטי-ספאם',
+                spam_max: 'מקסימום הודעות',
+                spam_window: 'חלון אנטי-ספאם',
+                enforcement: 'מדרג אכיפה',
+                warnings: 'כמות אזהרות',
+                exempt: 'רשימת חסינים',
+                report_target: 'יעד דיווח',
+                report_phone: 'מספר לדיווח',
+                mgmt_group_name: 'קבוצת הנהלה',
+                mgmt_group_confirm: 'אישור קבוצת הנהלה',
+                mgmt_group_verify_count: 'אימות משתתפים',
+                welcome_msg: 'הודעת קבלת פנים',
+                summary: 'סיכום ואישור'
+            };
+
+            const stepPlaceholders = {
+                language: '1 או 2',
+                group_name: 'שם הקבוצה שתרצה לאכוף',
+                group_confirm: '1 לאישור',
+                group_verify_admin: 'מספר משתתפים (לדוגמה 128)',
+                rules_type: '1 / 2 / 3',
+                rules_content: 'לדוגמה: שבת שלום, שבת מבורכת',
+                non_text_rule: '1 = כן, 2 = לא',
+                non_text_types: 'לדוגמה: תמונות, וידאו',
+                time_window: '1 = כן, 2 = לא',
+                time_day: '0-7 (0=כל יום, 5=שישי)',
+                time_start: 'לדוגמה: 16:00',
+                time_end: 'לדוגמה: 22:00',
+                time_more: '1 = הוסף חלון נוסף, 2 = המשך',
+                antispam: '1 = כן, 2 = לא',
+                spam_max: 'לדוגמה: 3',
+                spam_window: 'לדוגמה: 45',
+                enforcement: 'לדוגמה: 1,2,3,5',
+                warnings: 'מספר אזהרות (0-99)',
+                exempt: 'מספרים או "skip"',
+                report_target: '1 = DM, 2 = טלפון, 3 = קבוצת הנהלה',
+                report_phone: 'מספר טלפון מלא',
+                mgmt_group_name: 'שם קבוצת הנהלה',
+                mgmt_group_confirm: '1 = כן',
+                mgmt_group_verify_count: 'מספר משתתפים',
+                welcome_msg: '1 = כן, 2 = לא',
+                summary: '1 = אשר, 2 = התחל מחדש'
+            };
+
+            const randomMembers = ['אבי', 'נועה', 'דניאל', 'שירה', 'יוסי', 'טל'];
+            const genericMessages = ['שבת שלום', 'מה נשמע?', 'מי מגיע?', 'אפשר קישור?', 'תודה רבה'];
+
+            const actionMap = {
+                warn: {
+                    label: 'אזהרה',
+                    bot: (user, reason) => `⚠️ @${user}, ההודעה סומנה כחריגה (${reason}). נשלחה אזהרה אוטומטית.`
+                },
+                delete: {
+                    label: 'מחיקת הודעה',
+                    bot: (user, reason) => `⚠️ @${user}, ההודעה נמחקה כי היא לא עומדת בכללים (${reason}).`
+                },
+                remove: {
+                    label: 'מחיקה + הסרה',
+                    bot: (user, reason) => `⚠️ @${user}, ההודעה נמחקה והופעלה הסרה מהקבוצה (${reason}).`
+                }
+            };
+
+            function defaultSetupConfig() {
+                return {
+                    language: 'he',
+                    groupName: '',
+                    groupMemberCount: 0,
+                    rulesType: 'allowed',
+                    rulesMessages: [],
+                    blockNonText: false,
+                    blockedNonTextTypes: [],
+                    timeWindows: [],
+                    pendingWindow: null,
+                    antiSpam: null,
+                    enforcementConfig: {
+                        deleteMessage: true,
+                        privateWarning: true,
+                        removeFromGroup: true,
+                        blockUser: false,
+                        sendReport: true
+                    },
+                    warningCount: 2,
+                    exemptNumbers: [],
+                    reportTarget: 'dm',
+                    reportPhone: '',
+                    mgmtGroupName: '',
+                    mgmtGroupCount: 0,
+                    welcomeMessageEnabled: true
+                };
+            }
+
+            const setupConfig = defaultSetupConfig();
+            const spamMemory = new Map();
+            let currentStep = 'language';
+            let setupDone = false;
+            let autoGroupTimer = null;
+
+            function setGroupFormEnabled(enabled) {
+                groupMemberInput.disabled = !enabled;
+                groupMessageInput.disabled = !enabled;
+                groupForm.querySelector('button').disabled = !enabled;
+            }
+
+            function setSetupStatus(text) {
+                setupStatus.innerText = text;
+            }
+
+            function setInputHint(step) {
+                setupInput.placeholder = stepPlaceholders[step] || 'כתוב תשובה לבוט...';
+            }
+
+            function addLogLine(text, state = 'info') {
+                const row = document.createElement('div');
+                row.className = `log-item ${state}`;
+                row.innerText = text;
+                logItems.prepend(row);
+            }
+
+            async function botSetupMessage(text, typingMs = 620) {
+                await showTyping('setup-typing', typingMs);
+                appendAndScroll(setupMessages, createBubble({
+                    type: 'bot',
+                    sender: 'GroupShield',
+                    text
+                }));
+            }
+
+            function getCurrentActionKey() {
+                if (setupConfig.enforcementConfig.removeFromGroup) return 'remove';
+                if (setupConfig.enforcementConfig.deleteMessage) return 'delete';
+                return 'warn';
+            }
+
+            function buildGroupRuleBanner() {
+                if (setupConfig.rulesType === 'allowed') {
+                    const list = setupConfig.rulesMessages.map(msg => `"${msg}"`).join(', ');
+                    return `מותר לשלוח רק: ${list}`;
+                }
+                if (setupConfig.rulesType === 'forbidden') {
+                    const list = setupConfig.rulesMessages.map(msg => `"${msg}"`).join(', ');
+                    return `אסור לשלוח הודעות שמכילות: ${list}`;
+                }
+                return 'ללא חוקי תוכן. אכיפה פעילה לפי אנטי-ספאם ומדרג פעולות.';
+            }
+
+            function buildSetupSummaryText() {
+                const rulesTypeText = setupConfig.rulesType === 'allowed'
+                    ? 'הודעות מותרות בלבד'
+                    : setupConfig.rulesType === 'forbidden'
+                        ? 'הודעות אסורות'
+                        : 'ללא חוקי תוכן';
+
+                const rulesContent = setupConfig.rulesMessages.length > 0
+                    ? setupConfig.rulesMessages.map(msg => `"${msg}"`).join(', ')
+                    : 'לא הוגדר';
+
+                const timeWindows = setupConfig.timeWindows.length > 0
+                    ? setupConfig.timeWindows.map(w => `יום ${w.day}: ${w.start} - ${w.end}`).join('\n')
+                    : 'ללא הגבלת זמן';
+
+                const antiSpam = setupConfig.antiSpam
+                    ? `${setupConfig.antiSpam.maxMessages} הודעות / ${setupConfig.antiSpam.windowSeconds} שניות`
+                    : 'כבוי';
+
+                const enforcementSteps = [];
+                if (setupConfig.enforcementConfig.deleteMessage) enforcementSteps.push('מחיקת הודעה');
+                if (setupConfig.enforcementConfig.privateWarning) enforcementSteps.push('אזהרה פרטית');
+                if (setupConfig.enforcementConfig.removeFromGroup) enforcementSteps.push('הסרה מהקבוצה');
+                if (setupConfig.enforcementConfig.blockUser) enforcementSteps.push('חסימת משתמש');
+                if (setupConfig.enforcementConfig.sendReport) enforcementSteps.push('דיווח למנהלים');
+
+                let reportTargetText = 'DM';
+                if (setupConfig.reportTarget === 'phone') {
+                    reportTargetText = `טלפון: ${setupConfig.reportPhone || 'לא הוגדר'}`;
+                } else if (setupConfig.reportTarget === 'mgmt_group') {
+                    reportTargetText = `קבוצת הנהלה: ${setupConfig.mgmtGroupName || 'לא הוגדר'}`;
+                }
+
+                return [
+                    '🧾 סיכום Setup (בדומה לבוט האמיתי):',
+                    `• קבוצה: ${setupConfig.groupName}`,
+                    `• סוג חוקים: ${rulesTypeText}`,
+                    `• תוכן חוקים: ${rulesContent}`,
+                    `• חסימת מדיה: ${setupConfig.blockNonText ? 'פעיל' : 'כבוי'}`,
+                    `• חלונות זמן:\n${timeWindows}`,
+                    `• אנטי-ספאם: ${antiSpam}`,
+                    `• מדרג אכיפה: ${enforcementSteps.join(', ') || 'ללא פעולות'}`,
+                    `• אזהרות לפני הסלמה: ${setupConfig.warningCount}`,
+                    `• חסינים: ${setupConfig.exemptNumbers.length || 0}`,
+                    `• יעד דיווח: ${reportTargetText}`,
+                    `• הודעת קבלת פנים: ${setupConfig.welcomeMessageEnabled ? 'מופעל' : 'כבוי'}`
+                ].join('\n');
+            }
+
+            function evaluateViolation(sender, text) {
+                const normalizedText = normalizeText(text);
+
+                if (setupConfig.rulesType === 'allowed' && setupConfig.rulesMessages.length > 0) {
+                    const allowed = setupConfig.rulesMessages.map(item => normalizeText(item));
+                    if (!allowed.includes(normalizedText)) {
+                        return { violation: true, reason: 'לא ברשימת ההודעות המותרות' };
+                    }
+                }
+
+                if (setupConfig.rulesType === 'forbidden' && setupConfig.rulesMessages.length > 0) {
+                    const forbiddenHit = setupConfig.rulesMessages.find(item => normalizedText.includes(normalizeText(item)));
+                    if (forbiddenHit) {
+                        return { violation: true, reason: `מכיל ביטוי אסור: "${forbiddenHit}"` };
+                    }
+                }
+
+                if (setupConfig.antiSpam) {
+                    const key = `${normalizeText(sender)}::${normalizedText}`;
+                    const now = Date.now();
+                    const history = spamMemory.get(key) || [];
+                    const active = history.filter(ts => now - ts <= setupConfig.antiSpam.windowSeconds * 1000);
+                    active.push(now);
+                    spamMemory.set(key, active);
+
+                    if (active.length > setupConfig.antiSpam.maxMessages) {
+                        return { violation: true, reason: 'חריגת אנטי-ספאם' };
+                    }
+                }
+
+                return { violation: false, reason: '' };
+            }
+
+            async function enforceViolation(messageBubble, sender, text, reason) {
+                messageBubble.classList.add('violation');
+                await showTyping('group-typing', 820);
+
+                const actionKey = getCurrentActionKey();
+                const action = actionMap[actionKey];
+                appendAndScroll(groupMessages, createBubble({
+                    type: 'bot',
+                    sender: 'GroupShield',
+                    text: action.bot(sender, reason)
+                }));
+
+                messageBubble.style.opacity = '0.24';
+                messageBubble.style.textDecoration = 'line-through';
+
+                if (setupConfig.enforcementConfig.sendReport) {
+                    addLogLine(`חריגה: "${text}" | משתמש: ${sender} | סיבה: ${reason} | פעולה: ${action.label}`, 'violation');
+                } else {
+                    addLogLine(`חריגה זוהתה: "${text}" | משתמש: ${sender}`, 'violation');
+                }
+
+                if (actionKey === 'remove') {
+                    appendAndScroll(groupMessages, createSystemNote(`${sender} הוסר מהקבוצה על ידי GroupShield`));
+                }
+            }
+
+            async function processGroupMessage(sender, text) {
+                const bubble = createBubble({
+                    type: 'incoming',
+                    sender,
+                    text
+                });
+                appendAndScroll(groupMessages, bubble);
+
+                const decision = evaluateViolation(sender, text);
+                if (!decision.violation) {
+                    addLogLine(`תקין: "${text}" | משתמש: ${sender}`, 'ok');
+                    return;
+                }
+
+                await enforceViolation(bubble, sender, text, decision.reason);
+            }
+
+            function randomGroupMessage() {
+                if (!setupDone) return;
+
+                const sender = randomMembers[Math.floor(Math.random() * randomMembers.length)];
+                let text = genericMessages[Math.floor(Math.random() * genericMessages.length)];
+
+                if (setupConfig.rulesType === 'allowed' && setupConfig.rulesMessages.length > 0) {
+                    const pass = setupConfig.rulesMessages[Math.floor(Math.random() * setupConfig.rulesMessages.length)];
+                    text = Math.random() > 0.45 ? pass : 'מישהו יודע מה השעה?';
+                }
+
+                if (setupConfig.rulesType === 'forbidden' && setupConfig.rulesMessages.length > 0) {
+                    const forbidden = setupConfig.rulesMessages[Math.floor(Math.random() * setupConfig.rulesMessages.length)];
+                    text = Math.random() > 0.5 ? `הודעה עם ${forbidden}` : 'שבת שלום לכולם';
+                }
+
+                processGroupMessage(sender, text);
+            }
+
+            function startLiveGroupDemo() {
+                if (autoGroupTimer) clearInterval(autoGroupTimer);
+                spamMemory.clear();
+
+                groupMessages.innerHTML = '';
+                logItems.innerHTML = '';
+
+                appendAndScroll(groupMessages, createSystemNote('האכיפה הופעלה לפי ה-flow המלא של ה-setup'));
+                addLogLine('הדגמה פעילה: אימות חוקים, אנטי-ספאם ופעולות אכיפה', 'info');
+
+                randomGroupMessage();
+                autoGroupTimer = setInterval(randomGroupMessage, 4200);
+            }
+
+            function setStep(step) {
+                currentStep = step;
+                setInputHint(step);
+                setSetupStatus(`שלב נוכחי: ${stepLabels[step] || step}`);
+            }
+
+            function resetSetupState() {
+                const nextDefaults = defaultSetupConfig();
+                Object.keys(nextDefaults).forEach(key => {
+                    setupConfig[key] = nextDefaults[key];
+                });
+                setupDone = false;
+                setupMessages.innerHTML = '';
+                setGroupFormEnabled(false);
+                groupBanner.innerText = 'השלם setup בצד שמאל כדי להפעיל את ההדגמה החיה.';
+                groupNameLabel.innerText = 'קבוצת הדגמה';
+                setStep('language');
+            }
+
+            async function promptCurrentStep() {
+                switch (currentStep) {
+                    case 'language':
+                        await botSetupMessage('שלום! אני GroupShield. נתחיל setup מלא בדומה לבוט האמיתי.\nבחר שפה:\n1. עברית\n2. English');
+                        break;
+                    case 'group_name':
+                        await botSetupMessage('מה שם קבוצת האכיפה שתרצה לחבר?');
+                        break;
+                    case 'group_confirm':
+                        await botSetupMessage(`מצאתי את הקבוצה "${setupConfig.groupName}" (דמו). האם זו הקבוצה הנכונה?\n1. כן\n2. לא`);
+                        break;
+                    case 'group_verify_admin':
+                        await botSetupMessage('אימות אדמין בוצע ✅\nלאימות כפול כמו בבוט האמיתי, כתוב כמה משתתפים יש בקבוצה.');
+                        break;
+                    case 'rules_type':
+                        await botSetupMessage('בחר סוג חוקי תוכן:\n1. הודעות מותרות בלבד\n2. הודעות אסורות\n3. ללא חוקי תוכן');
+                        break;
+                    case 'rules_content':
+                        await botSetupMessage(
+                            setupConfig.rulesType === 'allowed'
+                                ? 'הכנס הודעות מותרות (שורה נפרדת או פסיקים).'
+                                : 'הכנס ביטויים אסורים (שורה נפרדת או פסיקים).'
+                        );
+                        break;
+                    case 'non_text_rule':
+                        await botSetupMessage('האם להפעיל חסימת הודעות לא-טקסט (תמונה/וידאו/אודיו)?\n1. כן\n2. לא');
+                        break;
+                    case 'non_text_types':
+                        await botSetupMessage('אילו סוגים לחסום? (לדוגמה: תמונות, וידאו, סטיקרים).');
+                        break;
+                    case 'time_window':
+                        await botSetupMessage('האם להגדיר חלונות זמן לאכיפה?\n1. כן\n2. לא');
+                        break;
+                    case 'time_day':
+                        await botSetupMessage('בחר יום: 0=כל יום, 1=ראשון ... 7=שבת');
+                        break;
+                    case 'time_start':
+                        await botSetupMessage('הכנס שעת התחלה (HH:mm)');
+                        break;
+                    case 'time_end':
+                        await botSetupMessage('הכנס שעת סיום (HH:mm)');
+                        break;
+                    case 'time_more':
+                        await botSetupMessage('להוסיף חלון זמן נוסף?\n1. כן\n2. לא');
+                        break;
+                    case 'antispam':
+                        await botSetupMessage('להפעיל אנטי-ספאם?\n1. כן\n2. לא');
+                        break;
+                    case 'spam_max':
+                        await botSetupMessage('כמה הודעות מותרות לפני חריגה? (1-100)');
+                        break;
+                    case 'spam_window':
+                        await botSetupMessage('באיזה חלון זמן בשניות? (1-300)');
+                        break;
+                    case 'enforcement':
+                        await botSetupMessage('בחר מדרג אכיפה (אפשר כמה מספרים):\n1. מחיקת הודעה\n2. אזהרה פרטית\n3. הסרה מהקבוצה\n4. חסימה\n5. דיווח למנהלים');
+                        break;
+                    case 'warnings':
+                        await botSetupMessage('כמה אזהרות לפני הסלמה? (0-99)');
+                        break;
+                    case 'exempt':
+                        await botSetupMessage('הכנס מספרים חסינים (שורה נפרדת), או כתוב skip.');
+                        break;
+                    case 'report_target':
+                        await botSetupMessage('לאן לשלוח דיווחים?\n1. DM\n2. מספר טלפון\n3. קבוצת הנהלה');
+                        break;
+                    case 'report_phone':
+                        await botSetupMessage('הכנס מספר טלפון לדיווחים.');
+                        break;
+                    case 'mgmt_group_name':
+                        await botSetupMessage('הכנס שם קבוצת הנהלה לדיווחים.');
+                        break;
+                    case 'mgmt_group_confirm':
+                        await botSetupMessage(`נמצאה קבוצת הנהלה "${setupConfig.mgmtGroupName}" (דמו).\n1. אשר`);
+                        break;
+                    case 'mgmt_group_verify_count':
+                        await botSetupMessage('אימות נוסף: כתוב מספר משתתפים בקבוצת ההנהלה.');
+                        break;
+                    case 'welcome_msg':
+                        await botSetupMessage('להפעיל הודעת קבלת פנים עם בקשת אישור כללים?\n1. כן\n2. לא');
+                        break;
+                    case 'summary':
+                        await botSetupMessage(buildSetupSummaryText(), 920);
+                        await botSetupMessage('לאישור סופי:\n1. אשר והפעל\n2. התחל setup מחדש');
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            function moveTo(nextStep) {
+                setStep(nextStep);
+                return promptCurrentStep();
+            }
+
+            async function finishSetup() {
+                setupDone = true;
+                setupInput.placeholder = 'Setup הושלם';
+
+                const action = actionMap[getCurrentActionKey()].label;
+                const rules = setupConfig.rulesMessages.length > 0
+                    ? setupConfig.rulesMessages.map(msg => `"${msg}"`).join(', ')
+                    : 'ללא';
+
+                await botSetupMessage(`ההגדרה הופעלה ✅\nקבוצה: ${setupConfig.groupName}\nחוקים: ${rules}\nפעולת אכיפה: ${action}`);
+                await botSetupMessage('עכשיו ההדגמה החיה בצד ימין משתמשת בדיוק בהגדרות שהזנת.');
+
+                setSetupStatus(`Setup הושלם | קבוצה: ${setupConfig.groupName}`);
+                groupNameLabel.innerText = setupConfig.groupName;
+                groupBanner.innerText = buildGroupRuleBanner();
+                setGroupFormEnabled(true);
+                startLiveGroupDemo();
+            }
+
+            async function handleSetupInput(input) {
+                if (currentStep === 'language') {
+                    const choice = normalizeText(input);
+                    setupConfig.language = choice === '2' || choice.includes('english') ? 'en' : 'he';
+                    await botSetupMessage(setupConfig.language === 'he' ? 'השפה הוגדרה לעברית ✅' : 'Language set to English ✅');
+                    return moveTo('group_name');
+                }
+
+                if (currentStep === 'group_name') {
+                    setupConfig.groupName = input.trim() || 'קהילת שבת שלום';
+                    setupConfig.groupMemberCount = 64 + Math.floor(Math.random() * 220);
+                    await botSetupMessage(`מחפש את הקבוצה "${setupConfig.groupName}"...`, 420);
+                    return moveTo('group_confirm');
+                }
+
+                if (currentStep === 'group_confirm') {
+                    const confirmed = parseYesNo(input);
+                    if (confirmed === false) {
+                        await botSetupMessage('בדמו נמשיך עם אותה קבוצה כדי להציג את כל ה-flow בלי חסימות.');
+                    } else {
+                        await botSetupMessage('הקבוצה אושרה ✅');
+                    }
+                    return moveTo('group_verify_admin');
+                }
+
+                if (currentStep === 'group_verify_admin') {
+                    const count = parseInt(input.trim(), 10);
+                    setupConfig.groupMemberCount = Number.isInteger(count) && count > 0 ? count : setupConfig.groupMemberCount;
+                    await botSetupMessage(`אימות הושלם: ${setupConfig.groupMemberCount} משתתפים. ממשיכים להגדרת חוקים.`);
+                    return moveTo('rules_type');
+                }
+
+                if (currentStep === 'rules_type') {
+                    const choice = parseInt(input.trim(), 10);
+                    setupConfig.rulesType = choice === 2 ? 'forbidden' : choice === 3 ? 'none' : 'allowed';
+                    if (setupConfig.rulesType === 'none') {
+                        await botSetupMessage('ללא חוקי תוכן. ממשיכים לחוקי מדיה.');
+                        return moveTo('non_text_rule');
+                    }
+                    return moveTo('rules_content');
+                }
+
+                if (currentStep === 'rules_content') {
+                    const values = parseListInput(input);
+                    setupConfig.rulesMessages = values.length > 0 ? values : ['שבת שלום'];
+                    await botSetupMessage(`נשמרו ${setupConfig.rulesMessages.length} ערכי חוק.`);
+                    return moveTo('non_text_rule');
+                }
+
+                if (currentStep === 'non_text_rule') {
+                    const choice = parseYesNo(input);
+                    setupConfig.blockNonText = choice === true;
+                    if (setupConfig.blockNonText) {
+                        return moveTo('non_text_types');
+                    }
+                    return moveTo('time_window');
+                }
+
+                if (currentStep === 'non_text_types') {
+                    const types = parseListInput(input);
+                    setupConfig.blockedNonTextTypes = types.length > 0 ? types : ['תמונות', 'וידאו'];
+                    await botSetupMessage(`סוגי המדיה שנחסמים: ${setupConfig.blockedNonTextTypes.join(', ')}`);
+                    return moveTo('time_window');
+                }
+
+                if (currentStep === 'time_window') {
+                    const enabled = parseYesNo(input);
+                    if (enabled !== true) {
+                        setupConfig.timeWindows = [];
+                        return moveTo('antispam');
+                    }
+                    setupConfig.pendingWindow = null;
+                    return moveTo('time_day');
+                }
+
+                if (currentStep === 'time_day') {
+                    const rawDay = parseInt(input.trim(), 10);
+                    const day = Number.isInteger(rawDay) && rawDay >= 0 && rawDay <= 7 ? rawDay : 5;
+                    setupConfig.pendingWindow = { day, start: '', end: '' };
+                    return moveTo('time_start');
+                }
+
+                if (currentStep === 'time_start') {
+                    const time = parseTimeInput(input) || '16:00';
+                    setupConfig.pendingWindow = setupConfig.pendingWindow || { day: 5, start: '', end: '' };
+                    setupConfig.pendingWindow.start = time;
+                    return moveTo('time_end');
+                }
+
+                if (currentStep === 'time_end') {
+                    const time = parseTimeInput(input) || '22:00';
+                    setupConfig.pendingWindow = setupConfig.pendingWindow || { day: 5, start: '16:00', end: '' };
+                    setupConfig.pendingWindow.end = time;
+                    setupConfig.timeWindows.push({ ...setupConfig.pendingWindow });
+                    await botSetupMessage(`חלון זמן נוסף: יום ${setupConfig.pendingWindow.day}, ${setupConfig.pendingWindow.start}-${setupConfig.pendingWindow.end}`);
+                    setupConfig.pendingWindow = null;
+                    return moveTo('time_more');
+                }
+
+                if (currentStep === 'time_more') {
+                    const more = parseYesNo(input);
+                    if (more === true) return moveTo('time_day');
+                    return moveTo('antispam');
+                }
+
+                if (currentStep === 'antispam') {
+                    const enabled = parseYesNo(input);
+                    if (enabled !== true) {
+                        setupConfig.antiSpam = null;
+                        return moveTo('enforcement');
+                    }
+                    return moveTo('spam_max');
+                }
+
+                if (currentStep === 'spam_max') {
+                    const max = parseInt(input.trim(), 10);
+                    setupConfig.antiSpam = {
+                        maxMessages: Number.isInteger(max) && max > 0 ? max : 3,
+                        windowSeconds: 45
+                    };
+                    return moveTo('spam_window');
+                }
+
+                if (currentStep === 'spam_window') {
+                    const windowSeconds = parseInt(input.trim(), 10);
+                    setupConfig.antiSpam.windowSeconds = Number.isInteger(windowSeconds) && windowSeconds > 0 ? windowSeconds : 45;
+                    await botSetupMessage(`אנטי-ספאם הופעל: ${setupConfig.antiSpam.maxMessages} הודעות / ${setupConfig.antiSpam.windowSeconds} שניות.`);
+                    return moveTo('enforcement');
+                }
+
+                if (currentStep === 'enforcement') {
+                    const choices = parseChoiceList(input);
+                    const picked = choices.length > 0 ? choices : [1, 2, 3, 5];
+                    setupConfig.enforcementConfig = {
+                        deleteMessage: picked.includes(1),
+                        privateWarning: picked.includes(2),
+                        removeFromGroup: picked.includes(3),
+                        blockUser: picked.includes(4),
+                        sendReport: picked.includes(5)
+                    };
+                    return moveTo('warnings');
+                }
+
+                if (currentStep === 'warnings') {
+                    const count = parseInt(input.trim(), 10);
+                    setupConfig.warningCount = Number.isInteger(count) && count >= 0 ? count : 2;
+                    return moveTo('exempt');
+                }
+
+                if (currentStep === 'exempt') {
+                    const normalized = normalizeText(input);
+                    if (normalized === 'skip' || normalized === 'דלג') {
+                        setupConfig.exemptNumbers = [];
+                    } else {
+                        setupConfig.exemptNumbers = parseListInput(input).filter(item => /\d{6,}/.test(item));
+                    }
+                    return moveTo('report_target');
+                }
+
+                if (currentStep === 'report_target') {
+                    const choice = parseInt(input.trim(), 10);
+                    if (choice === 2) {
+                        setupConfig.reportTarget = 'phone';
+                        return moveTo('report_phone');
+                    }
+                    if (choice === 3) {
+                        setupConfig.reportTarget = 'mgmt_group';
+                        return moveTo('mgmt_group_name');
+                    }
+                    setupConfig.reportTarget = 'dm';
+                    return moveTo('welcome_msg');
+                }
+
+                if (currentStep === 'report_phone') {
+                    const digits = (input || '').replace(/\D/g, '');
+                    setupConfig.reportPhone = digits || '972500000000';
+                    await botSetupMessage(`דיווחים יישלחו למספר ${setupConfig.reportPhone} (דמו).`);
+                    return moveTo('welcome_msg');
+                }
+
+                if (currentStep === 'mgmt_group_name') {
+                    setupConfig.mgmtGroupName = input.trim() || 'מנהלים | GroupShield';
+                    return moveTo('mgmt_group_confirm');
+                }
+
+                if (currentStep === 'mgmt_group_confirm') {
+                    await botSetupMessage('אושר ✅ נבצע אימות משתתפים (בדמו ללא חסימות חיצוניות).');
+                    return moveTo('mgmt_group_verify_count');
+                }
+
+                if (currentStep === 'mgmt_group_verify_count') {
+                    const count = parseInt(input.trim(), 10);
+                    setupConfig.mgmtGroupCount = Number.isInteger(count) && count > 0 ? count : 32;
+                    await botSetupMessage(`אימות קבוצת הנהלה הושלם (${setupConfig.mgmtGroupCount} משתתפים).`);
+                    return moveTo('welcome_msg');
+                }
+
+                if (currentStep === 'welcome_msg') {
+                    const enabled = parseYesNo(input);
+                    setupConfig.welcomeMessageEnabled = enabled !== false;
+                    return moveTo('summary');
+                }
+
+                if (currentStep === 'summary') {
+                    const choice = parseInt(input.trim(), 10);
+                    if (choice === 2) {
+                        await botSetupMessage('מתחילים setup מחדש...');
+                        resetSetupState();
+                        await promptCurrentStep();
+                        return;
+                    }
+                    await finishSetup();
+                }
+            }
+
+            async function handleSetupSubmit(event) {
+                event.preventDefault();
+                const value = setupInput.value.trim();
+                if (!value || setupDone) return;
+
+                appendAndScroll(setupMessages, createBubble({
+                    type: 'outgoing',
+                    sender: 'אתה',
+                    text: value,
+                    status: '✓✓'
+                }));
+
+                setupInput.value = '';
+                await handleSetupInput(value);
+            }
+
+            async function handleGroupSubmit(event) {
+                event.preventDefault();
+                if (!setupDone) return;
+
+                const sender = groupMemberInput.value.trim() || 'אורח';
+                const text = groupMessageInput.value.trim();
+                if (!text) return;
+
+                groupMessageInput.value = '';
+                await processGroupMessage(sender, text);
+            }
+
+            const nodes = ['node-in', 'node-rule', 'node-action', 'node-report'];
+            async function runPipelineSim() {
+                for (let i = 0; i < nodes.length; i++) {
+                    const node = document.getElementById(nodes[i]);
+                    node.classList.add('active-node');
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    node.classList.remove('active-node');
+                }
+                setTimeout(runPipelineSim, 1000);
+            }
+
+            setGroupFormEnabled(false);
+            setupForm.addEventListener('submit', handleSetupSubmit);
+            groupForm.addEventListener('submit', handleGroupSubmit);
+
+            (async () => {
+                await promptCurrentStep();
+                runPipelineSim();
+            })();
         });
     </script>
 </body>
