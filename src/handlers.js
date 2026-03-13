@@ -60,6 +60,11 @@ async function handleDM(client, msg, senderJid, content) {
         return;
     }
 
+    // Check for pending admin action responses (demotion/removal)
+    if (await handleAdminActionResponse(client, msg, senderJid, content, lang)) {
+        return;
+    }
+
     // Check if user is responding to a Welcome Message DM
     const lowerContent = content.trim().toLowerCase();
     const isAgree = lowerContent === '1' || lowerContent.includes('מסכים') || lowerContent === 'agree';
@@ -144,8 +149,58 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
     const ownerUser = await database.getUser(groupConfig.ownerJid);
     const lang = senderUser ? senderUser.language || 'he' : (ownerUser ? ownerUser.language || 'he' : 'he');
 
-    // Check if this is the management group — handle undo
+    // Handle bot removal/demotion responses within the mgmt group
     if (isMgmtGroup) {
+        if (await handleAdminActionResponse(client, msg, senderJid, content, lang)) {
+            return;
+        }
+    }
+
+    // Check if this is the management group — handle undo and pending actions
+    if (isMgmtGroup) {
+        // Handle pending group actions (multi-group target selection)
+        const possibleChoice = parseInt(content.trim(), 10);
+        if (!isNaN(possibleChoice)) {
+            const pendingAction = await database.getPendingGroupAction(senderJid);
+            if (pendingAction) {
+                const options = pendingAction.optionsData || [];
+                if (possibleChoice > 0 && possibleChoice <= options.length) {
+                    const targetGroupId = options[possibleChoice - 1];
+                    const targetGroupConf = await database.getGroup(targetGroupId);
+                    
+                    if (targetGroupConf) {
+                        if (pendingAction.action === 'pause') {
+                            const response = await commands.pauseEnforcement(client, senderJid, targetGroupConf, pendingAction.duration, lang);
+                            if (response) await msg.reply(response);
+                        } else if (pendingAction.action === 'resume') {
+                            if (targetGroupConf.status && targetGroupConf.status.startsWith('PAUSED_UNTIL:')) {
+                                await database.updateGroupStatus(targetGroupConf.groupId, 'ACTIVE');
+                                logger.auditLog(senderJid, 'RESUME_ENFORCEMENT', `Group: ${targetGroupConf.groupName}`, true);
+                                await msg.reply(t('action_resumed', lang, { groupName: targetGroupConf.groupName }));
+                            } else {
+                                await msg.reply(lang === 'he' ? '❌ הקבוצה אינה מושהית.' : '❌ Group is not paused.');
+                            }
+                        } else if (pendingAction.action === 'stop') {
+                            const response = await commands.stopEnforcement(client, senderJid, targetGroupConf, lang);
+                            if (response) await msg.reply(response);
+                        } else if (pendingAction.action === 'execute') {
+                            // pendingAction.duration contains the original command string text
+                            const response = await commands.executeCommand(client, senderJid, pendingAction.duration, lang, targetGroupConf);
+                            if (response) await msg.reply(response);
+                        }
+                    } else {
+                         await msg.reply(lang === 'he' ? '❌ שגיאה: הקבוצה לא נמצאה במסד הנתונים.' : '❌ Error: Group not found in database.');
+                    }
+                    
+                    await database.deletePendingGroupAction(senderJid);
+                    return;
+                } else {
+                    await msg.reply(lang === 'he' ? `❌ נא לבחור מספר תקין בין 1 ל-${options.length}.` : `❌ Please select a valid number between 1 and ${options.length}.`);
+                    return;
+                }
+            }
+        }
+
         const undoWords = ['בטל', 'undo'];
         if (msg.hasQuotedMsg && undoWords.includes(content.trim().toLowerCase())) {
             const response = await handleUndo(client, msg, groupConfig, lang);
@@ -161,21 +216,164 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
             return;
         }
 
-        // In management groups, allow only group-name approval/rejection commands
+        // In management groups, allow only group-name approval/rejection commands and enforcement commands
         const mgmtCommand = (content || '').trim().toLowerCase();
-        const isNameApprovalCommand =
-            mgmtCommand.startsWith('אימות שם ') ||
-            mgmtCommand.startsWith('verify name ') ||
-            mgmtCommand.startsWith('לא אימות שם ') ||
-            mgmtCommand.startsWith('verify_not name ');
 
-        if (isNameApprovalCommand) {
-            const mgmtResponse = await commands.executeCommand(client, senderJid, content, lang);
+        // Pause / Resume / Stop commands
+        if (mgmtCommand.startsWith('השהה ') || mgmtCommand.startsWith('pause ') ||
+            mgmtCommand === 'המשך אכיפה' || mgmtCommand === 'resume' || mgmtCommand === 'חזור לאכוף' || mgmtCommand === 'resume enforcement' ||
+            mgmtCommand === 'הפסק אכיפה' || mgmtCommand === 'stop enforcement') {
+
+            let targetGroupConf = null;
+            let durationParams = null;
+
+            if (mgmtCommand.startsWith('השהה ') || mgmtCommand.startsWith('pause ')) {
+                const durationRaw = mgmtCommand.replace(/^(השהה |pause )/, '').trim();
+                durationParams = parseInt(durationRaw, 10);
+                if (isNaN(durationParams) || durationParams <= 0) {
+                    await msg.reply(t('invalid_pause_duration', lang));
+                    return;
+                }
+            }
+
+            if (mgmtLinkedGroups.length === 1) {
+                targetGroupConf = mgmtLinkedGroups[0];
+            } else if (msg.hasQuotedMsg) {
+                const quotedMsg = await msg.getQuotedMessage();
+                const quotedContent = quotedMsg.body || '';
+                const groupIdMatch = quotedContent.match(/(?:Group ID|מזהה קבוצה):\s*([^\s\n]+)/i);
+                if (groupIdMatch && groupIdMatch[1]) {
+                    targetGroupConf = await database.getGroup(groupIdMatch[1]);
+                }
+            }
+
+            if (!targetGroupConf && mgmtLinkedGroups.length > 1 && !msg.hasQuotedMsg) {
+                // Multi-group target selection via numbering
+                const optionsData = mgmtLinkedGroups.map(g => g.groupId);
+                const actionType = (mgmtCommand.startsWith('השהה ') || mgmtCommand.startsWith('pause ')) ? 'pause' :
+                                   (mgmtCommand === 'המשך אכיפה' || mgmtCommand === 'resume' || mgmtCommand === 'חזור לאכוף' || mgmtCommand === 'resume enforcement') ? 'resume' : 'stop';
+                
+                await database.createPendingGroupAction(senderJid, actionType, durationParams, optionsData);
+                
+                let promptMsg = lang === 'he' ? '👇 על איזה קבוצה תרצה להחיל את הפעולה? (השב במספר בלבד):\n' : '👇 Which group would you like to apply this action to? (Reply with a number):\n';
+                mgmtLinkedGroups.forEach((g, idx) => {
+                    promptMsg += `${idx + 1}. ${g.groupName}\n`;
+                });
+                await msg.reply(promptMsg);
+                return;
+            } else if (!targetGroupConf) {
+                await msg.reply(lang === 'he' ? '❌ בקבוצת הנהלה משותפת יש להגיב לדו״ח של הבוט כדי לבצע פעולה זו.' : '❌ In a shared management group, please reply to a bot report to perform this action.');
+                return;
+            }
+
+            // Now apply the command to targetGroupConf
+            if (mgmtCommand.startsWith('השהה ') || mgmtCommand.startsWith('pause ')) {
+                const response = await commands.pauseEnforcement(client, senderJid, targetGroupConf, durationParams, lang);
+                if (response) await msg.reply(response);
+            } else if (mgmtCommand === 'המשך אכיפה' || mgmtCommand === 'resume' || mgmtCommand === 'חזור לאכוף' || mgmtCommand === 'resume enforcement') {
+                if (targetGroupConf.status && targetGroupConf.status.startsWith('PAUSED_UNTIL:')) {
+                    await database.updateGroupStatus(targetGroupConf.groupId, 'ACTIVE');
+                    logger.auditLog(senderJid, 'RESUME_ENFORCEMENT', `Group: ${targetGroupConf.groupName}`, true);
+                    await msg.reply(t('action_resumed', lang, { groupName: targetGroupConf.groupName }));
+                } else {
+                    await msg.reply(lang === 'he' ? '❌ הקבוצה אינה מושהית.' : '❌ Group is not paused.');
+                }
+            } else if (mgmtCommand === 'הפסק אכיפה' || mgmtCommand === 'stop enforcement') {
+                const response = await commands.stopEnforcement(client, senderJid, targetGroupConf, lang);
+                if (response) await msg.reply(response);
+            }
+            return;
+        }
+
+        const isGeneralMultiGroupCommand = 
+            mgmtCommand.startsWith('הוסף חסין ') || mgmtCommand.startsWith('exempt add ') ||
+            mgmtCommand.startsWith('הסר חסין ') || mgmtCommand.startsWith('exempt remove ') ||
+            mgmtCommand === 'רשימת חסינים' || mgmtCommand === 'exempt list' ||
+            mgmtCommand.startsWith('אפס אזהרות ') || mgmtCommand.startsWith('warnings reset ') ||
+            mgmtCommand === 'התחל' || mgmtCommand === 'start' || mgmtCommand === 'setup' || mgmtCommand === 'start setup' ||
+            mgmtCommand === 'הגדרות' || mgmtCommand === 'settings' ||
+            mgmtCommand === 'עדכן אכיפה' || mgmtCommand === 'update enforcement' ||
+            mgmtCommand === 'איפוס' || mgmtCommand === 'reset';
+
+        if (isGeneralMultiGroupCommand) {
+            let targetGroupConf = null;
+
+            if (mgmtLinkedGroups.length === 1) {
+                targetGroupConf = mgmtLinkedGroups[0];
+            } else if (msg.hasQuotedMsg) {
+                const quotedMsg = await msg.getQuotedMessage();
+                const quotedContent = quotedMsg.body || '';
+                const groupIdMatch = quotedContent.match(/(?:Group ID|מזהה קבוצה):\s*([^\s\n]+)/i);
+                if (groupIdMatch && groupIdMatch[1]) {
+                    targetGroupConf = await database.getGroup(groupIdMatch[1]);
+                }
+            }
+
+            if (!targetGroupConf && mgmtLinkedGroups.length > 1 && !msg.hasQuotedMsg) {
+                // Multi-group target selection via numbering
+                const optionsData = mgmtLinkedGroups.map(g => g.groupId);
+                // We store the original message text in 'duration' parameter
+                await database.createPendingGroupAction(senderJid, 'execute', content, optionsData);
+                
+                let promptMsg = lang === 'he' ? '👇 על איזה קבוצה תרצה להחיל את הפעולה? (השב במספר בלבד):\n' : '👇 Which group would you like to apply this action to? (Reply with a number):\n';
+                mgmtLinkedGroups.forEach((g, idx) => {
+                    promptMsg += `${idx + 1}. ${g.groupName}\n`;
+                });
+                await msg.reply(promptMsg);
+                return;
+            } else if (!targetGroupConf) {
+                await msg.reply(lang === 'he' ? '❌ בקבוצת הנהלה משותפת יש להגיב לדו״ח של הבוט כדי לבצע פעולה זו.' : '❌ In a shared management group, please reply to a bot report to perform this action.');
+                return;
+            }
+
+            // Apply directly
+            const mgmtResponse = await commands.executeCommand(client, senderJid, content, lang, targetGroupConf);
             if (mgmtResponse) {
                 await msg.reply(mgmtResponse);
             }
+            return;
         }
+
+        const isApproveCommand =
+            mgmtCommand.startsWith('אימות שם ') ||
+            mgmtCommand.startsWith('verify name ');
+
+        const isRejectCommand =
+            mgmtCommand.startsWith('לא אימות שם ') ||
+            mgmtCommand.startsWith('verify_not name ');
+
+        if (isApproveCommand) {
+            const requestId = content.trim().replace(/^(אימות שם |verify name )/i, '').trim();
+            const response = await commands.approveGroupNameChange(client, senderJid, requestId, lang);
+            if (response) await msg.reply(response);
+        } else if (isRejectCommand) {
+            const requestId = content.trim().replace(/^(לא אימות שם |verify_not name )/i, '').trim();
+            const response = await commands.stopEnforcementOnNameRejection(client, senderJid, requestId, lang, false);
+            if (response) await msg.reply(response);
+        }
+
         return; // Don't enforce rules in management group
+    }
+
+    // ── Pre-Check for PAUSED / PENDING status ───────────────────────
+    if (!isMgmtGroup && groupConfig) {
+        if (groupConfig.status === 'PENDING_ADMIN_ACTION' || groupConfig.status === 'PENDING_ADMIN_RESUME') {
+            return; // Not enforcing right now
+        }
+        if (groupConfig.status && groupConfig.status.startsWith('PAUSED_UNTIL:')) {
+            const untilIso = groupConfig.status.split('PAUSED_UNTIL:')[1];
+            if (untilIso) {
+                const untilTime = new Date(untilIso).getTime();
+                if (Date.now() < untilTime) {
+                    return; // Group is paused, do not enforce
+                } else {
+                    // Pause expired, resume automatically
+                    await database.updateGroupStatus(groupConfig.groupId, 'ACTIVE');
+                    groupConfig.status = 'ACTIVE';
+                    logger.info(`Pause expired for ${groupConfig.groupName}, resuming enforcement.`);
+                }
+            }
+        }
     }
 
     // Global immunity: users who started setup flow are never enforced
@@ -350,19 +548,47 @@ async function buildMgmtGroupStatusResponse(client, content, groups, lang) {
 /**
  * Handle group participant updates (joins/leaves)
  */
-async function handleGroupUpdate(client, update) {
-    if (update && update.id) {
-        invalidateGroupAdminCache(update.id);
-    }
+async function handleGroupNotification(client, notification) {
+    const groupId = notification.chatId;
+    if (!groupId) return;
 
-    const groupConfig = await database.getGroup(update.id);
+    invalidateGroupAdminCache(groupId);
+
+    const groupConfig = await database.getGroup(groupId);
     if (!groupConfig) return; // Not a managed group
 
-    if (update.action === 'add') {
+    const action = notification.type;
+    const participants = notification.recipientIds || [];
+
+    // ── Bot Demotion or Removal ──────────────────────────────────────
+    const botJid = client.info && client.info.wid ? getNormalizedJid(client.info.wid._serialized) : null;
+    if (botJid && participants.includes(botJid)) {
+        if (action === 'remove' || action === 'leave' || action === 'demote') {
+            await handleBotDemotionOrRemoval(client, groupConfig, action);
+            return;
+        } else if (action === 'promote') {
+            // Edge case: Bot was manually promoted to admin in WhatsApp, bypassing external bot commands
+            if (groupConfig.status === 'PENDING_ADMIN_ACTION' || groupConfig.status === 'PENDING_ADMIN_RESUME') {
+                await database.updateGroupStatus(groupId, 'ACTIVE');
+                logger.info(`Bot was manually promoted back in ${groupConfig.groupName}, automatically resuming enforcement.`);
+
+                // Notify the reporter that it was detected automatically
+                const ownerUser = await database.getUser(groupConfig.ownerJid);
+                const lang = ownerUser ? ownerUser.language || 'he' : 'he';
+                const msg = lang === 'he'
+                    ? `✅ זיהיתי שחזרתי להיות מנהל בקבוצה *${groupConfig.groupName}*. האכיפה חזרה לפעילות באופן אוטומטי.`
+                    : `✅ I noticed I've been promoted to admin in *${groupConfig.groupName}*. Enforcement has automatically resumed.`;
+                await sendNoticeToReporter(client, groupConfig, msg);
+            }
+            return;
+        }
+    }
+
+    if (action === 'add' || action === 'invite') {
         const ownerUser = await database.getUser(groupConfig.ownerJid);
         const lang = ownerUser ? ownerUser.language || 'he' : 'he';
 
-        for (const pId of update.participants) {
+        for (const pId of participants) {
             const addedJid = getNormalizedJid(pId);
             const addedNum = extractNumber(addedJid);
             logger.info(`JOIN: ${addedNum} joined ${groupConfig.groupName}`);
@@ -400,13 +626,122 @@ async function handleGroupUpdate(client, update) {
         }
     }
 
-    if (update.action === 'remove' || update.action === 'leave') {
+    if (action === 'remove' || action === 'leave') {
         // Reset warnings for removed/left users
-        for (const pId of update.participants) {
+        for (const pId of participants) {
             const jid = getNormalizedJid(pId);
             await database.resetWarnings(groupConfig.groupId, jid);
         }
     }
+}
+
+async function handleBotDemotionOrRemoval(client, groupConfig, action) {
+    logger.info(`Bot was ${action === 'demote' ? 'demoted' : 'removed'} from ${groupConfig.groupName}`);
+    await database.updateGroupStatus(groupConfig.groupId, 'PENDING_ADMIN_ACTION');
+
+    const ownerUser = await database.getUser(groupConfig.ownerJid);
+    const lang = ownerUser ? ownerUser.language || 'he' : 'he';
+
+    const reason = action === 'demote' ? t('bot_demoted', lang) : t('bot_removed', lang);
+    const text = t('bot_action_required', lang, {
+        groupName: groupConfig.groupName,
+        reason
+    });
+
+    await sendNoticeToReporter(client, groupConfig, text);
+}
+
+async function sendNoticeToReporter(client, groupConfig, text) {
+    try {
+        if (groupConfig.reportTarget === 'mgmt_group' && groupConfig.mgmtGroupId) {
+            await client.sendMessage(groupConfig.mgmtGroupId, text);
+        } else if (groupConfig.reportTarget && groupConfig.reportTarget.startsWith('phone:')) {
+            const phone = groupConfig.reportTarget.split(':')[1];
+            await client.sendMessage(phone + '@s.whatsapp.net', text);
+        } else {
+            await client.sendMessage(groupConfig.ownerJid, text);
+        }
+    } catch (e) {
+        logger.error(`Failed to send notice to reporter for ${groupConfig.groupId}`, e);
+    }
+}
+
+async function handleAdminActionResponse(client, msg, senderJid, content, lang) {
+    const text = (content || '').trim().toLowerCase();
+
+    // Quick check if the message could be a response
+    if (text !== '1' && text !== '2' && text !== 'בוצע' && text !== 'done') {
+        return false;
+    }
+
+    const pendingGroups = await database.getPendingAdminActionGroups();
+    if (pendingGroups.length === 0) return false;
+
+    // Filter to groups where this sender has authority
+    const authorizedGroups = pendingGroups.filter(g => {
+        if (g.reportTarget === 'mgmt_group' && g.mgmtGroupId === msg.from) return true;
+        if (g.reportTarget === `phone:${extractNumber(senderJid)}`) return true;
+        if (g.ownerJid === senderJid) return true;
+        return false;
+    });
+
+    if (authorizedGroups.length === 0) return false;
+
+    // Take the most recently pending group if multiple exist (rare)
+    const targetGroup = authorizedGroups[authorizedGroups.length - 1];
+
+    if (targetGroup.status === 'PENDING_ADMIN_ACTION') {
+        if (text === '1') {
+            await database.updateGroupStatus(targetGroup.groupId, 'PENDING_ADMIN_RESUME');
+            await msg.reply(t('bot_action_resume_guide', lang));
+            return true;
+        } else if (text === '2') {
+            // Stop Completely - stop command already exists in commands.js via stopEnforcement, but we implement the logic here directly
+            await database.setGroupActive(targetGroup.groupId, false);
+            await database.deleteGroup(targetGroup.groupId);
+
+            // Try to leave
+            try {
+                const managedChat = await client.getChatById(targetGroup.groupId);
+                await managedChat.leave();
+            } catch (e) {
+                logger.warn(`Could not leave managed group ${targetGroup.groupId} during stop completely`);
+            }
+
+            await msg.reply(t('stop_enforcement_done', lang, { groupName: targetGroup.groupName }));
+            logger.auditLog(senderJid, 'STOP_ENFORCEMENT', `Group: ${targetGroup.groupName} (via bot removal prompt)`, true);
+            return true;
+        }
+    } else if (targetGroup.status === 'PENDING_ADMIN_RESUME' && (text === 'בוצע' || text === 'done')) {
+        // Verify admin status
+        try {
+            const chat = await withRetry(() => client.getChatById(targetGroup.groupId), 3, 700);
+            const botJid = client.info && client.info.wid ? getNormalizedJid(client.info.wid._serialized) : null;
+            let nIsAdmin = false;
+
+            if (chat && chat.participants && botJid) {
+                const botParticipant = chat.participants.find(p => getNormalizedJid(p.id._serialized) === botJid);
+                if (botParticipant && (botParticipant.isAdmin || botParticipant.isSuperAdmin)) {
+                    nIsAdmin = true;
+                }
+            }
+
+            if (nIsAdmin) {
+                await database.updateGroupStatus(targetGroup.groupId, 'ACTIVE');
+                await msg.reply(lang === 'he' ? '✅ מעולה. חזרתי להיות מנהל והאכיפה חזרה לפעילות.' : '✅ Great. I am an admin again and enforcement has resumed.');
+                logger.info(`Resumed enforcement for ${targetGroup.groupName}`);
+            } else {
+                await msg.reply(t('group_not_admin', lang));
+            }
+            return true;
+        } catch (e) {
+            logger.error(`Failed to verify admin status before resume for ${targetGroup.groupId}`, e);
+            await msg.reply(lang === 'he' ? '❌ שגיאה בבדיקת ההרשאות. אנא נסה שנית בעוד רגע.' : '❌ Error checking permissions. Please try again in a moment.');
+            return true;
+        }
+    }
+
+    return false;
 }
 
 function invalidateGroupAdminCache(groupJid) {
@@ -450,6 +785,35 @@ async function buildStatusMessage(client) {
  * Periodically verify group names and request confirmation on detected changes
  */
 async function refreshManagedGroupNames(client) {
+    // ── 1. Handle expired name-change approval requests (12-hour timeout) ───────────
+    try {
+        const expired = await database.getExpiredNameChangeRequests(12);
+        for (const req of expired) {
+            try {
+                const groupConfig = await database.getGroup(req.groupId);
+                if (!groupConfig) {
+                    await database.resolveGroupNameChangeRequest(req.requestId, 'timeout_missing_group', 'system');
+                    continue;
+                }
+                const ownerUser = await database.getUser(groupConfig.ownerJid);
+                const lang = ownerUser ? ownerUser.language || 'he' : 'he';
+
+                // Notify before stopping
+                const timeoutMsg = t('name_change_timeout', lang, { groupName: groupConfig.groupName });
+                await sendNoticeToReporter(client, groupConfig, timeoutMsg);
+
+                // Stop enforcement (marks request as rejected internally)
+                await commands.stopEnforcementOnNameRejection(client, null, req.requestId, lang, true);
+                logger.info(`Auto-stopped enforcement for ${groupConfig.groupName} due to name change timeout (req: ${req.requestId})`);
+            } catch (e) {
+                logger.error(`Failed to handle expired name change request ${req.requestId}`, e);
+            }
+        }
+    } catch (e) {
+        logger.error('Failed to scan for expired name change requests', e);
+    }
+
+    // ── 2. Check for new group name changes ────────────────────────────────────
     const groups = await database.getAllActiveGroups();
 
     for (const g of groups) {
@@ -493,7 +857,7 @@ async function refreshManagedGroupNames(client) {
 
 module.exports = {
     processMessage,
-    handleGroupUpdate,
+    handleGroupNotification,
     buildStatusMessage,
     refreshManagedGroupNames
 };

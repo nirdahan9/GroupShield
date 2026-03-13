@@ -142,6 +142,15 @@ class Database {
                 PRIMARY KEY (groupId, userJid)
             )`);
 
+            // Pending group actions (for multi-group target selection via numbering)
+            this.db.run(`CREATE TABLE IF NOT EXISTS pending_group_actions (
+                userJid TEXT PRIMARY KEY,
+                action TEXT NOT NULL,
+                duration INTEGER,
+                optionsData TEXT NOT NULL,
+                createdAt TEXT NOT NULL
+            )`);
+
             // Check if welcomeMessageEnabled column exists, if not, add it (schema migration)
             this.db.all("PRAGMA table_info(groups)", (err, rows) => {
                 if (!err && rows) {
@@ -149,6 +158,12 @@ class Database {
                     if (!hasWelcomeCol) {
                         this.db.run("ALTER TABLE groups ADD COLUMN welcomeMessageEnabled INTEGER DEFAULT 0");
                         logger.info("Migrated schema: Added welcomeMessageEnabled to groups");
+                    }
+
+                    const hasStatusCol = rows.some(r => r.name === 'status');
+                    if (!hasStatusCol) {
+                        this.db.run("ALTER TABLE groups ADD COLUMN status TEXT DEFAULT 'ACTIVE'");
+                        logger.info("Migrated schema: Added status to groups");
                     }
                 }
             });
@@ -306,6 +321,14 @@ class Database {
         );
     }
 
+    async getExpiredNameChangeRequests(hours = 12) {
+        const threshold = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
+        return this._all(
+            `SELECT * FROM group_name_change_requests WHERE status = 'pending' AND createdAt < ?`,
+            [threshold]
+        );
+    }
+
     // ── Group Operations ─────────────────────────────────────────────────
 
     async getGroup(groupId) {
@@ -395,8 +418,16 @@ class Database {
         await this._run('UPDATE groups SET groupName = ? WHERE groupId = ?', [groupName, groupId]);
     }
 
+    async updateGroupStatus(groupId, status) {
+        await this._run('UPDATE groups SET status = ? WHERE groupId = ?', [status, groupId]);
+    }
+
+    async getPendingAdminActionGroups() {
+        return this._all("SELECT * FROM groups WHERE status IN ('PENDING_ADMIN_ACTION', 'PENDING_ADMIN_RESUME')");
+    }
+
     async getAllActiveGroups() {
-        return this._all('SELECT * FROM groups WHERE active = 1 AND verified = 1');
+        return this._all("SELECT * FROM groups WHERE active = 1 AND verified = 1 AND status = 'ACTIVE'");
     }
 
     async deleteGroup(groupId) {
@@ -668,6 +699,40 @@ class Database {
             'SELECT * FROM pending_group_members WHERE joinedAt < ?',
             [threshold]
         );
+    }
+
+    // ── Pending Group Actions (Multi-Group Command Selection) ────────────
+
+    async createPendingGroupAction(userJid, action, duration, optionsData) {
+        await this._run(
+            `INSERT OR REPLACE INTO pending_group_actions (userJid, action, duration, optionsData, createdAt)
+             VALUES (?, ?, ?, ?, ?)`,
+            [userJid, action, duration, JSON.stringify(optionsData), new Date().toISOString()]
+        );
+    }
+
+    async getPendingGroupAction(userJid) {
+        const row = await this._get(
+            'SELECT * FROM pending_group_actions WHERE userJid = ?',
+            [userJid]
+        );
+        if (row) {
+            row.optionsData = JSON.parse(row.optionsData);
+        }
+        return row;
+    }
+
+    async deletePendingGroupAction(userJid) {
+        await this._run('DELETE FROM pending_group_actions WHERE userJid = ?', [userJid]);
+    }
+
+    async cleanupExpiredPendingGroupActions(minutes = 10) {
+        const threshold = new Date(Date.now() - minutes * 60 * 1000).toISOString();
+        const result = await this._run(
+            'DELETE FROM pending_group_actions WHERE createdAt < ?',
+            [threshold]
+        );
+        return result.changes || 0;
     }
 
     // ── Settings Operations ──────────────────────────────────────────────

@@ -128,6 +128,19 @@ It was transformed from a specific "ShabbatBot" into a fully configurable enforc
 - Added safety guard for missing database file:
 	- if the SQLite DB file is missing, unknown-group cleanup is skipped entirely (bot does not leave any group).
 
+### Enforcement Stop, Pause, and Bot Demotion/Removal Handling
+- **Scenario 1 (Bot Demoted/Removed):** Bot detects demotion/removal events (`group_leave`, `group_remove`, `group_demote`), sets group status to `PENDING_ADMIN_ACTION`, and alerts the reporter with two options: resume (manual admin re-grant) or stop completely.
+- **Scenario 2 (User-initiated pause/stop):** `pause <n>` (hours), `resume`, `stop enforcement` commands supported both from DM and management group.
+- **Auto-resume on promoted:** If bot is manually promoted back to admin via WhatsApp UI (bypassing the bot workflow), it auto-detects the `promote` event and resumes enforcement automatically.
+- **Multi-group target selection (Scenario 3):** When `pause`, `resume`, or `stop` is sent from a shared management group **without quoting a report**, the bot sends a numbered list of managed groups for the admin to select. Response is a number (1, 2, ...). State stored in `pending_group_actions` DB table.
+- **General command target selection (Scenario 4):** The numbered list mechanism was extended to 7 general commands: `הוסף חסין`, `הסר חסין`, `רשימת חסינים`, `אפס אזהרות`, `הגדרות`, `עדכן אכיפה`, `איפוס`. `executeCommand` now accepts optional `overrideGroupConfig` param.
+- **Group Name Change Redesign:** Approval prompt updated to include 12-hour timeout warning. Rejection (`לא אימות שם`) now triggers `stopEnforcementOnNameRejection` (full stop + DB delete + leave). 12-hour timeout auto-enforced by `refreshManagedGroupNames` job.
+- **Bug Fixes:**
+	- `stopEnforcement` now uses `groupConfig.ownerJid` (not caller's JID) for DB user-group unlinking — fixes mgmt group admin / null `senderJid` bugs.
+	- `pending_group_actions` entries expire after 10 minutes (cleaned up via `ניקוי`/`cleanup` command and `cleanupExpiredPendingGroupActions`).
+	- `handleAdminActionResponse` takes the most recently pending group (not random) when multiple groups are in pending state.
+	- `getExpiredNameChangeRequests` DB method added for 12-hour timeout scanning.
+
 ## Mandatory Workflow Instruction
 - For **every** new prompt that includes code/config changes:
 	1. apply and validate changes,

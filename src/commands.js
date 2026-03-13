@@ -10,17 +10,22 @@ const backup = require('./backup');
 
 /**
  * Parse and execute admin commands (from DM or management group)
+ * @param {object} client - The WhatsApp client
+ * @param {string} senderJid - The JID of the user sending the command
+ * @param {string} command - The text content of the command
+ * @param {string} lang - The preferred language code ('he' or 'en')
+ * @param {object} [overrideGroupConfig=null] - Optional group config to override the sender's default group
  * @returns {string|null} Response message, or null if not a command
  */
-async function executeCommand(client, senderJid, command, lang) {
+async function executeCommand(client, senderJid, command, lang, overrideGroupConfig = null) {
     const cmd = command.trim();
     const cmdLower = cmd.toLowerCase();
     const normalizedSender = getNormalizedJid(senderJid);
     const isDeveloper = config.isDeveloper(normalizedSender);
 
-    // Get user's group config
+    // Get user's group config, or use override if provided
     const user = await database.getUser(senderJid);
-    const groupConfig = user && user.groupId ? await database.getGroup(user.groupId) : null;
+    const groupConfig = overrideGroupConfig || (user && user.groupId ? await database.getGroup(user.groupId) : null);
 
     try {
         // ── Help ─────────────────────────────────────────────────────
@@ -57,6 +62,27 @@ async function executeCommand(client, senderJid, command, lang) {
         // ── Quick Enforcement Update ────────────────────────────────
         if (cmdLower === 'עדכן אכיפה' || cmdLower === 'update enforcement') {
             return await setupFlow.startQuickEnforcementUpdate(senderJid);
+        }
+
+        // ── Pause Enforcement ────────────────────────────────────────
+        if (cmdLower.startsWith('השהה ') || cmdLower.startsWith('pause ')) {
+            if (!groupConfig) return t('no_group_linked', lang);
+            const durationRaw = cmdLower.replace(/^(השהה |pause )/, '').trim();
+            const durationParams = parseInt(durationRaw, 10);
+            if (isNaN(durationParams) || durationParams <= 0) {
+                return t('invalid_pause_duration', lang);
+            }
+            return await pauseEnforcement(client, senderJid, groupConfig, durationParams, lang);
+        }
+
+        // ── Resume Enforcement ───────────────────────────────────────
+        if (cmdLower === 'המשך אכיפה' || cmdLower === 'resume' || cmdLower === 'חזור לאכוף' || cmdLower === 'resume enforcement') {
+            if (!groupConfig) return t('no_group_linked', lang);
+            if (!groupConfig.status || !groupConfig.status.startsWith('PAUSED_UNTIL:')) return null; // Only resume if manually paused
+
+            await database.updateGroupStatus(groupConfig.groupId, 'ACTIVE');
+            logger.auditLog(senderJid, 'RESUME_ENFORCEMENT', `Group: ${groupConfig.groupName}`, true);
+            return t('action_resumed', lang, { groupName: groupConfig.groupName });
         }
 
         // ── Stop Enforcement + Exit Groups ───────────────────────────
@@ -114,6 +140,7 @@ async function executeCommand(client, senderJid, command, lang) {
             if (!isDeveloper) return t('developer_only_command', lang);
             const removed = await database.cleanupExpiredWarnings();
             await database.markStaleEnforcementActionsFailed(15);
+            await database.cleanupExpiredPendingGroupActions(10);
             return t('cleanup_done', lang, { removed: String(removed) });
         }
 
@@ -229,6 +256,33 @@ async function resetUserWarnings(groupConfig, rawPhone, lang) {
     return t('warnings_reset', lang, { number });
 }
 
+async function pauseEnforcement(client, senderJid, groupConfig, hours, lang) {
+    try {
+        const ms = hours * 60 * 60 * 1000;
+        const until = new Date(Date.now() + ms);
+        const untilIso = until.toISOString();
+
+        await database.updateGroupStatus(groupConfig.groupId, `PAUSED_UNTIL:${untilIso}`);
+
+        logger.auditLog(senderJid, 'PAUSE_ENFORCEMENT', `Group: ${groupConfig.groupName} for ${hours}h`, true);
+
+        const timeStr = until.toLocaleString('he-IL', {
+            timeZone: 'Asia/Jerusalem',
+            hour: '2-digit', minute: '2-digit',
+            day: '2-digit', month: '2-digit'
+        });
+
+        return t('action_paused', lang, {
+            groupName: groupConfig.groupName,
+            duration: hours.toString(),
+            time: timeStr
+        });
+    } catch (error) {
+        logger.error('Failed to pause enforcement', error);
+        return t('error_generic', lang, { error: error.message });
+    }
+}
+
 async function stopEnforcement(client, senderJid, groupConfig, lang) {
     try {
         const mgmtGroupId = groupConfig.mgmtGroupId;
@@ -236,7 +290,8 @@ async function stopEnforcement(client, senderJid, groupConfig, lang) {
         // Disable enforcement and cleanup DB config
         await database.setGroupActive(groupConfig.groupId, false);
         await database.deleteGroup(groupConfig.groupId);
-        await database.updateUserGroup(senderJid, null);
+        // Always clear the owner's linked group (not the caller's JID, which may be a mgmt group admin or null)
+        await database.updateUserGroup(groupConfig.ownerJid, null);
 
         // Leave managed group
         try {
@@ -263,7 +318,7 @@ async function stopEnforcement(client, senderJid, groupConfig, lang) {
             }
         }
 
-        logger.auditLog(senderJid, 'STOP_ENFORCEMENT', `Group: ${groupConfig.groupName}`, true);
+        logger.auditLog(senderJid || 'system_timeout', 'STOP_ENFORCEMENT', `Group: ${groupConfig.groupName}`, true);
         return t('stop_enforcement_done', lang, { groupName: groupConfig.groupName });
     } catch (error) {
         logger.error('Failed to stop enforcement', error);
@@ -325,7 +380,7 @@ async function approveGroupNameChange(client, senderJid, requestId, lang) {
     });
 }
 
-async function rejectGroupNameChange(client, senderJid, requestId, lang) {
+async function stopEnforcementOnNameRejection(client, senderJid, requestId, lang, isTimeout = false) {
     if (!requestId) return t('invalid_input', lang);
 
     const req = await database.getGroupNameChangeRequest(requestId);
@@ -335,24 +390,29 @@ async function rejectGroupNameChange(client, senderJid, requestId, lang) {
 
     const groupConfig = await database.getGroup(req.groupId);
     if (!groupConfig) {
-        await database.resolveGroupNameChangeRequest(requestId, 'rejected_missing_group', senderJid);
+        await database.resolveGroupNameChangeRequest(requestId, 'rejected_missing_group', senderJid || 'system');
         return t('name_change_request_not_found', lang, { requestId });
     }
 
-    const authorized = await isAuthorizedNameChangeResponder(client, senderJid, groupConfig);
-    if (!authorized) {
-        return t('name_change_unauthorized', lang);
+    if (!isTimeout) {
+        const authorized = await isAuthorizedNameChangeResponder(client, senderJid, groupConfig);
+        if (!authorized) {
+            return t('name_change_unauthorized', lang);
+        }
     }
 
-    await database.resolveGroupNameChangeRequest(requestId, 'rejected', senderJid);
-    logger.auditLog(senderJid, 'GROUP_NAME_REJECTED', `${req.oldName} -> ${req.newName} (${requestId})`, true);
+    await database.resolveGroupNameChangeRequest(requestId, 'rejected', senderJid || 'system_timeout');
+    const who = isTimeout ? 'timeout' : senderJid;
+    logger.auditLog(who, 'GROUP_NAME_REJECTED_STOP', `${req.oldName} -> ${req.newName} (${requestId}). Stopping enforcement.`, !isTimeout);
 
-    return t('name_change_rejected', lang, {
-        oldName: req.oldName || (lang === 'he' ? 'לא ידוע' : 'Unknown'),
-        newName: req.newName
-    });
+    // Stop enforcement fully
+    return await stopEnforcement(client, senderJid || groupConfig.ownerJid, groupConfig, lang);
 }
 
 module.exports = {
-    executeCommand
+    executeCommand,
+    pauseEnforcement,
+    stopEnforcement,
+    approveGroupNameChange,
+    stopEnforcementOnNameRejection
 };

@@ -245,6 +245,36 @@ const strings = {
         en: '✅ Welcome message settings saved.'
     },
 
+    // ── Bot Demotion / Removal ───────────────────────────────────────────
+    'bot_demoted': {
+        he: 'משתמש כלשהו הסיר ממני את הרשאת הניהול',
+        en: 'Someone removed my admin privileges'
+    },
+    'bot_removed': {
+        he: 'הוסרתי או יצאתי מהקבוצה',
+        en: 'I was removed or left the group'
+    },
+    'bot_action_required': {
+        he: '⚠️ *הפסקה באכיפה - דרושה פעולה*\n\nזיהיתי ש{{reason}} בקבוצה *{{groupName}}*.\nהאכיפה לקבוצה זו הושהתה כעת.\n\nבחר כיצד תרצה להמשיך (השב במספר):\n\n1️⃣ *חזרה לאכוף* - אדריך אותך כיצד להחזיר אותי\n2️⃣ *הפסקת אכיפה לגמרי* - מחיקת כל הנתונים של הקבוצה ממסד הנתונים',
+        en: '⚠️ *Enforcement Paused - Action Required*\n\nI noticed that {{reason}} in the group *{{groupName}}*.\nEnforcement for this group is currently paused.\n\nPlease choose how to proceed (reply with number):\n\n1️⃣ *Resume* - I will guide you on how to bring me back\n2️⃣ *Stop completely* - delete all group data from my database'
+    },
+    'bot_action_resume_guide': {
+        he: '🔄 *החזרה לפעילות*\n\nכדי לחזור לאכוף, אנא בצע את הפעולה הנדרשת (החזר אותי לקבוצה או מנה אותי חזרה למנהל).\n\nלאחר מכן, השב להודעה זו במילה *"בוצע"*.',
+        en: '🔄 *Resuming Enforcement*\n\nTo resume enforcement, please perform the required action (add me back to the group or make me admin again).\n\nAfterward, reply to this message with *"done"*.'
+    },
+    'action_paused': {
+        he: '⏸️ הפעילות עבור הקבוצה *{{groupName}}* הושהתה למשך *{{duration}}* שעות (עד {{time}}). לא יתבצעו הרחקות או מחיקות בזמן זה.',
+        en: '⏸️ Enforcement for *{{groupName}}* paused for *{{duration}}* hours (until {{time}}). No actions will be taken.'
+    },
+    'action_resumed': {
+        he: '▶️ אכיפת חוקים עבור הקבוצה *{{groupName}}* חזרה לפעילות כרגיל.',
+        en: '▶️ Enforcement for *{{groupName}}* has resumed.'
+    },
+    'invalid_pause_duration': {
+        he: '❌ לא הוגדר זמן נכון. אנא שלח השהיה בצירוף מספר שעות. לדוגמה: `pause 24`',
+        en: '❌ Invalid duration. Please provide hours. Example: `pause 24`'
+    },
+
     // ── Summary & Completion ─────────────────────────────────────────────
     'setup_summary': {
         he: '📋 *סיכום הגדרות GroupShield*\n\n🏷️ *קבוצה:* {{groupName}}\n📏 *חוקי תוכן:* {{rulesType}}\n🧠 *התאמת תוכן:* {{rulesMode}}\n🖼️ *הודעות לא-טקסט:* {{nonTextRule}}\n⏰ *חלון זמנים:* {{timeWindow}}\n🔁 *אנטי-ספאם:* {{antiSpam}}\n⚖️ *שלבי אכיפה:* {{enforcement}}\n⚠️ *אזהרות:* {{warnings}}\n🛡️ *חסינים:* {{exempt}}\n📨 *דיווח:* {{report}}\n👋 *הודעת קבלת פנים:* {{welcome}}\n\nלאשר ולהפעיל?\n\n1️⃣ אשר ✅\n2️⃣ התחל מחדש 🔄',
@@ -326,12 +356,12 @@ const strings = {
 
     // ── Commands ─────────────────────────────────────────────────────────
     'help_user': {
-        he: '🛡️ *פקודות GroupShield*\n\n📊 *מידע:*\n• *עזרה* — תפריט זה\n• *סטטוס* — מצב הבוט והקבוצה\n\n🛡️ *חסינים:*\n• *הוסף חסין 05X-XXX-XXXX* — הוסף חסין\n• *הסר חסין 05X-XXX-XXXX* — הסר חסין\n• *רשימת חסינים* — הצג חסינים\n\n⚠️ *אזהרות:*\n• *אפס אזהרות 05X-XXX-XXXX* — אפס אזהרות\n\n🔄 *שינוי שם קבוצה:*\n• *אימות שם <requestId>* — נכון, שונה לשם החדש\n• *לא אימות שם <requestId>* — לא נכון, השאר את הישן',
-        en: '🛡️ *GroupShield Commands*\n\n📊 *Info:*\n• *help* — this menu\n• *status* — bot and group status\n\n🛡️ *Exemptions:*\n• *exempt add 05X-XXX-XXXX* — add exempt\n• *exempt remove 05X-XXX-XXXX* — remove exempt\n• *exempt list* — list exempt users\n\n⚠️ *Warnings:*\n• *warnings reset 05X-XXX-XXXX* — reset warnings\n\n🔄 *Group name changes:*\n• *verify name <requestId>* — yes, name was changed\n• *verify_not name <requestId>* — no, keep old name\n\n⚙️ *System:*\n• *start* — begin setup\n• *settings* — full reconfiguration\n• *update enforcement* — quick enforcement + warnings update\n• *reset* — full reset\n• *stop enforcement* — stop enforcement and leave groups\n• *language* — switch language'
+        he: '🛡️ *פקודות GroupShield*\n\n📊 *מידע:*\n• *עזרה* — תפריט זה\n• *סטטוס* — מצב הבוט והקבוצה\n\n🛡️ *חסינים:*\n• *הוסף חסין 05X-XXX-XXXX* — הוסף חסין\n• *הסר חסין 05X-XXX-XXXX* — הסר חסין\n• *רשימת חסינים* — הצג חסינים\n\n⚠️ *אזהרות:*\n• *אפס אזהרות 05X-XXX-XXXX* — אפס אזהרות\n\n🔄 *שינוי שם קבוצה:*\n• *אימות שם <requestId>* — נכון, שונה לשם החדש\n• *לא אימות שם <requestId>* — לא נכון, השאר את הישן\n\n⚙️ *מערכת:*\n• *התחל* — התחלת הגדרות\n• *הגדרות* — תצורת קבוצה מחדש\n• *עדכן אכיפה* — עדכון אכיפה ואזהרות\n• *איפוס* — איפוס מלא\n• *השהה <n>* — (למשל `pause 24`) להשהיית אכיפה ל-n שעות\n• *המשך אכיפה* — לביטול השהיה וחזרה לפעילות\n• *הפסק אכיפה* — הפסקת אכיפה ועזיבת הקבוצה\n• *שפה* — החלפת שפה',
+        en: '🛡️ *GroupShield Commands*\n\n📊 *Info:*\n• *help* — this menu\n• *status* — bot and group status\n\n🛡️ *Exemptions:*\n• *exempt add 05X-XXX-XXXX* — add exempt\n• *exempt remove 05X-XXX-XXXX* — remove exempt\n• *exempt list* — list exempt users\n\n⚠️ *Warnings:*\n• *warnings reset 05X-XXX-XXXX* — reset warnings\n\n🔄 *Group name changes:*\n• *verify name <requestId>* — yes, name was changed\n• *verify_not name <requestId>* — no, keep old name\n\n⚙️ *System:*\n• *start* — begin setup\n• *settings* — full reconfiguration\n• *update enforcement* — quick enforcement + warnings update\n• *reset* — full reset\n• *pause <n>* — pause enforcement for n hours\n• *resume* — cancel pause and resume enforcement\n• *stop enforcement* — stop enforcement and leave groups\n• *language* — switch language'
     },
     'help_developer': {
-        he: '🛡️ *פקודות GroupShield (מפתח)*\n\n📊 *מידע ותפעול:*\n• *עזרה* — תפריט זה\n• *סטטוס* — מצב הבוט והקבוצה\n\n🛡️ *ניהול קבוצה:*\n• *הוסף חסין 05X-XXX-XXXX*\n• *הסר חסין 05X-XXX-XXXX*\n• *רשימת חסינים*\n• *אפס אזהרות 05X-XXX-XXXX*\n• *אימות שם <requestId>*\n• *לא אימות שם <requestId>*\n• *התחל* / *הגדרות* / *עדכן אכיפה* / *איפוס* / *הפסק אכיפה* / *שפה*\n\n🧰 *מפתח בלבד:*\n• *גיבוי* — יצירת גיבוי מיידי\n• *ניקוי* — ניקוי אזהרות שפג תוקפן ופעולות תקועות\n• *ריסטארט* — אתחול הבוט',
-        en: '🛡️ *GroupShield Commands (Developer)*\n\n📊 *Info & Operations:*\n• *help* — this menu\n• *status* — bot and group status\n\n🛡️ *Group management:*\n• *exempt add 05X-XXX-XXXX*\n• *exempt remove 05X-XXX-XXXX*\n• *exempt list*\n• *warnings reset 05X-XXX-XXXX*\n• *verify name <requestId>*\n• *verify_not name <requestId>*\n• *start* / *settings* / *update enforcement* / *reset* / *stop enforcement* / *language*\n\n🧰 *Developer only:*\n• *backup* — create immediate backup\n• *cleanup* — clear expired warnings and stale actions\n• *restart* — restart bot'
+        he: '🛡️ *פקודות GroupShield (מפתח)*\n\n📊 *מידע ותפעול:*\n• *עזרה* — תפריט זה\n• *סטטוס* — מצב הבוט והקבוצה\n\n🛡️ *ניהול קבוצה:*\n• *הוסף חסין 05X-XXX-XXXX*\n• *הסר חסין 05X-XXX-XXXX*\n• *רשימת חסינים*\n• *אפס אזהרות 05X-XXX-XXXX*\n• *אימות שם <requestId>*\n• *לא אימות שם <requestId>*\n• *התחל* / *הגדרות* / *עדכן אכיפה* / *איפוס* / *השהה* / *המשך אכיפה* / *הפסק אכיפה* / *שפה*\n\n🧰 *מפתח בלבד:*\n• *גיבוי* — יצירת גיבוי מיידי\n• *ניקוי* — ניקוי אזהרות שפג תוקפן ופעולות תקועות\n• *ריסטארט* — אתחול הבוט',
+        en: '🛡️ *GroupShield Commands (Developer)*\n\n📊 *Info & Operations:*\n• *help* — this menu\n• *status* — bot and group status\n\n🛡️ *Group management:*\n• *exempt add 05X-XXX-XXXX*\n• *exempt remove 05X-XXX-XXXX*\n• *exempt list*\n• *warnings reset 05X-XXX-XXXX*\n• *verify name <requestId>*\n• *verify_not name <requestId>*\n• *start* / *settings* / *update enforcement* / *reset* / *pause* / *resume* / *stop enforcement* / *language*\n\n🧰 *Developer only:*\n• *backup* — create immediate backup\n• *cleanup* — clear expired warnings and stale actions\n• *restart* — restart bot'
     },
     'status_message': {
         he: '📊 *סטטוס GroupShield*\n🟢 פעיל\n🛡️ *קבוצה:* {{groupName}} ({{memberCount}} חברים)\n⚠️ *אזהרות פעילות:* {{activeWarnings}}\n🕒 {{time}}',
@@ -454,8 +484,8 @@ const strings = {
         en: '✅ Warnings reset for {{number}}.'
     },
     'group_name_change_detected': {
-        he: '🔄 *האם שם הקבוצה השתנה?*\n\nשם קודם: *{{oldName}}*\nשם חדש שזוהה: *{{newName}}*\n\nכדי שהבוט יתעדכן על השם החדש, השב:\n*אימות שם {{requestId}}*\n\nאם זו טעות, השב:\n*לא אימות שם {{requestId}}*',
-        en: '🔄 *Group name change detected*\n\nOld name: *{{oldName}}*\nDetected new name: *{{newName}}*\n\nTo update the bot, reply:\n*verify name {{requestId}}*\n\nIf incorrect, reply:\n*verify_not name {{requestId}}*'
+        he: '🔄 *שינוי שם קבוצה זוהה*\n\nשם קודם: *{{oldName}}*\nשם חדש: *{{newName}}*\n\nכדי לאשר: השב *אימות שם {{requestId}}*\nכדי לדחות: השב *לא אימות שם {{requestId}}*\n\n⚠️ ביצוע דחייה או אי אישור בתוך 12 שעות יגרום להפסקת אכיפה ויציאת הבוט מהקבוצה.',
+        en: '🔄 *Group name change detected*\n\nOld name: *{{oldName}}*\nNew name: *{{newName}}*\n\nTo approve: reply *verify name {{requestId}}*\nTo reject: reply *verify_not name {{requestId}}*\n\n⚠️ Rejecting or not responding within 12 hours will stop enforcement and the bot will leave the group.'
     },
     'name_change_request_not_found': {
         he: '❌ בקשת עדכון שם לא נמצאה או שכבר טופלה ({{requestId}}).',
@@ -470,8 +500,12 @@ const strings = {
         en: '✅ Group name updated.\n*{{oldName}}* → *{{newName}}*'
     },
     'name_change_rejected': {
-        he: '✅ אימות שם נדחה. הבוט יישאר בשם:\n*{{oldName}}*\n(השם שזוהה: *{{newName}}*)',
-        en: '✅ Group name change rejected. Stored name remains:\n*{{oldName}}*\n(detected: *{{newName}}*)'
+        he: '🚫 שינוי שם נדחה. הבוט יפסיק לאכוף את *{{oldName}}* ויצא מהקבוצה.',
+        en: '🚫 Name change rejected. The bot will stop enforcing *{{oldName}}* and leave the group.'
+    },
+    'name_change_timeout': {
+        he: '⏰ פג חלון האישור (יותר מ-12 שעות) עבור שינוי שם בקבוצה *{{groupName}}*. הבוט מפסיק לאכוף ויצא מהקבוצה.',
+        en: '⏰ Approval window expired (12 hours) for name change in *{{groupName}}*. The bot will stop enforcing and leave the group.'
     },
     'not_configured': {
         he: '❌ הבוט עדיין לא הוגדר. שלח הודעה כלשהי כדי להתחיל.',

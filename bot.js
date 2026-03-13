@@ -161,14 +161,19 @@ async function startBot() {
         }
     });
 
-    // ── Group Updates ────────────────────────────────────────────────
-    client.on('group_update', async (update) => {
+    // ── Group Notifications ──────────────────────────────────────────
+    const handleNotification = async (notification) => {
         try {
-            await handlers.handleGroupUpdate(client, update);
+            await handlers.handleGroupNotification(client, notification);
         } catch (e) {
-            logger.error('Group update error', e);
+            logger.error('Group notification error', e);
         }
-    });
+    };
+
+    client.on('group_join', handleNotification);
+    client.on('group_leave', handleNotification);
+    client.on('group_admin_changed', handleNotification);
+    client.on('group_update', handleNotification);
 
     // Initialize client
     client.initialize();
