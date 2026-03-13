@@ -415,8 +415,8 @@ async function buildFullGroupsStatus(lang) {
             reporterLabel = rt;
         }
 
-        // ── Extras ────────────────────────────────────────────────────
-        const warnCount = await database.getActiveWarningCount(g.groupId);
+        // ── Operational Errors ────────────────────────────────
+        const errors = await database.getGroupErrors(g.groupId);
         const pendingName = await database._get(
             `SELECT requestId FROM group_name_change_requests WHERE groupId = ? AND status = 'pending'`,
             [g.groupId]
@@ -426,8 +426,20 @@ async function buildFullGroupsStatus(lang) {
             `\n📌 *${g.groupName}*`,
             (lang === 'he' ? `📊 סטטוס: ` : `📊 Status: `) + statusLine,
             (lang === 'he' ? `📣 דיווח: ` : `📣 Reporter: `) + reporterLabel,
-            (lang === 'he' ? `⚠️ אזהרות: ` : `⚠️ Warnings: `) + warnCount,
         ];
+        if (errors.failedRecent > 0) {
+            entry.push(lang === 'he'
+                ? `❌ ${errors.failedRecent} כשל אכיפה (24ש אחרונות)`
+                : `❌ ${errors.failedRecent} enforcement failure(s) in last 24h`);
+        }
+        if (errors.staleStuck > 0) {
+            entry.push(lang === 'he'
+                ? `⏳ ${errors.staleStuck} פעולת אכיפה תקועה (>15 דק')`
+                : `⏳ ${errors.staleStuck} stuck enforcement action(s) (>15 min)`);
+        }
+        if (errors.failedRecent === 0 && errors.staleStuck === 0 && g.active) {
+            entry.push(lang === 'he' ? '✅ ללא תקלות' : '✅ No errors');
+        }
         if (pendingName) {
             entry.push(lang === 'he'
                 ? `🔔 ממתין לאישור שינוי שם (${pendingName.requestId})`

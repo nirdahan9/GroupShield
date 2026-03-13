@@ -1,0 +1,250 @@
+:root {
+  --primary: #00e5ff;
+  --secondary: #00ffa3;
+  --bg-deep: #050a14;
+  --bg-card: rgba(255, 255, 255, 0.05);
+  --text-main: #e0e6ed;
+  --text-dim: #94a3b8;
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-deep);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Glassmorphism Utility */
+.glass {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 1.5rem;
+}
+
+/* Hero Section */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 0;
+  background: radial-gradient(circle at top right, rgba(0, 229, 255, 0.1), transparent),
+              radial-gradient(circle at bottom left, rgba(0, 255, 163, 0.05), transparent);
+}
+
+.hero-content h1 {
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 15px rgba(0, 229, 255, 0.3));
+}
+
+.hero-content p {
+  font-size: 1.25rem;
+  color: var(--text-dim);
+  max-width: 700px;
+  margin: 0 auto 3rem;
+}
+
+/* CTA Buttons */
+.btn {
+  display: inline-block;
+  padding: 1rem 2.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: #000;
+  box-shadow: 0 10px 30px -10px rgba(0, 229, 255, 0.5);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 15px 40px -10px rgba(0, 229, 255, 0.6);
+}
+
+/* grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 4rem;
+}
+
+.card {
+  padding: 2.5rem;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  border-color: var(--primary);
+  transform: translateY(-10px);
+}
+
+.card h3 {
+  margin-bottom: 1rem;
+  color: var(--primary);
+}
+
+.card p {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+}
+
+/* Simulation Containers */
+.sim-container {
+  margin-top: 4rem;
+  padding: 2rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Chat Simulator */
+.chat-window {
+  height: 450px;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  overflow-y: hidden;
+  position: relative;
+}
+
+.chat-bubble {
+  max-width: 80%;
+  padding: 0.8rem 1.2rem;
+  border-radius: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  position: relative;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: messageIn 0.5s forwards;
+}
+
+.chat-bubble.bot {
+  align-self: flex-start;
+  background: rgba(255, 255, 255, 0.1);
+  border-bottom-left-radius: 0.2rem;
+  color: #fff;
+}
+
+.chat-bubble.user {
+  align-self: flex-end;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: #000;
+  border-bottom-right-radius: 0.2rem;
+}
+
+@keyframes messageIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Pipeline Simulator */
+.pipeline-track {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2rem;
+  position: relative;
+}
+
+.pipeline-node {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  font-size: 0.75rem;
+  z-index: 2;
+  transition: all 0.5s ease;
+}
+
+.pipeline-node i {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.pipeline-connector {
+  flex-grow: 1;
+  height: 2px;
+  background: var(--glass-border);
+  position: relative;
+  overflow: hidden;
+}
+
+.pipeline-pulse {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  to { left: 100%; }
+}
+
+.active-node {
+  border-color: var(--primary);
+  box-shadow: 0 0 20px var(--primary);
+  background: rgba(0, 229, 255, 0.1);
+}
+
+/* Detail Features */
+.feature-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 4rem;
+}
+
+.detail-card {
+  padding: 2rem;
+  text-align: left;
+}
+
+.detail-card .icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+/* Responsive Extensions */
+@media (max-width: 600px) {
+  .pipeline-track { flex-direction: column; gap: 2rem; }
+  .pipeline-connector { width: 2px; height: 40px; }
+  .pipeline-pulse { top: -100%; left: 0; width: 100%; height: 100%; background: linear-gradient(180deg, transparent, var(--primary), transparent); }
+}

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GroupShield | Secure Your WhatsApp Groups</title>
+    <meta name="description" content="Generic WhatsApp Group Enforcement Bot - Enforce any rules on any group with ease.">
+    <link rel="stylesheet" href="index.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+    </script>
+</head>
+<body>
+
+    <section class="hero">
+        <div class="container hero-content animate">
+            <h1>GroupShield 🛡️</h1>
+            <p>Moderating large WhatsApp groups is a nightmare. GroupShield automates it with custom rules, bilingual support, and a self-healing architecture.</p>
+            <div class="cta">
+                <a href="#features" class="btn btn-primary">Discover Features</a>
+                <a href="https://github.com/nirdahan9/GroupShield" class="btn" style="color: white">View Repository</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="container" style="padding: 8rem 0 4rem;">
+        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;">Generic & Powerful</h2>
+        <p style="text-align: center; color: var(--text-dim); margin-bottom: 4rem;">One bot to rule them all. Simple for admins, transparent for users.</p>
+        
+        <div class="feature-list">
+            <div class="card glass detail-card">
+                <span class="icon">🤖</span>
+                <h3>Interactive Setup</h3>
+                <p>No complex dashboards. Configure rules, languages, and enforcement steps through a natural DM conversation.</p>
+            </div>
+            <div class="card glass detail-card">
+                <span class="icon">⏰</span>
+                <h3>Time Windows</h3>
+                <p>Define precise hours when messages are allowed. Perfect for "Shabbat Bots" or forum-style groups.</p>
+            </div>
+            <div class="card glass detail-card">
+                <span class="icon">🚫</span>
+                <h3>Content Filter</h3>
+                <p>Block forbidden phrases or enforce "Allowed Only" lists. Supports exact matches and regex-style containment.</p>
+            </div>
+            <div class="card glass detail-card">
+                <span class="icon">🔄</span>
+                <h3>Anti-Spam</h3>
+                <p>Prevent flood attacks with configurable limits for consecutive identical messages and daily volume.</p>
+            </div>
+            <div class="card glass detail-card">
+                <span class="icon">⚖️</span>
+                <h3>Gradual Enforcement</h3>
+                <p>Warn, Delete, Remove, Block. You define the escalation path that fits your community culture.</p>
+            </div>
+            <div class="card glass detail-card">
+                <span class="icon">🌍</span>
+                <h3>Bilingual Support</h3>
+                <p>Full support for Hebrew and English out of the box, ensuring every user understands the rules.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chat Simulation -->
+    <section class="container" style="padding: 4rem 0;">
+        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;">Experience the Setup</h2>
+        <p style="text-align: center; color: var(--text-dim); margin-bottom: 3rem;">See how easy it is to configure GroupShield through a DM.</p>
+        <div class="sim-container glass chat-window" id="chat-simulator">
+            <!-- Bubbles injected by JS -->
+        </div>
+    </section>
+
+    <!-- Enforcement Pipeline -->
+    <section class="container" style="padding: 4rem 0;">
+        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;">Enforcement Engine</h2>
+        <p style="text-align: center; color: var(--text-dim); margin-bottom: 3rem;">How GroupShield processes every message in milliseconds.</p>
+        <div class="sim-container glass" style="padding: 3rem 1rem;">
+            <div class="pipeline-track" id="pipeline-simulator">
+                <div class="pipeline-node glass" id="node-in"><span>📥 Message</span></div>
+                <div class="pipeline-connector"><div class="pipeline-pulse"></div></div>
+                <div class="pipeline-node glass" id="node-rule"><span>🧠 Rule Engine</span></div>
+                <div class="pipeline-connector"><div class="pipeline-pulse"></div></div>
+                <div class="pipeline-node glass" id="node-action"><span>⚖️ Action</span></div>
+                <div class="pipeline-connector"><div class="pipeline-pulse"></div></div>
+                <div class="pipeline-node glass" id="node-report"><span>📣 Report</span></div>
+            </div>
+            <div id="pipeline-status" style="text-align: center; margin-top: 2rem; color: var(--secondary); font-weight: 600; min-height: 1.5em;"></div>
+        </div>
+    </section>
+
+    <!-- Architecture (Fixed) -->
+    <section class="container" style="padding: 4rem 0 8rem;">
+        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 4rem;">System Architecture</h2>
+        <div class="glass" style="padding: 2rem; overflow: hidden;">
+            <pre class="mermaid" style="display: flex; justify-content: center;">
+graph LR
+    User[Admin User] -- "DM (Setup)" --> SF[State Machine]
+    SF -- "Config" --> DB[(SQLite)]
+    
+    msg[Group Msg] --> H[Handler]
+    H --> RE{Rule Engine}
+    RE -- "Violated" --> EP[Pipeline]
+    
+    EP -- "Enforce" --> WA[WhatsApp]
+    EP -- "Report" --> MG[Mgmt Group]
+    
+    H -- "Healthy" --> HM[Health Monitor]
+            </pre>
+        </div>
+    </section>
+
+    <footer style="text-align: center; padding: 4rem; color: var(--text-dim); border-top: 1px solid var(--glass-border);">
+        <p>© 2026 GroupShield - Built by Nirdahan</p>
+    </footer>
+
+    <script>
+        // Chat Simulation Data
+        const chatData = [
+            { type: 'bot', text: 'שלום! אני בוט האכיפה שלך. בחר שפה / Choose language:\n1. עברית\n2. English' },
+            { type: 'user', text: '1', delay: 1500 },
+            { type: 'bot', text: 'השפה הוגדרה לעברית. ✅\nמה שם הקבוצה שתרצה שאאכוף בה?', delay: 1000 },
+            { type: 'user', text: 'ועד הבית', delay: 1500 },
+            { type: 'bot', text: 'מצאתי את הקבוצה: "ועד הבית" (32 משתתפים). \nהאם זו הקבוצה הנכונה? (1. כן / 2. לא)', delay: 1200 },
+            { type: 'user', text: '1', delay: 1000 },
+            { type: 'bot', text: 'מעולה! עכשיו בוא נגדיר את החוקים...', delay: 800 }
+        ];
+
+        async function runChatSim() {
+            const container = document.getElementById('chat-simulator');
+            container.innerHTML = '';
+            for (const msg of chatData) {
+                await new Promise(r => setTimeout(r, msg.delay || 500));
+                const bubble = document.createElement('div');
+                bubble.className = `chat-bubble ${msg.type}`;
+                bubble.innerText = msg.text;
+                container.appendChild(bubble);
+                container.scrollTop = container.scrollHeight;
+            }
+            setTimeout(runChatSim, 5000);
+        }
+
+        // Pipeline Simulation Data
+        const nodes = ['node-in', 'node-rule', 'node-action', 'node-report'];
+        const statuses = [
+            'Incoming message detected...',
+            'Evaluating against active rules...',
+            'Rule violation! Executing enforcement path...',
+            'Action logged and reported to management.'
+        ];
+
+        async function runPipelineSim() {
+            const statusEl = document.getElementById('pipeline-status');
+            for (let i = 0; i < nodes.length; i++) {
+                const node = document.getElementById(nodes[i]);
+                node.classList.add('active-node');
+                statusEl.innerText = statuses[i];
+                await new Promise(r => setTimeout(r, 2000));
+                node.classList.remove('active-node');
+            }
+            statusEl.innerText = '';
+            setTimeout(runPipelineSim, 1000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            runChatSim();
+            runPipelineSim();
+        });
+    </script>
+</body>
+</html>

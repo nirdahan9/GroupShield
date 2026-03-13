@@ -442,6 +442,24 @@ class Database {
         return row ? row.cnt : 0;
     }
 
+    async getGroupErrors(groupId) {
+        const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const staleThreshold = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+
+        const failed = await this._get(
+            `SELECT COUNT(*) as cnt FROM enforcement_actions WHERE groupId = ? AND status = 'failed' AND createdAt > ?`,
+            [groupId, since24h]
+        );
+        const stale = await this._get(
+            `SELECT COUNT(*) as cnt FROM enforcement_actions WHERE groupId = ? AND status = 'started' AND createdAt < ?`,
+            [groupId, staleThreshold]
+        );
+        return {
+            failedRecent: failed ? failed.cnt : 0,
+            staleStuck: stale ? stale.cnt : 0
+        };
+    }
+
     async deleteGroup(groupId) {
         await this._run('DELETE FROM groups WHERE groupId = ?', [groupId]);
         await this._run('DELETE FROM rules WHERE groupId = ?', [groupId]);
