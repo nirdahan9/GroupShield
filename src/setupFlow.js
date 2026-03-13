@@ -523,8 +523,8 @@ async function handleAntiSpam(client, jid, content, state, lang) {
         await saveState(jid, { ...state, step: 'spam_max' });
         return t('ask_spam_max', lang);
     } else if (choice === '2' || choice.includes('לא') || choice.toLowerCase() === 'no') {
-        await saveState(jid, { ...state, step: 'enforcement', antiSpam: null });
-        return buildEnforcementQuestion(lang);
+        await saveState(jid, { ...state, step: 'warnings', antiSpam: null });
+        return t('ask_warnings', lang);
     }
     return t('ask_antispam', lang);
 }
@@ -545,19 +545,20 @@ async function handleSpamWindow(client, jid, content, state, lang) {
     }
     await saveState(jid, {
         ...state,
-        step: 'enforcement',
+        step: 'warnings',
         antiSpam: { maxMessages: state.spamMax, windowSeconds: window }
     });
     return t('antispam_saved', lang, {
         max: state.spamMax.toString(),
         window: window.toString()
-    }) + '\n\n' + buildEnforcementQuestion(lang);
+    }) + '\n\n' + t('ask_warnings', lang);
 }
 
-function buildEnforcementQuestion(lang) {
+function buildEnforcementQuestion(lang, warningCount = 0) {
+    const step2Key = warningCount > 0 ? 'enforcement_step_2_warning' : 'enforcement_step_2_notice';
     const steps = [
         t('enforcement_step_1', lang),
-        t('enforcement_step_2', lang),
+        t(step2Key, lang),
         t('enforcement_step_3', lang),
         t('enforcement_step_4', lang),
         t('enforcement_step_5', lang)
@@ -579,14 +580,14 @@ async function handleEnforcement(client, jid, content, state, lang) {
         sendReport: choices.includes(5)
     };
 
-    await saveState(jid, { ...state, step: 'warnings', enforcementConfig });
-    return t('enforcement_saved', lang) + '\n\n' + t('ask_warnings', lang);
+    await saveState(jid, { ...state, step: 'exempt', enforcementConfig });
+    return t('enforcement_saved', lang) + '\n\n' + t('ask_exempt', lang);
 }
 
 async function handleQuickEnforcement(client, jid, content, state, lang) {
     const choices = content.trim().split(/[\s,]+/).map(s => parseInt(s.trim())).filter(n => !isNaN(n));
     if (choices.length === 0) {
-        return t('quick_enforcement_intro', lang) + '\n\n' + buildEnforcementQuestion(lang);
+        return buildEnforcementQuestion(lang, state.warningCount);
     }
 
     const enforcementConfig = {
@@ -597,8 +598,16 @@ async function handleQuickEnforcement(client, jid, content, state, lang) {
         sendReport: choices.includes(5)
     };
 
-    await saveState(jid, { ...state, step: 'quick_warnings', enforcementConfig });
-    return t('enforcement_saved', lang) + '\n\n' + t('ask_warnings', lang);
+    if (!state.groupId) {
+        await saveState(jid, { step: 'done' });
+        return t('error_generic', lang, { error: lang === 'he' ? 'קבוצה לא נמצאה' : 'Group not found' });
+    }
+
+    await database.setEnforcement(state.groupId, enforcementConfig);
+    await database.updateGroupWarningCount(state.groupId, state.warningCount || 0);
+    await saveState(jid, { step: 'done' });
+
+    return t('quick_enforcement_saved', lang);
 }
 
 async function handleWarnings(client, jid, content, state, lang) {
@@ -606,8 +615,8 @@ async function handleWarnings(client, jid, content, state, lang) {
     if (isNaN(count) || count < 0 || count > 99) {
         return t('ask_warnings', lang);
     }
-    await saveState(jid, { ...state, step: 'exempt', warningCount: count });
-    return t('warnings_saved', lang, { count: count.toString() }) + '\n\n' + t('ask_exempt', lang);
+    await saveState(jid, { ...state, step: 'enforcement', warningCount: count });
+    return t('warnings_saved', lang, { count: count.toString() }) + '\n\n' + buildEnforcementQuestion(lang, count);
 }
 
 async function handleQuickWarnings(client, jid, content, state, lang) {
@@ -616,16 +625,8 @@ async function handleQuickWarnings(client, jid, content, state, lang) {
         return t('ask_warnings', lang);
     }
 
-    if (!state.groupId) {
-        await saveState(jid, { step: 'done' });
-        return t('error_generic', lang, { error: lang === 'he' ? 'קבוצה לא נמצאה' : 'Group not found' });
-    }
-
-    await database.setEnforcement(state.groupId, state.enforcementConfig);
-    await database.updateGroupWarningCount(state.groupId, count);
-    await saveState(jid, { step: 'done' });
-
-    return t('quick_enforcement_saved', lang);
+    await saveState(jid, { ...state, step: 'quick_enforcement', warningCount: count });
+    return buildEnforcementQuestion(lang, count);
 }
 
 async function handleExempt(client, jid, content, state, lang) {
@@ -991,8 +992,8 @@ async function startQuickEnforcementUpdate(jid) {
     }
 
     const lang = user.language || 'he';
-    await saveState(jid, { step: 'quick_enforcement', groupId: user.groupId });
-    return t('quick_enforcement_intro', lang) + '\n\n' + buildEnforcementQuestion(lang);
+    await saveState(jid, { step: 'quick_warnings', groupId: user.groupId });
+    return t('quick_enforcement_intro', lang) + '\n\n' + t('ask_warnings', lang);
 }
 
 module.exports = {

@@ -145,16 +145,20 @@ const strings = {
 
     // ── Enforcement ──────────────────────────────────────────────────────
     'ask_enforcement': {
-        he: '⚖️ *שלב 5: שלבי אכיפה*\n\nבחר אילו שלבים הבוט יבצע בהפרה.\n*הסדר קבוע* — בחר אילו להפעיל:\n\n{{steps}}\n\nשלח את המספרים שברצונך להפעיל, מופרדים בפסיקים.\nלדוגמה: 1,2,3,5',
-        en: '⚖️ *Step 5: Enforcement Steps*\n\nChoose which steps the bot takes on violation.\n*Fixed order* — choose which to enable:\n\n{{steps}}\n\nSend the numbers you want to enable, separated by commas.\nExample: 1,2,3,5'
+        he: '⚖️ *שלב 6: שלבי אכיפה*\n\nבחר אילו שלבים הבוט יבצע בהפרה.\n*הסדר קבוע* — בחר אילו להפעיל:\n\n{{steps}}\n\nשלח את המספרים שברצונך להפעיל, מופרדים בפסיקים.\nלדוגמה: 1,2,3,5',
+        en: '⚖️ *Step 6: Enforcement Steps*\n\nChoose which steps the bot takes on violation.\n*Fixed order* — choose which to enable:\n\n{{steps}}\n\nSend the numbers you want to enable, separated by commas.\nExample: 1,2,3,5'
     },
     'enforcement_step_1': {
-        he: '1️⃣ מחיקת ההודעה המפרה — ההודעה תימחק מהקבוצה',
-        en: '1️⃣ Delete violating message — removes the message from the group'
+        he: '1️⃣ מחיקת ההודעה — ההודעה תימחק מהקבוצה',
+        en: '1️⃣ Delete message — the message will be removed from the group'
     },
-    'enforcement_step_2': {
-        he: '2️⃣ הודעה פרטית — המשתמש יקבל אזהרה/הודעת ענישה בפרטי',
-        en: '2️⃣ Private message — user receives warning/enforcement notice in DM'
+    'enforcement_step_2_warning': {
+        he: '2️⃣ הודעה פרטית (אזהרה) — המשתמש יקבל אזהרה בפרטי',
+        en: '2️⃣ Private message (Warning) — user receives warning in DM'
+    },
+    'enforcement_step_2_notice': {
+        he: '2️⃣ הודעה פרטית (התראה) — המשתמש יקבל הודעת הרחקה בפרטי',
+        en: '2️⃣ Private message (Notice) — user receives removal notice in DM'
     },
     'enforcement_step_3': {
         he: '3️⃣ הסרה מהקבוצה — המשתמש יוצא מהקבוצה',
@@ -175,8 +179,8 @@ const strings = {
 
     // ── Warnings ─────────────────────────────────────────────────────────
     'ask_warnings': {
-        he: '⚠️ *שלב 6: אזהרות*\n\nכמה אזהרות לפני אכיפה מלאה?\n(0 = אכיפה מיידית, ללא אזהרות)\n\n✳️ תשובות מוצעות:\n0\n3\n5',
-        en: '⚠️ *Step 6: Warnings*\n\nHow many warnings before full enforcement?\n(0 = immediate enforcement, no warnings)\n\n✳️ Suggested replies:\n0\n3\n5'
+        he: '⚠️ *שלב 5: אזהרות*\n\nכמה אזהרות לפני אכיפה מלאה?\n(0 = אכיפה מיידית, ללא אזהרות)\n\n✳️ תשובות מוצעות:\n0\n3\n5',
+        en: '⚠️ *Step 5: Warnings*\n\nHow many warnings before full enforcement?\n(0 = immediate enforcement, no warnings)\n\n✳️ Suggested replies:\n0\n3\n5'
     },
     'warnings_saved': {
         he: '✅ מספר אזהרות: {{count}}',
