@@ -1,62 +1,56 @@
 # GroupShield 🛡️
 
-**Generic WhatsApp Group Enforcement Bot** — Enforce any rules on any WhatsApp group.
+Production-grade WhatsApp moderation engine with a bilingual setup UX, deterministic enforcement pipeline, and operational reliability built for real communities.
 
-## Features
+## Why this project stands out
 
-- 🌐 **Bilingual** — Full Hebrew + English support
-- 💬 **Interactive Setup** — Easy ping-pong DM conversation to configure everything
-- 📏 **Flexible Rules** — Allowed/forbidden messages, time windows, anti-spam
-- ⚖️ **Configurable Enforcement** — Choose which steps: delete, warn, remove, block, report
-- ⚠️ **Warning System** — Configurable warning count before enforcement
-- 🛡️ **Exempt Users** — Define users immune to rules
-- 📨 **Smart Reporting** — Reports to DM, phone number, or management group
-- ↩️ **Undo** — Reply "בטל"/"undo" to reports to reverse punishment
-- 🏥 **Self-Healing** — Health monitoring, memory management, auto-restart
-- 💾 **Backups** — Automated daily database backups
+- **Product thinking + backend engineering:** complex rule configuration happens through an intuitive chat flow, without a dashboard.
+- **Real reliability work:** self-healing runtime, PM2 process management, health monitoring, and automated backups.
+- **Scalable design:** multitenant SQLite model and event-driven enforcement flow designed for many managed groups.
+- **Strong safety controls:** warning thresholds, fixed-order enforcement, exempt users, bilingual user-facing messaging, and undo-by-report workflow.
 
-## Setup
+## High-impact capabilities
+
+- **Interactive setup state machine** in DM (`start`/`התחל`) with multilingual guidance.
+- **Flexible policy engine:** allowed-only / blocked-only text policies, match modes (`exact` / `contains`), time windows, anti-spam.
+- **Enforcement pipeline:** delete → warn → remove → block → report.
+- **Management operations:** shared management groups, status views, group rules view, and safe admin actions.
+- **Operational tooling:** restart tracking, structured logs, scheduled cleanups, and backup automation.
+
+## Tech stack
+
+- **Runtime:** Node.js
+- **WhatsApp automation:** `whatsapp-web.js` + Puppeteer
+- **Storage:** SQLite
+- **Process manager:** PM2
+- **Observability:** Winston logging + health checks
+
+## Quick start
 
 ```bash
 npm install
 node bot.js
 ```
 
-Scan the QR code with WhatsApp, then send a DM to the bot to start configuring a group.
+Scan QR from WhatsApp, then DM the bot and send `start` / `התחל`.
 
-## Architecture
+## Project map
 
-```
-bot.js              → Main entry point (Puppeteer/whatsapp-web.js)
-src/
-  config.js         → Configuration manager
-  database.js       → SQLite database (7 tables)
-  i18n.js           → Bilingual string system
-  setupFlow.js      → Interactive setup conversation
-  ruleEngine.js     → Generic rule evaluation
-  enforcement.js    → Enforcement pipeline
-  handlers.js       → Message routing
-  commands.js       → Admin commands
-  health.js         → Health monitoring
-  backup.js         → Backup system
-  logger.js         → Winston logging
-  restartTracker.js → Restart reason tracking
-  utils.js          → Utility functions
+```text
+bot.js              → App bootstrap, client lifecycle, schedulers
+src/setupFlow.js    → Setup conversation + configuration flow
+src/ruleEngine.js   → Rule evaluation logic
+src/enforcement.js  → Enforcement + report/undo lifecycle
+src/handlers.js     → Message routing and command dispatch
+src/database.js     → SQLite schema and data access
+src/i18n.js         → Hebrew/English templates
+src/health.js       → Health checks and self-healing hooks
+src/backup.js       → Automated backup jobs
 ```
 
-## Commands
+## Link
 
-| Hebrew | English | Description |
-|--------|---------|-------------|
-| עזרה | help | Show commands |
-| סטטוס | status | Bot status |
-| הגדרות | settings | Reconfigure |
-| שפה | language | Switch language |
-| הוסף חסין | exempt add | Add exempt user |
-| הסר חסין | exempt remove | Remove exempt |
-| רשימת חסינים | exempt list | List exempt |
-| אפס אזהרות | warnings reset | Reset warnings |
-| ריסטארט | restart | Restart bot |
+https://nirdahan9.github.io/GroupShield/
 
 ## License
 

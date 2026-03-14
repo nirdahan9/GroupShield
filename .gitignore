@@ -9,5 +9,6 @@ backups/
 *.zip
 .DS_Store
 .vscode/
+.agents/
 *.txt
 !README.md
