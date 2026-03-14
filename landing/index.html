@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="he" dir="rtl">
 
 <head>
     <meta charset="UTF-8">
@@ -23,11 +23,10 @@
     <nav style="position: absolute; top: 1.5rem; right: 2rem; z-index: 999;">
         <button id="lang-toggle" onclick="toggleLanguage()" style="background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); padding: 0.5rem 1rem; border-radius: 20px; color: white; cursor: pointer; font-family: var(--font-sans); font-weight: 600;">EN | 🌐</button>
     </nav>
-    <section class="hero">
-        <section class="container" style="padding: 6rem 0 3rem; position: relative;">
+    <section class="hero" style="padding: 6rem 0 3rem; position: relative;">
         <!-- Glowing Background Orbs -->
         <div class="container hero-content animate">
-            <h1 style="display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+            <h1 style="display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; direction: ltr;">
                 <img src="hero.png" alt="GroupShield Logo" style="width: 65px; height: 65px; border-radius: 50%; object-fit: cover; border: 2px solid var(--secondary); box-shadow: 0 0 15px rgba(0, 255, 163, 0.4);">
                 GroupShield
             </h1>
@@ -593,10 +592,10 @@
             window.mgmtSim.data = useScripts.mgmt;
             window.dmSim.data = useScripts.dm;
 
-            window.setupSim.restart();
-            window.groupSim.restart();
-            window.mgmtSim.restart();
-            window.dmSim.restart();
+            window.setupSim.play();
+            window.groupSim.play();
+            window.mgmtSim.play();
+            window.dmSim.play();
         }
 
         // Apply translations on initial load
