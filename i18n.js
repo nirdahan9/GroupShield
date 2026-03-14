@@ -42,7 +42,18 @@ const translations = {
         "t2-desc": "Local persistent database structured to handle configurations and warnings for thousands of groups efficiently.",
         "t3-title": "Strict Event Queue",
         "t3-desc": "Rate-limited message processing pipeline that prevents connection bans and ensures deterministic rule evaluation.",
-        "footer-text": "© 2026 GroupShield"
+        "t4-title": "Dockerized Architecture",
+        "t4-desc": "Containerized setup for effortless deployment across any cloud provider with zero dependency conflicts.",
+        "t5-title": "Self-Healing Puppeteer",
+        "t5-desc": "Advanced crash-recovery system that automatically restores the WhatsApp connection if the browser unexpectedly drops.",
+        "faq-title": "Frequently Asked Questions",
+        "faq-1-q": "Is my privacy protected?",
+        "faq-1-a": "Yes. GroupShield does not save your messages. Message contents are strictly evaluated in memory and discarded immediately unless a violation occurs (for reporting purposes only).",
+        "faq-2-q": "Can I use it on multiple groups?",
+        "faq-2-a": "Absolutely. A single GroupShield instance can seamlessly manage thousands of groups, each with its own independent rule configuration.",
+        "faq-3-q": "What happens if the bot crashes?",
+        "faq-3-a": "GroupShield is built with a self-healing architecture. It automatically detects connection drops and safely restarts the browser session without missing any backend data.",
+        "footer-text": "© 2026 GroupShield | Created by Nirdahan"
     },
     he: {
         "hero-desc": "ניהול קבוצות וואטסאפ גדולות זה סיוט. GroupShield ממכן את זה בעזרת חוקים מותאמים אישית, תמיכה דו-לשונית וארכיטקטורה יציבה.",
@@ -87,7 +98,18 @@ const translations = {
         "t2-desc": "מסד נתונים מקומי מהיר במיוחד שעוצב טבלאית להכיל אלפי קבוצות ומעקב אזהרות יעיל וחסכוני בזיכרון.",
         "t3-title": "Event-Driven Logic",
         "t3-desc": "צנרת אירועים ותור הודעות (Queue) העמיד בפני עומסי קצה וחוסם פניות כפולות ליציבות ה-API הרשמי.",
-        "footer-text": "© 2026 GroupShield"
+        "t4-title": "Dockerized Architecture",
+        "t4-desc": "פריסה פשוטה ומהירה באמצעות קונטיינרים (Docker) לכל ספק ענן ללא התנגשויות תלויות.",
+        "t5-title": "Self-Healing Puppeteer",
+        "t5-desc": "מערכת התאוששות חכמה שמזהירה מקרים של קריסת דפדפן ומאתחלת את חיבור ה-WhatsApp בצורה שקופה.",
+        "faq-title": "שאלות ותשובות נפוצות",
+        "faq-1-q": "האם הפרטיות שלי נשמרת?",
+        "faq-1-a": "כן. GroupShield אינו שומר את ההודעות שלך במסד הנתונים. התוכן מוערך בזיכרון בזמן אמת ונמחק מיד, אלא אם כן התבצעה הפרה מתועדת (לצורכי דיווח בלבד).",
+        "faq-2-q": "האם ניתן לנהל מספר קבוצות במקביל?",
+        "faq-2-a": "בהחלט. בוט אחד יכול לנהל אלפי קבוצות שונות במקביל, כשכל קבוצה מקבלת טבלת חוקים ותצורת אכיפה משלה לחלוטין.",
+        "faq-3-q": "מה קורה אם הבוט קורס?",
+        "faq-3-a": "המערכת בנויה בארכיטקטורה יציבה בעלת יכולת התאוששות עצמית. במקרה של ניתוק, הבוט מזהה זאת ומרים מחדש את החיבור בשקיפות מלאה למשתמשים.",
+        "footer-text": "© 2026 GroupShield | נבנה על ידי ניר דהן"
     }
 };
 
