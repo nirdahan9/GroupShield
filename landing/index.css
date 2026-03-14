@@ -472,15 +472,21 @@ body {
   40% { transform: scale(1); }
 }
 
-/* Specific Sim Labels */
 .sim-label {
-    text-align: center;
-  font-size: 0.78rem;
-    color: var(--secondary);
-    text-transform: uppercase;
-  letter-spacing: 0.9px;
-    margin-top: 2rem;
-    font-weight: 800;
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--secondary);
+  margin-top: 1rem;
+  font-weight: 800;
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+  background: rgba(0, 229, 255, 0.05);
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 229, 255, 0.1);
+  display: inline-block;
+  margin-bottom: -1rem;
+  position: relative;
+  z-index: 5;
 }
 
 .sim-grid {
@@ -524,6 +530,7 @@ body {
 
 .pipeline-node {
   width: 220px;
+  flex-shrink: 0;
   height: auto;
   padding: 1.5rem 1rem;
   border-radius: 12px;
@@ -603,31 +610,11 @@ body {
 .chat-bubble.deleted-anim {
   opacity: 0.6;
   transition: opacity 0.5s ease;
+  filter: grayscale(100%);
 }
 
 .chat-bubble.deleted-anim .bubble-text {
-  position: relative;
-  display: inline-block;
   color: var(--text-dim) !important;
-}
-
-.chat-bubble.deleted-anim .bubble-text::after {
-  content: '';
-  position: absolute;
-  left: -2px;
-  right: -2px;
-  top: 50%;
-  height: 1.5px;
-  background-color: var(--text-dim);
-  transform: scaleX(0);
-  transform-origin: center;
-  animation: strike 0.3s ease-out 0.1s forwards;
-}
-
-@keyframes strike {
-  to {
-    transform: scaleX(1);
-  }
 }
 
 @media (max-width: 900px) {
