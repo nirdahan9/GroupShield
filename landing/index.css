@@ -65,6 +65,13 @@ body {
   filter: drop-shadow(0 0 15px rgba(0, 229, 255, 0.3));
 }
 
+.text-gradient {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 .hero-content p {
   font-size: 1.25rem;
   color: var(--text-dim);

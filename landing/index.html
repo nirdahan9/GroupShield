@@ -15,77 +15,74 @@
         import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
         mermaid.initialize({ startOnLoad: true, theme: 'dark' });
     </script>
+    <script src="i18n.js"></script>
 </head>
 
 <body>
 
+    <nav style="position: absolute; top: 1.5rem; right: 2rem; z-index: 999;">
+        <button id="lang-toggle" onclick="toggleLanguage()" style="background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); padding: 0.5rem 1rem; border-radius: 20px; color: white; cursor: pointer; font-family: var(--font-sans); font-weight: 600;">EN | 🌐</button>
+    </nav>
     <section class="hero">
         <div class="container hero-content animate">
             <h1 style="display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap;">
                 <img src="hero.png" alt="GroupShield Logo" style="width: 65px; height: 65px; border-radius: 50%; object-fit: cover; border: 2px solid var(--secondary); box-shadow: 0 0 15px rgba(0, 255, 163, 0.4);">
-                GroupShield 🛡️
+                GroupShield
             </h1>
-            <p>Moderating large WhatsApp groups is a nightmare. GroupShield automates it with custom rules, bilingual
-                support, and a self-healing architecture.</p>
+            <p data-i18n="hero-desc">Moderating large WhatsApp groups is a nightmare. GroupShield automates it with custom rules, bilingual support, and a self-healing architecture.</p>
             <div class="cta">
-                <a href="#features" class="btn btn-primary">Discover Features</a>
-                <a href="#demo-chat-window" class="btn" style="background: var(--secondary); color: #000; border: none; font-weight: 600;">Experience GroupShield</a>
-                <a href="https://github.com/nirdahan9/GroupShield" class="btn" style="color: white">View Repository</a>
+                <a href="#features" class="btn btn-primary" data-i18n="btn-features">Discover Features</a>
+                <a href="#demo-chat-window" class="btn" style="background: var(--secondary); color: #000; border: none; font-weight: 600;" data-i18n="btn-demo">Experience GroupShield</a>
             </div>
         </div>
     </section>
 
     <section id="features" class="container" style="padding: 8rem 0 4rem;">
-        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;">Generic & Powerful</h2>
-        <p style="text-align: center; color: var(--text-dim); margin-bottom: 4rem;">One bot to rule them all. Simple for
-            admins, transparent for users.</p>
+        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="features-title">Generic & Powerful</h2>
+        <p style="text-align: center; color: var(--text-dim); margin-bottom: 4rem;" data-i18n="features-desc">One bot to rule them all. Simple for admins, transparent for users.</p>
 
         <div class="feature-list">
             <div class="card glass detail-card">
                 <span class="icon">🤖</span>
-                <h3>Interactive Setup</h3>
-                <p>No complex dashboards. Configure rules, languages, and enforcement steps through a natural DM
-                    conversation.</p>
+                <h3 data-i18n="f1-title">Interactive Setup</h3>
+                <p data-i18n="f1-desc">No complex dashboards. Configure rules, languages, and enforcement steps through a natural DM conversation.</p>
             </div>
             <div class="card glass detail-card">
                 <span class="icon">⏰</span>
-                <h3>Time Windows</h3>
-                <p>Define precise hours when messages are allowed. Perfect for "Shabbat Bots" or forum-style groups.</p>
+                <h3 data-i18n="f2-title">Time Windows</h3>
+                <p data-i18n="f2-desc">Define precise hours when messages are allowed. Perfect for forum-style groups.</p>
             </div>
             <div class="card glass detail-card">
                 <span class="icon">🚫</span>
-                <h3>Content Filter</h3>
-                <p>Block forbidden phrases or enforce "Allowed Only" lists. Supports exact matches and regex-style
-                    containment.</p>
+                <h3 data-i18n="f3-title">Content Filter</h3>
+                <p data-i18n="f3-desc">Block forbidden phrases or enforce "Allowed Only" lists. Supports exact matches and regex containment.</p>
             </div>
             <div class="card glass detail-card">
                 <span class="icon">🔄</span>
-                <h3>Anti-Spam</h3>
-                <p>Prevent flood attacks with configurable limits for consecutive identical messages and daily volume.
-                </p>
+                <h3 data-i18n="f4-title">Anti-Spam</h3>
+                <p data-i18n="f4-desc">Prevent flood attacks with configurable limits for consecutive identical messages and daily volume.</p>
             </div>
             <div class="card glass detail-card">
                 <span class="icon">⚖️</span>
-                <h3>Gradual Enforcement</h3>
-                <p>Warn, Delete, Remove, Block. You define the escalation path that fits your community culture.</p>
+                <h3 data-i18n="f5-title">Gradual Enforcement</h3>
+                <p data-i18n="f5-desc">Warn, Delete, Remove, Block. You define the escalation path that fits your community culture.</p>
             </div>
             <div class="card glass detail-card">
                 <span class="icon">🌍</span>
-                <h3>Bilingual Support</h3>
-                <p>Full support for Hebrew and English out of the box, ensuring every user understands the rules.</p>
+                <h3 data-i18n="f6-title">Bilingual Support</h3>
+                <p data-i18n="f6-desc">Full support for Hebrew and English out of the box, ensuring every user understands the rules.</p>
             </div>
         </div>
     </section>
 
     <!-- Chat Simulation Engine -->
     <section class="container" style="padding: 4rem 0;">
-        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;">Experience GroupShield</h2>
-        <p style="text-align: center; color: var(--text-dim); margin-bottom: 3rem;">A visual simulation of how
-            GroupShield transforms your community management.</p>
+        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="demo-title">Experience GroupShield</h2>
+        <p style="text-align: center; color: var(--text-dim); margin-bottom: 3rem;" data-i18n="demo-desc">A visual simulation of how GroupShield transforms your community management.</p>
 
         <div class="sim-grid" id="demo-chat-window">
             <div class="live-panel">
-                <div class="sim-label">1. הגדרת הבוט (מול המנהל)</div>
+                <div class="sim-label" data-i18n="sim-lbl-1">1. הגדרת הבוט (מול המנהל)</div>
                 <div class="sim-container glass chat-window" style="height: 550px;">
                     <div class="chat-header" style="justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 1rem;">
@@ -101,16 +98,15 @@
                                 </div>
                             </div>
                         </div>
-                        <button id="replay-setup-btn"
-                            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-main); padding: 0.4rem 0.8rem; border-radius: 20px; cursor: pointer; font-size: 0.75rem; transition: background 0.2s, transform 0.2s; font-weight: 600;">↻
-                            שחזר</button>
+                        <button id="replay-setup-btn" data-i18n="btn-replay-setup"
+                            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-main); padding: 0.4rem 0.8rem; border-radius: 20px; cursor: pointer; font-size: 0.75rem; transition: background 0.2s, transform 0.2s; font-weight: 600;">↻ שחזר</button>
                     </div>
                     <div class="chat-messages" id="setup-container"></div>
                 </div>
             </div>
 
             <div class="live-panel">
-                <div class="sim-label">2. הקבוצה הנאכפת</div>
+                <div class="sim-label" data-i18n="sim-lbl-2">2. הקבוצה הנאכפת</div>
                 <div class="sim-container glass chat-window" style="height: 550px;">
                     <div class="chat-header" style="justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 1rem;">
@@ -122,16 +118,15 @@
                                 <div style="font-size: 0.75rem; color: var(--text-dim);">243 חברים</div>
                             </div>
                         </div>
-                        <button id="replay-group-btn"
-                            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-main); padding: 0.4rem 0.8rem; border-radius: 20px; cursor: pointer; font-size: 0.75rem; transition: background 0.2s, transform 0.2s; font-weight: 600;">↻
-                            שחזר שוב</button>
+                        <button id="replay-group-btn" data-i18n="btn-replay-group"
+                            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-main); padding: 0.4rem 0.8rem; border-radius: 20px; cursor: pointer; font-size: 0.75rem; transition: background 0.2s, transform 0.2s; font-weight: 600;">↻ שחזר שוב</button>
                     </div>
                     <div class="chat-messages" id="group-container"></div>
                 </div>
             </div>
 
             <div class="live-panel">
-                <div class="sim-label">3. קבוצת הנהלה</div>
+                <div class="sim-label" data-i18n="sim-lbl-3">3. קבוצת הנהלה</div>
                 <div class="sim-container glass chat-window" style="height: 550px;">
                     <div class="chat-header" style="justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 1rem;">
@@ -149,7 +144,7 @@
             </div>
 
             <div class="live-panel">
-                <div class="sim-label">4. הודעה פרטית למשתמש</div>
+                <div class="sim-label" data-i18n="sim-lbl-4">4. הודעה פרטית למשתמש</div>
                 <div class="sim-container glass chat-window" style="height: 550px;">
                     <div class="chat-header" style="justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 1rem;">
@@ -173,42 +168,66 @@
     </section>
 
     <!-- Logic Engine & Footer -->
-    <section class="container" style="padding: 4rem 0 8rem;">
-        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;">The Logic Engine</h2>
+    <section class="container" style="padding: 4rem 0 0;">
+        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="logic-title">The Logic Engine</h2>
         <div class="sim-container glass" style="padding: 3rem 1rem;">
             <div class="pipeline-track" id="pipeline-simulator">
                 <div class="pipeline-node glass" id="node-in">
-                    <span>📥 Message</span>
-                    <p class="node-desc">Incoming message is captured directly from the managed group.</p>
+                    <span data-i18n="l1-title">📥 Message</span>
+                    <p class="node-desc" data-i18n="l1-desc">Incoming message is captured directly from the managed group.</p>
                 </div>
                 <div class="pipeline-connector">
                     <div class="pipeline-pulse"></div>
                 </div>
                 <div class="pipeline-node glass" id="node-rule">
-                    <span>🧠 Rule Engine</span>
-                    <p class="node-desc">Cross-references content against regex logic and configured spam limits.</p>
+                    <span data-i18n="l2-title">🧠 Rule Engine</span>
+                    <p class="node-desc" data-i18n="l2-desc">Cross-references content against regex logic and configured spam limits.</p>
                 </div>
                 <div class="pipeline-connector">
                     <div class="pipeline-pulse"></div>
                 </div>
                 <div class="pipeline-node glass" id="node-action">
-                    <span>⚖️ Action</span>
-                    <p class="node-desc">Executes strict enforcement: deletes violation, warns, blocks or removes.</p>
+                    <span data-i18n="l3-title">⚖️ Action</span>
+                    <p class="node-desc" data-i18n="l3-desc">Executes strict enforcement: deletes violation, warns, blocks or removes.</p>
                 </div>
                 <div class="pipeline-connector">
                     <div class="pipeline-pulse"></div>
                 </div>
                 <div class="pipeline-node glass" id="node-report">
-                    <span>📣 Report</span>
-                    <p class="node-desc">Delivers transparent logs to the admin group and a private DM to the user.</p>
+                    <span data-i18n="l4-title">📣 Report</span>
+                    <p class="node-desc" data-i18n="l4-desc">Delivers transparent logs to the admin group and a private DM to the user.</p>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technical Specs -->
+    <section class="container" style="padding: 8rem 0 8rem;">
+        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="tech-title">Architecture & Tech Stack</h2>
+        <p style="text-align: center; color: var(--text-dim); margin-bottom: 4rem;" data-i18n="tech-desc">Built for high availability, massive scale, and zero-maintenance.</p>
+
+        <div class="feature-list" style="margin-top: 0;">
+            <div class="card glass detail-card" style="text-align: center;">
+                <span class="icon">⚙️</span>
+                <h3 data-i18n="t1-title">Node.js & Puppeteer</h3>
+                <p data-i18n="t1-desc">Reliable WhatsApp Web automation utilizing persistent sessions and a self-healing crash recovery protocol.</p>
+            </div>
+            <div class="card glass detail-card" style="text-align: center;">
+                <span class="icon">🗄️</span>
+                <h3 data-i18n="t2-title">SQLite Multitenant</h3>
+                <p data-i18n="t2-desc">Local persistent database structured to handle configurations and warnings for thousands of groups efficiently.</p>
+            </div>
+            <div class="card glass detail-card" style="text-align: center;">
+                <span class="icon">⚡</span>
+                <h3 data-i18n="t3-title">Strict Event Queue</h3>
+                <p data-i18n="t3-desc">Rate-limited message processing pipeline that prevents connection bans and ensures deterministic rule evaluation.</p>
             </div>
         </div>
     </section>
 
     <footer
         style="text-align: center; padding: 4rem; color: var(--text-dim); border-top: 1px solid var(--glass-border);">
-        <p>© 2026 GroupShield - Portfolio Showcase by Nirdahan</p>
+        <p data-i18n="footer-text">© 2026 GroupShield</p>
     </footer>
 
     <script>
@@ -480,6 +499,52 @@
                 setTimeout(runPipelineSim, 1000);
             }
             runPipelineSim();
+        });
+
+        let currentLang = 'he'; // Default
+        
+        function applyTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (window.appTranslations && window.appTranslations[currentLang][key]) {
+                    el.innerHTML = window.appTranslations[currentLang][key];
+                }
+            });
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'he' ? 'en' : 'he';
+            
+            // Update Toggle Button Content
+            const btn = document.getElementById('lang-toggle');
+            btn.innerHTML = currentLang === 'he' ? 'EN | 🌐' : 'עברית | 🌐';
+            
+            // Layout & text direction
+            document.documentElement.lang = currentLang;
+            document.documentElement.dir = currentLang === 'he' ? 'rtl' : 'ltr';
+
+            // Apply translation map
+            applyTranslations();
+
+            // Re-apply array logic
+            const useScripts = currentLang === 'he' 
+                ? { setup: setupScriptData, group: groupScriptData, mgmt: mgmtScriptData, dm: dmScriptData }
+                : window.appScriptsEn;
+
+            window.setupSim.data = useScripts.setup;
+            window.groupSim.data = useScripts.group;
+            window.mgmtSim.data = useScripts.mgmt;
+            window.dmSim.data = useScripts.dm;
+
+            window.setupSim.restart();
+            window.groupSim.restart();
+            window.mgmtSim.restart();
+            window.dmSim.restart();
+        }
+
+        // Apply translations on initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            applyTranslations();
         });
     </script>
 </body>
