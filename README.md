@@ -52,8 +52,4 @@ src/backup.js       → Automated backup jobs
 
 ## Credits
 
-Created by Nirdahan Dahan
-
-## License
-
-ISC
+Created by Nir Dahan
