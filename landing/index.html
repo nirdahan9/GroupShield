@@ -20,11 +20,7 @@
 
 <body>
 
-    <nav style="position: absolute; top: 1.5rem; inset-inline-start: 2rem; inset-inline-end: 2rem; display: flex; justify-content: space-between; align-items: center; z-index: 999; max-width: 1200px; margin: 0 auto; width: calc(100% - 4rem);">
-        <div style="display: flex; gap: 1.5rem; align-items: center;">
-            <a href="#tech-stack" style="color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: color 0.2s;" data-i18n="nav-tech">Architecture</a>
-            <a href="#faq" style="color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: color 0.2s;" data-i18n="nav-faq">FAQ</a>
-        </div>
+    <nav style="position: absolute; top: 1.5rem; inset-inline-start: 2rem; inset-inline-end: 2rem; display: flex; justify-content: flex-end; align-items: center; z-index: 999; max-width: 1200px; margin: 0 auto; width: calc(100% - 4rem);">
         <button id="lang-toggle" onclick="toggleLanguage()" style="background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); padding: 0.5rem 1rem; border-radius: 20px; color: white; cursor: pointer; font-family: var(--font-sans); font-weight: 600;">EN | 🌐</button>
     </nav>
     <section class="hero" style="padding: 6rem 0 3rem; position: relative;">
@@ -35,9 +31,11 @@
                 GroupShield
             </h1>
             <p data-i18n="hero-desc">Moderating large WhatsApp groups is a nightmare. GroupShield automates it with custom rules, bilingual support, and a self-healing architecture.</p>
-            <div class="cta">
+            <div class="cta" style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
                 <a href="#features" class="btn btn-primary" data-i18n="btn-features">Discover Features</a>
                 <a href="#demo-chat-window" class="btn" style="background: var(--secondary); color: #000; border: none; font-weight: 600;" data-i18n="btn-demo">Experience GroupShield</a>
+                <a href="#tech-stack" class="btn" style="border: 1px solid var(--glass-border); color: white; background: rgba(255,255,255,0.05); font-weight: 600;" data-i18n="nav-tech">Architecture</a>
+                <a href="#faq" class="btn" style="border: 1px solid var(--glass-border); color: white; background: rgba(255,255,255,0.05); font-weight: 600;" data-i18n="nav-faq">FAQ</a>
             </div>
         </div>
     </section>
