@@ -249,7 +249,7 @@ const dmScriptDataEn = [
     { sender: 'user', isOutgoing: true, text: "Agree", appearanceDelay: 2500 },
     { sender: 'bot', senderName: 'GroupShield', isOutgoing: false, text: '✅ You agreed to the rules.\n\nYou have been added to the group. Enjoy!', typingDelay: 800, appearanceDelay: 1000 },
     { systemNote: "⏳ A few minutes later after the user sent a message...", appearanceDelay: 3000 },
-    { sender: 'bot', senderName: 'GroupShield', isOutgoing: false, text: '🚫 *You were removed from "Shabbat Shalom"*\n\n📝 *Reason:* Content completely violates rules, etc.', typingDelay: 1200, appearanceDelay: 4000 },
+    { sender: 'bot', senderName: 'GroupShield', isOutgoing: false, text: '🚫 *You were removed from "Shabbat Shalom"*\n\n📝 *Reason:* Invalid content\n📅 *Time:* 16:42', typingDelay: 1200, appearanceDelay: 4000 },
     { systemNote: "🚫 GroupShield blocked Yossi Spammer", appearanceDelay: 800 }
 ];
 
