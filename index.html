@@ -20,7 +20,11 @@
 
 <body>
 
-    <nav style="position: absolute; top: 1.5rem; right: 2rem; z-index: 999;">
+    <nav style="position: absolute; top: 1.5rem; inset-inline-start: 2rem; inset-inline-end: 2rem; display: flex; justify-content: space-between; align-items: center; z-index: 999; max-width: 1200px; margin: 0 auto; width: calc(100% - 4rem);">
+        <div style="display: flex; gap: 1.5rem; align-items: center;">
+            <a href="#tech-stack" style="color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: color 0.2s;" data-i18n="nav-tech">Architecture</a>
+            <a href="#faq" style="color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: color 0.2s;" data-i18n="nav-faq">FAQ</a>
+        </div>
         <button id="lang-toggle" onclick="toggleLanguage()" style="background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); padding: 0.5rem 1rem; border-radius: 20px; color: white; cursor: pointer; font-family: var(--font-sans); font-weight: 600;">EN | 🌐</button>
     </nav>
     <section class="hero" style="padding: 6rem 0 3rem; position: relative;">
@@ -203,7 +207,7 @@
     </section>
 
     <!-- Technical Specs -->
-    <section class="container" style="padding: 8rem 0 8rem;">
+    <section id="tech-stack" class="container" style="padding: 8rem 0 8rem;">
         <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="tech-title">Architecture & Tech Stack</h2>
         <p style="text-align: center; color: var(--text-dim); margin-bottom: 4rem;" data-i18n="tech-desc">Built for high availability, massive scale, and zero-maintenance.</p>
 
@@ -233,11 +237,16 @@
                 <h3 data-i18n="t5-title">Self-Healing Puppeteer</h3>
                 <p data-i18n="t5-desc">Advanced crash-recovery system that automatically restores the WhatsApp connection if the browser unexpectedly drops.</p>
             </div>
+            <div class="card glass detail-card" style="text-align: center;">
+                <span class="icon">💻</span>
+                <h3 data-i18n="t6-title">No-Code Management</h3>
+                <p data-i18n="t6-desc">Configure complex rules, schedules, and immunity groups intuitively inside WhatsApp. No dashboard required.</p>
+            </div>
         </div>
     </section>
 
     <!-- FAQ Section -->
-    <section class="container" style="padding: 4rem 0 8rem; max-width: 1000px; margin: 0 auto;">
+    <section id="faq" class="container" style="padding: 4rem 0 8rem; max-width: 1000px; margin: 0 auto;">
         <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 3rem;" data-i18n="faq-title">Frequently Asked Questions</h2>
         
         <div class="feature-list" style="margin-top: 0;">
