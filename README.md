@@ -2,7 +2,9 @@
 
 Production-grade WhatsApp moderation engine with a bilingual setup UX, deterministic enforcement pipeline, and operational reliability built for real communities.
 
-## Why this project stands out
+https://nirdahan9.github.io/GroupShield/
+
+## Core strengths
 
 - **Product thinking + backend engineering:** complex rule configuration happens through an intuitive chat flow, without a dashboard.
 - **Real reliability work:** self-healing runtime, PM2 process management, health monitoring, and automated backups.
@@ -48,9 +50,9 @@ src/health.js       → Health checks and self-healing hooks
 src/backup.js       → Automated backup jobs
 ```
 
-## Link
+## Credits
 
-https://nirdahan9.github.io/GroupShield/
+Created by Nirdahan Dahan
 
 ## License
 
