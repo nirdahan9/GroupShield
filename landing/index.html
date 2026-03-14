@@ -24,6 +24,8 @@
         <button id="lang-toggle" onclick="toggleLanguage()" style="background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); padding: 0.5rem 1rem; border-radius: 20px; color: white; cursor: pointer; font-family: var(--font-sans); font-weight: 600;">EN | 🌐</button>
     </nav>
     <section class="hero">
+        <section class="container" style="padding: 6rem 0 3rem; position: relative;">
+        <!-- Glowing Background Orbs -->
         <div class="container hero-content animate">
             <h1 style="display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap;">
                 <img src="hero.png" alt="GroupShield Logo" style="width: 65px; height: 65px; border-radius: 50%; object-fit: cover; border: 2px solid var(--secondary); box-shadow: 0 0 15px rgba(0, 255, 163, 0.4);">
@@ -114,8 +116,8 @@
                                 style="background: var(--secondary); width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#000; font-weight:800;">
                                 ש</div>
                             <div>
-                                <div style="font-weight: 600; font-size: 1.05rem;" id="demo-group-name">שבת שלום</div>
-                                <div style="font-size: 0.75rem; color: var(--text-dim);">243 חברים</div>
+                                <div style="font-weight: 600; font-size: 1.05rem;" id="demo-group-name" data-i18n="sim-g-name">שבת שלום</div>
+                                <div style="font-size: 0.75rem; color: var(--text-dim);" data-i18n="sim-g-members">243 חברים</div>
                             </div>
                         </div>
                         <button id="replay-group-btn" data-i18n="btn-replay-group"
@@ -134,8 +136,8 @@
                                 style="background: #10b981; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#000; font-weight:800;">
                                 ה</div>
                             <div>
-                                <div style="font-weight: 600; font-size: 1.05rem;">הנהלה - שבת שלום</div>
-                                <div style="font-size: 0.75rem; color: var(--text-dim);">3 מנהלים</div>
+                                <div style="font-weight: 600; font-size: 1.05rem;" data-i18n="sim-m-name">הנהלה - שבת שלום</div>
+                                <div style="font-size: 0.75rem; color: var(--text-dim);" data-i18n="sim-m-members">3 מנהלים</div>
                             </div>
                         </div>
                     </div>
@@ -320,9 +322,10 @@
 
                 const statusIcon = isOutgoing ? `<span class="status">✓✓</span>` : '';
 
+                const currentDir = document.documentElement.dir || 'rtl';
                 bubble.innerHTML = `
                     ${senderText}
-                    <div class="bubble-text" dir="rtl">${this.parseMarkdown(msg.text)}</div>
+                    <div class="bubble-text" dir="${currentDir}">${this.parseMarkdown(msg.text)}</div>
                     <div class="bubble-meta"><span class="timestamp">${time}</span>${statusIcon}</div>
                 `;
                 return bubble;

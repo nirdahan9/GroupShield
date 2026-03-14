@@ -601,19 +601,24 @@ body {
 
 /* Responsive Extensions */
 .chat-bubble.deleted-anim {
-  opacity: 0.5;
+  opacity: 0.6;
   transition: opacity 0.5s ease;
-  position: relative;
 }
 
-.chat-bubble.deleted-anim::after {
+.chat-bubble.deleted-anim .bubble-text {
+  position: relative;
+  display: inline-block;
+  color: var(--text-dim) !important;
+}
+
+.chat-bubble.deleted-anim .bubble-text::after {
   content: '';
   position: absolute;
-  left: 10px;
-  right: 10px;
+  left: -2px;
+  right: -2px;
   top: 50%;
   height: 1.5px;
-  background-color: #fecaca;
+  background-color: var(--text-dim);
   transform: scaleX(0);
   transform-origin: center;
   animation: strike 0.3s ease-out 0.1s forwards;
