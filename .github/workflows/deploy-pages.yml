@@ -1,0 +1,27 @@
+name: Deploy Landing Page to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'landing/**'
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Deploy landing/ to gh-pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: landing
+          clean: true
