@@ -601,8 +601,28 @@ body {
 
 /* Responsive Extensions */
 .chat-bubble.deleted-anim {
-  opacity: 0.3;
+  opacity: 0.5;
   transition: opacity 0.5s ease;
+  position: relative;
+}
+
+.chat-bubble.deleted-anim::after {
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 50%;
+  height: 1.5px;
+  background-color: #fecaca;
+  transform: scaleX(0);
+  transform-origin: center;
+  animation: strike 0.3s ease-out 0.1s forwards;
+}
+
+@keyframes strike {
+  to {
+    transform: scaleX(1);
+  }
 }
 
 @media (max-width: 900px) {

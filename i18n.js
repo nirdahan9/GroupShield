@@ -53,6 +53,12 @@ const translations = {
         "faq-2-a": "Absolutely. A single GroupShield instance can seamlessly manage thousands of groups, each with its own independent rule configuration.",
         "faq-3-q": "What happens if the bot crashes?",
         "faq-3-a": "GroupShield is built with a self-healing architecture. It automatically detects connection drops and safely restarts the browser session without missing any backend data.",
+        "faq-4-q": "Does it read images or files?",
+        "faq-4-a": "No. GroupShield currently only processes text messages. You can optionally configure it to automatically block all non-text media if you wish.",
+        "faq-5-q": "What's the maximum group size?",
+        "faq-5-a": "GroupShield works flawlessly with WhatsApp's maximum group size (1024 members) and handles high-volume message traffic effortlessly.",
+        "faq-6-q": "Do I need technical knowledge?",
+        "faq-6-a": "Not at all. The entire setup process is done through an intuitive chat interface directly in WhatsApp.",
         "footer-text": "© 2026 GroupShield | Created by Nirdahan"
     },
     he: {
@@ -109,6 +115,12 @@ const translations = {
         "faq-2-a": "בהחלט. בוט אחד יכול לנהל אלפי קבוצות שונות במקביל, כשכל קבוצה מקבלת טבלת חוקים ותצורת אכיפה משלה לחלוטין.",
         "faq-3-q": "מה קורה אם הבוט קורס?",
         "faq-3-a": "המערכת בנויה בארכיטקטורה יציבה בעלת יכולת התאוששות עצמית. במקרה של ניתוק, הבוט מזהה זאת ומרים מחדש את החיבור בשקיפות מלאה למשתמשים.",
+        "faq-4-q": "האם הבוט קורא תמונות או קבצים?",
+        "faq-4-a": "לא. GroupShield מנתח כרגע הודעות טקסט בלבד. ניתן להגדיר לו במידת הצורך לחסום אוטומטית כל תוכן שאינו טקסט (כגון תמונות וסרטונים).",
+        "faq-5-q": "מה גודל הקבוצה המקסימלי?",
+        "faq-5-a": "הבוט עובד בצורה מושלמת עם הגודל המקסימלי שוואטסאפ מאפשרת (1024 משתתפים) ומתמודד בקלות עם עומסי הודעות כבדים.",
+        "faq-6-q": "נדרש ידע טכני כדי להפעיל אותו?",
+        "faq-6-a": "ממש לא. כל תהליך ההגדרה והניהול מתבצע דרך ממשק צ'אט אינטראקטיבי ופשוט בוואטסאפ.",
         "footer-text": "© 2026 GroupShield | נבנה על ידי ניר דהן"
     }
 };

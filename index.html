@@ -33,7 +33,6 @@
             <div class="cta">
                 <a href="#features" class="btn btn-primary" data-i18n="btn-features">Discover Features</a>
                 <a href="#demo-chat-window" class="btn" style="background: var(--secondary); color: #000; border: none; font-weight: 600;" data-i18n="btn-demo">Experience GroupShield</a>
-                <a href="https://github.com/nirdahan9/GroupShield" class="btn" style="border: 1px solid var(--glass-border); color: white; background: rgba(255,255,255,0.05); font-weight: 600;">GitHub Repo</a>
             </div>
         </div>
     </section>
@@ -237,22 +236,39 @@
     </section>
 
     <!-- FAQ Section -->
-    <section class="container" style="padding: 4rem 0 8rem; max-width: 800px; margin: 0 auto;">
+    <section class="container" style="padding: 4rem 0 8rem; max-width: 1000px; margin: 0 auto;">
         <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 3rem;" data-i18n="faq-title">Frequently Asked Questions</h2>
         
-        <div class="glass" style="margin-bottom: 1rem; padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--secondary);">
-            <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-1-q">Is my privacy protected?</h3>
-            <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-1-a">Yes. GroupShield does not save your messages. Message contents are strictly evaluated in memory and discarded immediately unless a violation occurs (for reporting purposes only).</p>
-        </div>
-        
-        <div class="glass" style="margin-bottom: 1rem; padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--secondary);">
-            <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-2-q">Can I use it on multiple groups?</h3>
-            <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-2-a">Absolutely. A single GroupShield instance can seamlessly manage thousands of groups, each with its own independent rule configuration.</p>
-        </div>
-        
-        <div class="glass" style="margin-bottom: 1rem; padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--secondary);">
-            <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-3-q">What happens if the bot crashes?</h3>
-            <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-3-a">GroupShield is built with a self-healing architecture. It automatically detects connection drops and safely restarts the browser session without missing any backend data.</p>
+        <div class="feature-list" style="margin-top: 0;">
+            <div class="card glass detail-card" style="text-align: center;">
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-1-q">Is my privacy protected?</h3>
+                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-1-a">Yes. GroupShield does not save your messages. Message contents are strictly evaluated in memory and discarded immediately unless a violation occurs (for reporting purposes only).</p>
+            </div>
+            
+            <div class="card glass detail-card" style="text-align: center;">
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-2-q">Can I use it on multiple groups?</h3>
+                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-2-a">Absolutely. A single GroupShield instance can seamlessly manage thousands of groups, each with its own independent rule configuration.</p>
+            </div>
+            
+            <div class="card glass detail-card" style="text-align: center;">
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-3-q">What happens if the bot crashes?</h3>
+                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-3-a">GroupShield is built with a self-healing architecture. It automatically detects connection drops and safely restarts the browser session without missing any backend data.</p>
+            </div>
+
+            <div class="card glass detail-card" style="text-align: center;">
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-4-q">Does it read images or files?</h3>
+                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-4-a">No. GroupShield currently only processes text messages. You can optionally configure it to automatically block all non-text media if you wish.</p>
+            </div>
+
+            <div class="card glass detail-card" style="text-align: center;">
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-5-q">What's the maximum group size?</h3>
+                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-5-a">GroupShield works flawlessly with WhatsApp's maximum group size (1024 members) and handles high-volume message traffic effortlessly.</p>
+            </div>
+
+            <div class="card glass detail-card" style="text-align: center;">
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-6-q">Do I need technical knowledge?</h3>
+                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-6-a">Not at all. The entire setup process is done through an intuitive chat interface directly in WhatsApp.</p>
+            </div>
         </div>
     </section>
 
@@ -339,21 +355,29 @@
                 }
             }
 
+            stop() {
+                this.isReplaying = false;
+                this._playId = null;
+            }
+
             async play() {
                 this.stop();
                 this.isReplaying = true;
+                const currentPlayId = Symbol();
+                this._playId = currentPlayId;
+                
                 this.container.innerHTML = '';
 
                 // Add initial date badge
                 this.container.appendChild(this.createSystemNote('Today'));
 
                 for (const msg of this.data) {
-                    if (!this.isReplaying) break;
+                    if (!this.isReplaying || this._playId !== currentPlayId) break;
 
                     if (msg.appearanceDelay) {
                         await new Promise(r => setTimeout(r, msg.appearanceDelay * 1.5));
                     }
-                    if (!this.isReplaying) break;
+                    if (!this.isReplaying || this._playId !== currentPlayId) break;
 
                     if (msg.systemNote) {
                         this.container.appendChild(this.createSystemNote(msg.systemNote));
@@ -372,12 +396,14 @@
 
                         await new Promise(r => setTimeout(r, delay));
 
+                        if (!this.isReplaying || this._playId !== currentPlayId) break;
+
                         if (this.typingBubble && this.typingBubble.parentNode) {
                             this.container.removeChild(this.typingBubble);
                         }
                     }
 
-                    if (!this.isReplaying) break;
+                    if (!this.isReplaying || this._playId !== currentPlayId) break;
                     const bubble = this.createBubble(msg);
                     this.container.appendChild(bubble);
                     this.scrollToBottom();
@@ -390,10 +416,6 @@
                         }, msg.deleteAfter * 1.5);
                     }
                 }
-            }
-
-            stop() {
-                this.isReplaying = false;
             }
         }
 
