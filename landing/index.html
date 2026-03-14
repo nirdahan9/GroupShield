@@ -33,6 +33,7 @@
             <div class="cta">
                 <a href="#features" class="btn btn-primary" data-i18n="btn-features">Discover Features</a>
                 <a href="#demo-chat-window" class="btn" style="background: var(--secondary); color: #000; border: none; font-weight: 600;" data-i18n="btn-demo">Experience GroupShield</a>
+                <a href="https://github.com/nirdahan9/GroupShield" class="btn" style="border: 1px solid var(--glass-border); color: white; background: rgba(255,255,255,0.05); font-weight: 600;">GitHub Repo</a>
             </div>
         </div>
     </section>
@@ -42,32 +43,32 @@
         <p style="text-align: center; color: var(--text-dim); margin-bottom: 4rem;" data-i18n="features-desc">One bot to rule them all. Simple for admins, transparent for users.</p>
 
         <div class="feature-list">
-            <div class="card glass detail-card">
+            <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">🤖</span>
                 <h3 data-i18n="f1-title">Interactive Setup</h3>
                 <p data-i18n="f1-desc">No complex dashboards. Configure rules, languages, and enforcement steps through a natural DM conversation.</p>
             </div>
-            <div class="card glass detail-card">
+            <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">⏰</span>
                 <h3 data-i18n="f2-title">Time Windows</h3>
                 <p data-i18n="f2-desc">Define precise hours when messages are allowed. Perfect for forum-style groups.</p>
             </div>
-            <div class="card glass detail-card">
+            <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">🚫</span>
                 <h3 data-i18n="f3-title">Content Filter</h3>
                 <p data-i18n="f3-desc">Block forbidden phrases or enforce "Allowed Only" lists. Supports exact matches and regex containment.</p>
             </div>
-            <div class="card glass detail-card">
+            <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">🔄</span>
                 <h3 data-i18n="f4-title">Anti-Spam</h3>
                 <p data-i18n="f4-desc">Prevent flood attacks with configurable limits for consecutive identical messages and daily volume.</p>
             </div>
-            <div class="card glass detail-card">
+            <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">⚖️</span>
                 <h3 data-i18n="f5-title">Gradual Enforcement</h3>
                 <p data-i18n="f5-desc">Warn, Delete, Remove, Block. You define the escalation path that fits your community culture.</p>
             </div>
-            <div class="card glass detail-card">
+            <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">🌍</span>
                 <h3 data-i18n="f6-title">Bilingual Support</h3>
                 <p data-i18n="f6-desc">Full support for Hebrew and English out of the box, ensuring every user understands the rules.</p>
@@ -222,12 +223,43 @@
                 <h3 data-i18n="t3-title">Strict Event Queue</h3>
                 <p data-i18n="t3-desc">Rate-limited message processing pipeline that prevents connection bans and ensures deterministic rule evaluation.</p>
             </div>
+            <div class="card glass detail-card" style="text-align: center;">
+                <span class="icon">🐳</span>
+                <h3 data-i18n="t4-title">Dockerized Architecture</h3>
+                <p data-i18n="t4-desc">Containerized setup for effortless deployment across any cloud provider with zero dependency conflicts.</p>
+            </div>
+            <div class="card glass detail-card" style="text-align: center;">
+                <span class="icon">🩹</span>
+                <h3 data-i18n="t5-title">Self-Healing Puppeteer</h3>
+                <p data-i18n="t5-desc">Advanced crash-recovery system that automatically restores the WhatsApp connection if the browser unexpectedly drops.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="container" style="padding: 4rem 0 8rem; max-width: 800px; margin: 0 auto;">
+        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 3rem;" data-i18n="faq-title">Frequently Asked Questions</h2>
+        
+        <div class="glass" style="margin-bottom: 1rem; padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--secondary);">
+            <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-1-q">Is my privacy protected?</h3>
+            <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-1-a">Yes. GroupShield does not save your messages. Message contents are strictly evaluated in memory and discarded immediately unless a violation occurs (for reporting purposes only).</p>
+        </div>
+        
+        <div class="glass" style="margin-bottom: 1rem; padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--secondary);">
+            <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-2-q">Can I use it on multiple groups?</h3>
+            <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-2-a">Absolutely. A single GroupShield instance can seamlessly manage thousands of groups, each with its own independent rule configuration.</p>
+        </div>
+        
+        <div class="glass" style="margin-bottom: 1rem; padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--secondary);">
+            <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-3-q">What happens if the bot crashes?</h3>
+            <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-3-a">GroupShield is built with a self-healing architecture. It automatically detects connection drops and safely restarts the browser session without missing any backend data.</p>
         </div>
     </section>
 
     <footer
         style="text-align: center; padding: 4rem; color: var(--text-dim); border-top: 1px solid var(--glass-border);">
         <p data-i18n="footer-text">© 2026 GroupShield</p>
+        <a href="https://github.com/nirdahan9/GroupShield" target="_blank" style="color: inherit; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); padding: 0.5rem 1rem; border-radius: 20px; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-top: 1.5rem; transition: background 0.3s;">GitHub Repository</a>
     </footer>
 
     <script>
@@ -448,16 +480,16 @@
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
-            const setupSimulator = new ConversationSimulator('setup-container', setupScriptData);
-            const groupSimulator = new ConversationSimulator('group-container', groupScriptData);
-            const mgmtSimulator = new ConversationSimulator('mgmt-container', mgmtScriptData);
-            const dmSimulator = new ConversationSimulator('dm-container', dmScriptData);
+            window.setupSim = new ConversationSimulator('setup-container', setupScriptData);
+            window.groupSim = new ConversationSimulator('group-container', groupScriptData);
+            window.mgmtSim = new ConversationSimulator('mgmt-container', mgmtScriptData);
+            window.dmSim = new ConversationSimulator('dm-container', dmScriptData);
 
             const btn1 = document.getElementById('replay-setup-btn');
             btn1.addEventListener('click', () => {
                 btn1.style.transform = 'scale(0.95)';
                 setTimeout(() => btn1.style.transform = 'scale(1)', 150);
-                setupSimulator.play();
+                window.setupSim.play();
             });
 
             const btn2 = document.getElementById('replay-group-btn');
@@ -465,19 +497,19 @@
                 btn2.addEventListener('click', () => {
                     btn2.style.transform = 'scale(0.95)';
                     setTimeout(() => btn2.style.transform = 'scale(1)', 150);
-                    groupSimulator.play();
-                    mgmtSimulator.play();
-                    dmSimulator.play();
+                    window.groupSim.play();
+                    window.mgmtSim.play();
+                    window.dmSim.play();
                 });
             }
 
             const observer = new IntersectionObserver((entries) => {
                 if (entries[0].isIntersecting) {
-                    setupSimulator.play();
+                    window.setupSim.play();
                     setTimeout(() => {
-                        groupSimulator.play();
-                        mgmtSimulator.play();
-                        dmSimulator.play();
+                        window.groupSim.play();
+                        window.mgmtSim.play();
+                        window.dmSim.play();
                     }, 2000);
                     observer.disconnect();
                 }
