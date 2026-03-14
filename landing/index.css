@@ -574,11 +574,22 @@ body {
   width: 100%;
   height: 100%;
   background: linear-gradient(90deg, transparent, var(--primary), transparent);
-  animation: pulse 2s infinite;
+  animation: pulse-ltr 2s infinite;
 }
 
-@keyframes pulse {
+@keyframes pulse-ltr {
   to { left: 100%; }
+}
+
+html[dir="rtl"] .pipeline-pulse {
+  left: auto;
+  right: -100%;
+  background: linear-gradient(270deg, transparent, var(--primary), transparent);
+  animation: pulse-rtl 2s infinite;
+}
+
+@keyframes pulse-rtl {
+  to { right: 100%; }
 }
 
 .active-node {
@@ -635,5 +646,18 @@ body {
   .group-window { height: 520px; }
   .pipeline-track { flex-direction: column; gap: 2rem; }
   .pipeline-connector { width: 2px; height: 40px; }
-  .pipeline-pulse { top: -100%; left: 0; width: 100%; height: 100%; background: linear-gradient(180deg, transparent, var(--primary), transparent); }
+  .pipeline-pulse,
+  html[dir="rtl"] .pipeline-pulse {
+    top: -100%;
+    left: 0;
+    right: auto;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, transparent, var(--primary), transparent);
+    animation: pulse-vertical 2s infinite;
+  }
+}
+
+@keyframes pulse-vertical {
+  to { top: 100%; }
 }
