@@ -82,7 +82,7 @@ const translations = {
         "faq-5-a": "GroupShield works flawlessly with WhatsApp's maximum group size (1024 members) and handles high-volume message traffic effortlessly.",
         "faq-6-q": "Do I need technical knowledge?",
         "faq-6-a": "Not at all. The entire setup process is done through an intuitive chat interface directly in WhatsApp.",
-        "footer-text": "© 2026 GroupShield | Created by Nirdahan"
+        "footer-text": "© 2026 GroupShield | Created by Nir Dahan"
     },
     he: {
         "hero-desc": "מערכת אוטומציה מבוססת Node.js ו-Puppeteer בעלת מנגנון התאוששות עצמית (Self-Healing). הפרויקט מציג ארכיטקטורת Multitenant מבוססת SQLite ויכולת מתקדמת לעיבוד אירועים (Event-Driven) בקנה מידה רחב.",
