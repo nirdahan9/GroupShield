@@ -538,7 +538,20 @@ async function buildMgmtGroupStatusResponse(client, content, groups, lang) {
         } catch (e) { }
 
         const activeWarnings = await database.getActiveWarningsCount(g.groupId);
-        lines.push(`🛡️ ${g.groupName} | 👥 ${memberCount} | ⚠️ ${activeWarnings}`);
+
+        // Determine status emoji based on group status
+        let statusEmoji = '🟢';
+        if (g.status && g.status.startsWith('PAUSED_UNTIL:')) {
+            const until = new Date(g.status.split('PAUSED_UNTIL:')[1]);
+            const timeStr = until.toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem', hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' });
+            statusEmoji = `⏸️ (עד ${timeStr})`;
+        } else if (g.status === 'PENDING_ADMIN_ACTION') {
+            statusEmoji = '⚠️';
+        } else if (g.status === 'PENDING_ADMIN_RESUME') {
+            statusEmoji = '🔄';
+        }
+
+        lines.push(`${statusEmoji} ${g.groupName} | 👥 ${memberCount} | ⚠️ ${activeWarnings}`);
     }
 
     const time = new Date().toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' });
@@ -688,8 +701,19 @@ async function handleAdminActionResponse(client, msg, senderJid, content, lang) 
 
     if (authorizedGroups.length === 0) return false;
 
-    // Take the most recently pending group if multiple exist (rare)
-    const targetGroup = authorizedGroups[authorizedGroups.length - 1];
+    // Handle multiple pending groups — ask which one if more than one
+    if (authorizedGroups.length > 1) {
+        let promptMsg = lang === 'he'
+            ? '⚠️ יש מספר קבוצות שממתינות לפעולה. על איזו קבוצה הפעולה מתייחסת?\n'
+            : '⚠️ Multiple groups are awaiting action. Which group does this apply to?\n';
+        authorizedGroups.forEach((g, idx) => {
+            promptMsg += `${idx + 1}. ${g.groupName}\n`;
+        });
+        await msg.reply(promptMsg);
+        return true;
+    }
+
+    const targetGroup = authorizedGroups[0];
 
     if (targetGroup.status === 'PENDING_ADMIN_ACTION') {
         if (text === '1') {
@@ -815,7 +839,7 @@ async function refreshManagedGroupNames(client) {
     }
 
     // ── 2. Check for new group name changes ────────────────────────────────────
-    const groups = await database.getAllActiveGroups();
+    const groups = await database.getAllManagedGroupsForNameRefresh();
 
     for (const g of groups) {
         try {

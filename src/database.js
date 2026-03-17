@@ -146,7 +146,7 @@ class Database {
             this.db.run(`CREATE TABLE IF NOT EXISTS pending_group_actions (
                 userJid TEXT PRIMARY KEY,
                 action TEXT NOT NULL,
-                duration INTEGER,
+                duration TEXT,
                 optionsData TEXT NOT NULL,
                 createdAt TEXT NOT NULL
             )`);
@@ -164,6 +164,29 @@ class Database {
                     if (!hasStatusCol) {
                         this.db.run("ALTER TABLE groups ADD COLUMN status TEXT DEFAULT 'ACTIVE'");
                         logger.info("Migrated schema: Added status to groups");
+                    }
+                }
+            });
+
+            // Migrate pending_group_actions.duration from INTEGER to TEXT if needed
+            this.db.all("PRAGMA table_info(pending_group_actions)", (err, rows) => {
+                if (!err && rows) {
+                    const durationCol = rows.find(r => r.name === 'duration');
+                    if (durationCol && durationCol.type === 'INTEGER') {
+                        // SQLite doesn't support ALTER COLUMN, recreate the table
+                        this.db.serialize(() => {
+                            this.db.run(`CREATE TABLE IF NOT EXISTS pending_group_actions_new (
+                                userJid TEXT PRIMARY KEY,
+                                action TEXT NOT NULL,
+                                duration TEXT,
+                                optionsData TEXT NOT NULL,
+                                createdAt TEXT NOT NULL
+                            )`);
+                            this.db.run(`INSERT OR IGNORE INTO pending_group_actions_new SELECT userJid, action, CAST(duration AS TEXT), optionsData, createdAt FROM pending_group_actions`);
+                            this.db.run(`DROP TABLE pending_group_actions`);
+                            this.db.run(`ALTER TABLE pending_group_actions_new RENAME TO pending_group_actions`);
+                            logger.info('Migrated schema: pending_group_actions.duration to TEXT');
+                        });
                     }
                 }
             });
@@ -430,16 +453,12 @@ class Database {
         return this._all("SELECT * FROM groups WHERE active = 1 AND verified = 1 AND status = 'ACTIVE'");
     }
 
-    async getAllGroups() {
-        return this._all('SELECT * FROM groups WHERE verified = 1 ORDER BY createdAt ASC');
+    async getAllManagedGroupsForNameRefresh() {
+        return this._all("SELECT * FROM groups WHERE active = 1 AND verified = 1");
     }
 
-    async getActiveWarningCount(groupId) {
-        const row = await this._get(
-            'SELECT COUNT(*) as cnt FROM warnings WHERE groupId = ?',
-            [groupId]
-        );
-        return row ? row.cnt : 0;
+    async getAllGroups() {
+        return this._all('SELECT * FROM groups WHERE verified = 1 ORDER BY createdAt ASC');
     }
 
     async getGroupErrors(groupId) {
@@ -458,6 +477,33 @@ class Database {
             failedRecent: failed ? failed.cnt : 0,
             staleStuck: stale ? stale.cnt : 0
         };
+    }
+
+    async getAllGroupErrors() {
+        const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const staleThreshold = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+        const failed = await this._all(
+            `SELECT groupId, COUNT(*) as cnt FROM enforcement_actions WHERE status = 'failed' AND createdAt > ? GROUP BY groupId`,
+            [since24h]
+        );
+        const stale = await this._all(
+            `SELECT groupId, COUNT(*) as cnt FROM enforcement_actions WHERE status = 'started' AND createdAt < ? GROUP BY groupId`,
+            [staleThreshold]
+        );
+        const failedMap = {};
+        const staleMap = {};
+        failed.forEach(r => { failedMap[r.groupId] = r.cnt; });
+        stale.forEach(r => { staleMap[r.groupId] = r.cnt; });
+        return { failedMap, staleMap };
+    }
+
+    async getAllPendingNameChanges() {
+        const rows = await this._all(
+            `SELECT groupId, requestId FROM group_name_change_requests WHERE status = 'pending'`
+        );
+        const map = {};
+        rows.forEach(r => { map[r.groupId] = r.requestId; });
+        return map;
     }
 
     async deleteGroup(groupId) {
@@ -638,37 +684,38 @@ class Database {
     }
 
     async incrementWarning(groupId, userJid) {
-        const existing = await this._get(
-            'SELECT * FROM warnings WHERE groupId = ? AND userJid = ?',
+        const now = new Date().toISOString();
+        const expiryThreshold = this._getWarningsExpiryThresholdIso();
+
+        // Use atomic INSERT OR REPLACE to handle both create and update in one transaction
+        await this._run(
+            `INSERT INTO warnings (groupId, userJid, count, lastWarningAt)
+             VALUES (?, ?, 1, ?)
+             ON CONFLICT(groupId, userJid) DO UPDATE SET
+               count = CASE WHEN lastWarningAt < ? THEN 1 ELSE count + 1 END,
+               lastWarningAt = ?`,
+            [groupId, userJid, now, expiryThreshold, now]
+        );
+
+        // Now fetch the actual new count from the database
+        const result = await this._get(
+            'SELECT count FROM warnings WHERE groupId = ? AND userJid = ?',
             [groupId, userJid]
         );
-        if (existing) {
-            if (this._isWarningExpired(existing.lastWarningAt)) {
-                await this._run(
-                    'UPDATE warnings SET count = 1, lastWarningAt = ? WHERE groupId = ? AND userJid = ?',
-                    [new Date().toISOString(), groupId, userJid]
-                );
-                return 1;
-            }
-
-            await this._run(
-                'UPDATE warnings SET count = count + 1, lastWarningAt = ? WHERE groupId = ? AND userJid = ?',
-                [new Date().toISOString(), groupId, userJid]
-            );
-            return existing.count + 1;
-        } else {
-            await this._run(
-                'INSERT INTO warnings (groupId, userJid, count, lastWarningAt) VALUES (?, ?, 1, ?)',
-                [groupId, userJid, new Date().toISOString()]
-            );
-            return 1;
-        }
+        return result ? result.count : 1;
     }
 
     async resetWarnings(groupId, userJid) {
         await this._run(
             'DELETE FROM warnings WHERE groupId = ? AND userJid = ?',
             [groupId, userJid]
+        );
+    }
+
+    async decrementWarning(groupId, userJid) {
+        await this._run(
+            'UPDATE warnings SET count = count - 1, lastWarningAt = ? WHERE groupId = ? AND userJid = ? AND count > 0',
+            [new Date().toISOString(), groupId, userJid]
         );
     }
 

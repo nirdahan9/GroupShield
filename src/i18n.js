@@ -124,6 +124,14 @@ const strings = {
         he: '➕ להוסיף עוד טווח זמן?\n\n1️⃣ כן\n2️⃣ לא, המשך',
         en: '➕ Add another time range?\n\n1️⃣ Yes\n2️⃣ No, continue'
     },
+    'ask_time_window_mode': {
+        he: '⏰ *סוג חלון הזמן*\n\nבחר סוג חלון הזמן:\n\n1️⃣ ✅ זמן מותר — הודעות מותרות רק בזמן זה\n2️⃣ 🚫 זמן חסום — הודעות חסומות בזמן זה בלבד',
+        en: '⏰ *Time Window Type*\n\nChoose time window type:\n\n1️⃣ ✅ Allowed window — messages allowed only during this time\n2️⃣ 🚫 Blocked window — messages blocked only during this time'
+    },
+    'time_window_mode_saved': {
+        he: '✅ סוג חלון הזמן: {{mode}}',
+        en: '✅ Time window type: {{mode}}'
+    },
 
     // ── Anti-Spam ────────────────────────────────────────────────────────
     'ask_antispam': {
@@ -458,6 +466,10 @@ const strings = {
     'reason_time_violation': {
         he: 'חריגה מחלון הזמנים',
         en: 'Time window violation'
+    },
+    'reason_time_blocked': {
+        he: 'הקבוצה חסומה בשעות אלה',
+        en: 'The group is blocked during these hours'
     },
     'reason_spam': {
         he: 'ספאם',

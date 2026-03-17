@@ -61,6 +61,8 @@ async function processSetupMessage(client, senderJid, content) {
             return await handleTimeEnd(client, senderJid, content, state, lang);
         case 'time_more':
             return await handleTimeMore(client, senderJid, content, state, lang);
+        case 'time_window_mode':
+            return await handleTimeWindowMode(client, senderJid, content, state, lang);
         case 'antispam':
             return await handleAntiSpam(client, senderJid, content, state, lang);
         case 'spam_max':
@@ -182,7 +184,9 @@ async function handleGroupName(client, jid, content, state, lang) {
 
     // Search for the group among bot's groups
     try {
-        const chats = await client.getChats();
+        const chatsPromise = client.getChats();
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('getChats timeout')), 15000));
+        const chats = await Promise.race([chatsPromise, timeoutPromise]);
         const groups = chats.filter(c => c.isGroup);
 
         // Case-insensitive search
@@ -375,21 +379,24 @@ async function handleRulesContent(client, jid, content, state, lang) {
 
     await saveState(jid, {
         ...state,
-        step: 'non_text_rule',
-        rulesMessages: messages,
-        rulesMatchMode: state.rulesType === 'allowed' ? 'exact' : 'contains'
+        step: 'rules_match_mode',
+        rulesMessages: messages
     });
-    return t('rules_content_saved', lang, { count: messages.length.toString() }) + '\n\n' + t('ask_non_text_rule', lang);
+    return t('rules_content_saved', lang, { count: messages.length.toString() }) + '\n\n' + t('ask_rules_match_mode', lang);
 }
 
 async function handleRulesMatchMode(client, jid, content, state, lang) {
-    // Deprecated step kept for backward compatibility with old setup states
-    await saveState(jid, {
-        ...state,
-        step: 'non_text_rule',
-        rulesMatchMode: state.rulesType === 'allowed' ? 'exact' : 'contains'
-    });
-    return t('ask_non_text_rule', lang);
+    const choice = content.trim();
+    let matchMode = null;
+    if (choice === '1' || choice.includes('מדויק') || choice.toLowerCase() === 'exact') {
+        matchMode = 'exact';
+    } else if (choice === '2' || choice.includes('כולל') || choice.toLowerCase() === 'contains') {
+        matchMode = 'contains';
+    }
+    if (!matchMode) return t('ask_rules_match_mode', lang);
+
+    await saveState(jid, { ...state, step: 'non_text_rule', rulesMatchMode: matchMode });
+    return t('rules_match_mode_saved', lang, { mode: matchMode === 'exact' ? (lang === 'he' ? 'התאמה מדויקת' : 'exact match') : (lang === 'he' ? 'הכלה' : 'contains') }) + '\n\n' + t('ask_non_text_rule', lang);
 }
 
 async function handleNonTextRule(client, jid, content, state, lang) {
@@ -511,10 +518,24 @@ async function handleTimeMore(client, jid, content, state, lang) {
         return t('ask_time_day', lang);
     }
     if (choice === '2' || choice.includes('לא') || choice.toLowerCase() === 'no') {
-        await saveState(jid, { ...state, step: 'antispam' });
-        return t('ask_antispam', lang);
+        await saveState(jid, { ...state, step: 'time_window_mode' });
+        return t('ask_time_window_mode', lang);
     }
     return t('ask_time_more', lang);
+}
+
+async function handleTimeWindowMode(client, jid, content, state, lang) {
+    const choice = content.trim();
+    let windowMode = null;
+    if (choice === '1' || choice.includes('מותר') || choice.toLowerCase() === 'allow') {
+        windowMode = 'allow_in_window';
+    } else if (choice === '2' || choice.includes('חסום') || choice.toLowerCase() === 'block') {
+        windowMode = 'block_in_window';
+    }
+    if (!windowMode) return t('ask_time_window_mode', lang);
+
+    await saveState(jid, { ...state, step: 'antispam', windowMode });
+    return t('time_window_mode_saved', lang, { mode: windowMode === 'allow_in_window' ? (lang === 'he' ? 'זמן מותר' : 'allowed window') : (lang === 'he' ? 'זמן חסום' : 'blocked window') }) + '\n\n' + t('ask_antispam', lang);
 }
 
 async function handleAntiSpam(client, jid, content, state, lang) {
@@ -682,7 +703,9 @@ async function handleMgmtGroupName(client, jid, content, state, lang) {
     if (!groupName) return t('ask_mgmt_group_name', lang);
 
     try {
-        const chats = await client.getChats();
+        const chatsPromise = client.getChats();
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('getChats timeout')), 15000));
+        const chats = await Promise.race([chatsPromise, timeoutPromise]);
         const groups = chats.filter(c => c.isGroup);
         const match = groups.find(g => g.name && (
             g.name.toLowerCase() === groupName.toLowerCase() ||
@@ -873,16 +896,19 @@ async function handleSummary(client, jid, content, state, lang) {
             if (state.rulesType === 'allowed' && state.rulesMessages) {
                 await database.addRule(groupId, 'allowed_messages', {
                     messages: state.rulesMessages,
-                    matchMode: 'exact'
+                    matchMode: state.rulesMatchMode || 'exact'
                 });
             } else if (state.rulesType === 'forbidden' && state.rulesMessages) {
                 await database.addRule(groupId, 'forbidden_messages', {
                     messages: state.rulesMessages,
-                    matchMode: 'contains'
+                    matchMode: state.rulesMatchMode || 'contains'
                 });
             }
             if (state.timeWindows && state.timeWindows.length > 0) {
-                await database.addRule(groupId, 'time_window', { windows: state.timeWindows });
+                await database.addRule(groupId, 'time_window', {
+                    windows: state.timeWindows,
+                    windowMode: state.windowMode || 'allow_in_window'
+                });
             } else if (state.timeWindow) {
                 // Backward-compatible fallback
                 await database.addRule(groupId, 'time_window', state.timeWindow);

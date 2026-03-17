@@ -52,6 +52,7 @@ function evaluateMessage(rules, msgInfo, lang = 'he') {
 function checkAllowedMessages(ruleData, content, msgType, lang) {
     const violations = [];
     const allowedList = ruleData.messages || [];
+    const matchMode = ruleData.matchMode || 'exact';
 
     // Non-text is allowed by default (can be restricted via dedicated block_non_text rule)
     if (msgType !== 'chat') {
@@ -64,6 +65,10 @@ function checkAllowedMessages(ruleData, content, msgType, lang) {
         const target = allowed.trim();
         if (!target) return false;
 
+        if (matchMode === 'contains') {
+            return normalizedContent.toLowerCase().includes(target.toLowerCase());
+        }
+        // exact (default)
         const pattern = new RegExp(`^${escapeRegex(target)}\\s*$`, 'i');
         return pattern.test(normalizedContent);
     });
@@ -109,12 +114,17 @@ function checkNonTextRule(ruleData, msgType, lang) {
 function checkForbiddenMessages(ruleData, content, lang) {
     const violations = [];
     const forbiddenList = ruleData.messages || [];
+    const matchMode = ruleData.matchMode || 'contains';
     const normalizedContent = content.trim().toLowerCase();
 
     const isForbidden = forbiddenList.some(forbidden => {
         const target = forbidden.trim().toLowerCase();
         if (!target) return false;
 
+        if (matchMode === 'exact') {
+            return normalizedContent === target;
+        }
+        // contains (default)
         return normalizedContent.includes(target);
     });
 
@@ -179,8 +189,16 @@ function checkTimeWindow(ruleData, lang) {
             || (currentDay === nextDay && currentMinuteOfDay <= endMinute);
     });
 
-    if (!isAnyWindowOpen) {
-        violations.push(t('reason_time_violation', lang));
+    const windowMode = ruleData.windowMode || 'allow_in_window';
+
+    if (windowMode === 'allow_in_window') {
+        if (!isAnyWindowOpen) {
+            violations.push(t('reason_time_violation', lang));
+        }
+    } else { // block_in_window
+        if (isAnyWindowOpen) {
+            violations.push(t('reason_time_blocked', lang));
+        }
     }
 
     return violations;

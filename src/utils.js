@@ -161,10 +161,11 @@ function buildGroupRulesSummary(groupConfig, rules, enforceConfig, t, lang) {
     // Non-text rules
     const nonTextRule = rules.find(r => r.ruleType === 'block_non_text');
     if (nonTextRule) {
-        if (nonTextRule.ruleData.includes('all_non_text')) {
+        const blockedTypes = nonTextRule.ruleData.blockedTypes || [];
+        if (blockedTypes.includes('all_non_text')) {
             text += `• ${t('rules_summary_no_media', lang)}\n`;
         } else {
-            const types = nonTextRule.ruleData.map(type => t(`type_${type}`, lang)).join(', ');
+            const types = blockedTypes.map(type => t(`type_${type}`, lang)).join(', ');
             text += `• ${t('rules_summary_blocked_media', lang, { types })}\n`;
         }
     }
@@ -177,7 +178,8 @@ function buildGroupRulesSummary(groupConfig, rules, enforceConfig, t, lang) {
 
     const forbiddenRules = rules.find(r => r.ruleType === 'forbidden_messages');
     if (forbiddenRules) {
-        text += `• ${t('rules_summary_forbidden', lang, { count: forbiddenRules.ruleData.length })}\n`;
+        const messageCount = (forbiddenRules.ruleData.messages || []).length;
+        text += `• ${t('rules_summary_forbidden', lang, { count: messageCount })}\n`;
     }
 
     if (!nonTextRule && !allowedRules && !forbiddenRules) {
@@ -188,9 +190,16 @@ function buildGroupRulesSummary(groupConfig, rules, enforceConfig, t, lang) {
     const timeRule = rules.find(r => r.ruleType === 'time_window');
     if (timeRule) {
         text += `\n⏰ ${t('rules_summary_time_window_title', lang)}\n`;
-        timeRule.ruleData.forEach(tw => {
+        const windows = Array.isArray(timeRule.ruleData.windows) ? timeRule.ruleData.windows : [timeRule.ruleData];
+        const fmtMin = m => `${Math.floor(m/60).toString().padStart(2,'0')}:${(m%60).toString().padStart(2,'0')}`;
+        windows.forEach(tw => {
+            const startMin = typeof tw.startMinute === 'number' ? tw.startMinute : (tw.startHour || 0) * 60;
+            const endMin = typeof tw.endMinute === 'number' ? tw.endMinute : (tw.endHour || 0) * 60;
             const dayName = t(`day_${tw.day}`, lang);
-            text += `• ${dayName}: ${tw.start} - ${tw.end}\n`;
+            const modeLabel = timeRule.ruleData.windowMode === 'block_in_window'
+                ? (lang === 'he' ? '🚫 זמן חסום' : '🚫 Blocked window')
+                : (lang === 'he' ? '✅ זמן מותר' : '✅ Allowed window');
+            text += `• ${dayName}: ${fmtMin(startMin)} - ${fmtMin(endMin)} (${modeLabel})\n`;
         });
     }
 

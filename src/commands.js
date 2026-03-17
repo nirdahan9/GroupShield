@@ -125,6 +125,13 @@ async function executeCommand(client, senderJid, command, lang, overrideGroupCon
             return await resetUserWarnings(groupConfig, rawPhone, lang);
         }
 
+        // ── Warning Undo (decrement) ─────────────────────────────────
+        if (cmd.startsWith('בטל אזהרה ') || cmd.startsWith('undo warning ')) {
+            if (!groupConfig) return t('no_group_linked', lang);
+            const rawPhone = cmd.replace(/^(בטל אזהרה |undo warning )/, '').trim();
+            return await undoWarning(groupConfig, rawPhone, lang);
+        }
+
         // ── Restart ──────────────────────────────────────────────────
         if (cmdLower === 'גיבוי' || cmdLower === 'backup') {
             if (!isDeveloper) return t('developer_only_command', lang);
@@ -267,6 +274,32 @@ async function resetUserWarnings(groupConfig, rawPhone, lang) {
     return t('warnings_reset', lang, { number });
 }
 
+async function undoWarning(groupConfig, rawPhone, lang) {
+    const number = parsePhoneNumber(rawPhone);
+    if (!number) return t('invalid_input', lang);
+
+    const jid = number + '@s.whatsapp.net';
+    const currentCount = await database.getWarningCount(groupConfig.groupId, jid);
+
+    if (currentCount === 0) {
+        return lang === 'he'
+            ? `ℹ️ למשתמש ${number} אין אזהרות פעילות.`
+            : `ℹ️ User ${number} has no active warnings.`;
+    }
+
+    if (currentCount === 1) {
+        await database.resetWarnings(groupConfig.groupId, jid);
+    } else {
+        await database.decrementWarning(groupConfig.groupId, jid);
+    }
+
+    const newCount = Math.max(0, currentCount - 1);
+    logger.auditLog(null, 'WARNING_UNDO', `User: ${number}, Group: ${groupConfig.groupName}, ${currentCount} → ${newCount}`, true);
+    return lang === 'he'
+        ? `✅ אזהרה אחת בוטלה עבור ${number}. אזהרות נוכחיות: ${newCount}`
+        : `✅ One warning removed for ${number}. Current warnings: ${newCount}`;
+}
+
 async function pauseEnforcement(client, senderJid, groupConfig, hours, lang) {
     try {
         const ms = hours * 60 * 60 * 1000;
@@ -376,6 +409,10 @@ async function buildFullGroupsStatus(lang) {
         return lang === 'he' ? '📋 אין קבוצות מוגדרות במערכת.' : '📋 No groups configured in the system.';
     }
 
+    // Fetch all errors and pending names once
+    const { failedMap, staleMap } = await database.getAllGroupErrors();
+    const pendingNameMap = await database.getAllPendingNameChanges();
+
     const lines = [];
     lines.push(lang === 'he'
         ? `📋 *סטטוס כל הקבוצות (${allGroups.length})*\n${'─'.repeat(30)}`
@@ -415,29 +452,27 @@ async function buildFullGroupsStatus(lang) {
             reporterLabel = rt;
         }
 
-        // ── Operational Errors ────────────────────────────────
-        const errors = await database.getGroupErrors(g.groupId);
-        const pendingName = await database._get(
-            `SELECT requestId FROM group_name_change_requests WHERE groupId = ? AND status = 'pending'`,
-            [g.groupId]
-        );
+        // ── Operational Errors (from cached maps) ────────────────────
+        const failedRecent = failedMap[g.groupId] || 0;
+        const staleStuck = staleMap[g.groupId] || 0;
+        const pendingName = pendingNameMap[g.groupId] ? { requestId: pendingNameMap[g.groupId] } : null;
 
         const entry = [
             `\n📌 *${g.groupName}*`,
             (lang === 'he' ? `📊 סטטוס: ` : `📊 Status: `) + statusLine,
             (lang === 'he' ? `📣 דיווח: ` : `📣 Reporter: `) + reporterLabel,
         ];
-        if (errors.failedRecent > 0) {
+        if (failedRecent > 0) {
             entry.push(lang === 'he'
-                ? `❌ ${errors.failedRecent} כשל אכיפה (24ש אחרונות)`
-                : `❌ ${errors.failedRecent} enforcement failure(s) in last 24h`);
+                ? `❌ ${failedRecent} כשל אכיפה (24ש אחרונות)`
+                : `❌ ${failedRecent} enforcement failure(s) in last 24h`);
         }
-        if (errors.staleStuck > 0) {
+        if (staleStuck > 0) {
             entry.push(lang === 'he'
-                ? `⏳ ${errors.staleStuck} פעולת אכיפה תקועה (>15 דק')`
-                : `⏳ ${errors.staleStuck} stuck enforcement action(s) (>15 min)`);
+                ? `⏳ ${staleStuck} פעולת אכיפה תקועה (>15 דק')`
+                : `⏳ ${staleStuck} stuck enforcement action(s) (>15 min)`);
         }
-        if (errors.failedRecent === 0 && errors.staleStuck === 0 && g.active) {
+        if (failedRecent === 0 && staleStuck === 0 && g.active) {
             entry.push(lang === 'he' ? '✅ ללא תקלות' : '✅ No errors');
         }
         if (pendingName) {
