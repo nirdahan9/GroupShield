@@ -78,7 +78,7 @@ async function executeCommand(client, senderJid, command, lang, overrideGroupCon
         // ── Resume Enforcement ───────────────────────────────────────
         if (cmdLower === 'המשך אכיפה' || cmdLower === 'resume' || cmdLower === 'חזור לאכוף' || cmdLower === 'resume enforcement') {
             if (!groupConfig) return t('no_group_linked', lang);
-            if (!groupConfig.status || !groupConfig.status.startsWith('PAUSED_UNTIL:')) return null; // Only resume if manually paused
+            if (!groupConfig.status || !groupConfig.status.startsWith('PAUSED_UNTIL:')) return t('enforcement_not_paused', lang);
 
             await database.updateGroupStatus(groupConfig.groupId, 'ACTIVE');
             logger.auditLog(senderJid, 'RESUME_ENFORCEMENT', `Group: ${groupConfig.groupName}`, true);
@@ -102,14 +102,14 @@ async function executeCommand(client, senderJid, command, lang, overrideGroupCon
         if (cmd.startsWith('הוסף חסין ') || cmd.startsWith('exempt add ')) {
             if (!groupConfig) return t('no_group_linked', lang);
             const rawPhone = cmd.replace(/^(הוסף חסין |exempt add )/, '').trim();
-            return await addExemptUser(groupConfig, rawPhone, lang);
+            return await addExemptUser(groupConfig, rawPhone, lang, senderJid);
         }
 
         // ── Exempt Remove ────────────────────────────────────────────
         if (cmd.startsWith('הסר חסין ') || cmd.startsWith('exempt remove ')) {
             if (!groupConfig) return t('no_group_linked', lang);
             const rawPhone = cmd.replace(/^(הסר חסין |exempt remove )/, '').trim();
-            return await removeExemptUser(groupConfig, rawPhone, lang);
+            return await removeExemptUser(groupConfig, rawPhone, lang, senderJid);
         }
 
         // ── Exempt List ──────────────────────────────────────────────
@@ -122,14 +122,14 @@ async function executeCommand(client, senderJid, command, lang, overrideGroupCon
         if (cmd.startsWith('אפס אזהרות ') || cmd.startsWith('warnings reset ')) {
             if (!groupConfig) return t('no_group_linked', lang);
             const rawPhone = cmd.replace(/^(אפס אזהרות |warnings reset )/, '').trim();
-            return await resetUserWarnings(groupConfig, rawPhone, lang);
+            return await resetUserWarnings(groupConfig, rawPhone, lang, senderJid);
         }
 
         // ── Warning Undo (decrement) ─────────────────────────────────
         if (cmd.startsWith('בטל אזהרה ') || cmd.startsWith('undo warning ')) {
             if (!groupConfig) return t('no_group_linked', lang);
             const rawPhone = cmd.replace(/^(בטל אזהרה |undo warning )/, '').trim();
-            return await undoWarning(groupConfig, rawPhone, lang);
+            return await undoWarning(groupConfig, rawPhone, lang, senderJid);
         }
 
         // ── Restart ──────────────────────────────────────────────────
@@ -216,26 +216,26 @@ async function buildUserStatus(client, senderJid, groupConfig, lang) {
 /**
  * Add exempt user
  */
-async function addExemptUser(groupConfig, rawPhone, lang) {
+async function addExemptUser(groupConfig, rawPhone, lang, senderJid = null) {
     const number = parsePhoneNumber(rawPhone);
     if (!number) return t('invalid_input', lang);
 
     const jid = number + '@s.whatsapp.net';
     await database.addExemptUser(groupConfig.groupId, jid);
-    logger.auditLog(null, 'EXEMPT_ADD', `User: ${number}, Group: ${groupConfig.groupName}`, true);
+    logger.auditLog(senderJid, 'EXEMPT_ADD', `User: ${number}, Group: ${groupConfig.groupName}`, true);
     return t('exempt_added', lang, { number });
 }
 
 /**
  * Remove exempt user
  */
-async function removeExemptUser(groupConfig, rawPhone, lang) {
+async function removeExemptUser(groupConfig, rawPhone, lang, senderJid = null) {
     const number = parsePhoneNumber(rawPhone);
     if (!number) return t('invalid_input', lang);
 
     const jid = number + '@s.whatsapp.net';
     await database.removeExemptUser(groupConfig.groupId, jid);
-    logger.auditLog(null, 'EXEMPT_REMOVE', `User: ${number}, Group: ${groupConfig.groupName}`, true);
+    logger.auditLog(senderJid, 'EXEMPT_REMOVE', `User: ${number}, Group: ${groupConfig.groupName}`, true);
     return t('exempt_removed', lang, { number });
 }
 
@@ -264,17 +264,17 @@ async function listExemptUsers(client, groupConfig, lang) {
 /**
  * Reset warnings for a user
  */
-async function resetUserWarnings(groupConfig, rawPhone, lang) {
+async function resetUserWarnings(groupConfig, rawPhone, lang, senderJid = null) {
     const number = parsePhoneNumber(rawPhone);
     if (!number) return t('invalid_input', lang);
 
     const jid = number + '@s.whatsapp.net';
     await database.resetWarnings(groupConfig.groupId, jid);
-    logger.auditLog(null, 'WARNINGS_RESET', `User: ${number}, Group: ${groupConfig.groupName}`, true);
+    logger.auditLog(senderJid, 'WARNINGS_RESET', `User: ${number}, Group: ${groupConfig.groupName}`, true);
     return t('warnings_reset', lang, { number });
 }
 
-async function undoWarning(groupConfig, rawPhone, lang) {
+async function undoWarning(groupConfig, rawPhone, lang, senderJid = null) {
     const number = parsePhoneNumber(rawPhone);
     if (!number) return t('invalid_input', lang);
 
@@ -294,7 +294,7 @@ async function undoWarning(groupConfig, rawPhone, lang) {
     }
 
     const newCount = Math.max(0, currentCount - 1);
-    logger.auditLog(null, 'WARNING_UNDO', `User: ${number}, Group: ${groupConfig.groupName}, ${currentCount} → ${newCount}`, true);
+    logger.auditLog(senderJid, 'WARNING_UNDO', `User: ${number}, Group: ${groupConfig.groupName}, ${currentCount} → ${newCount}`, true);
     return lang === 'he'
         ? `✅ אזהרה אחת בוטלה עבור ${number}. אזהרות נוכחיות: ${newCount}`
         : `✅ One warning removed for ${number}. Current warnings: ${newCount}`;
@@ -538,7 +538,9 @@ async function isAuthorizedNameChangeResponder(client, senderJid, groupConfig) {
     }
 
     if (target.startsWith('phone:')) {
-        const phoneJid = target.split(':')[1] + '@s.whatsapp.net';
+        const phone = target.split(':')[1];
+        if (!phone) return false;
+        const phoneJid = phone + '@s.whatsapp.net';
         return normalizedSender === phoneJid;
     }
 

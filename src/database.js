@@ -529,10 +529,16 @@ class Database {
 
     async getRules(groupId) {
         const rows = await this._all('SELECT * FROM rules WHERE groupId = ? AND enabled = 1', [groupId]);
-        return rows.map(r => ({
-            ...r,
-            ruleData: JSON.parse(r.ruleData)
-        }));
+        return rows.map(r => {
+            let ruleData;
+            try {
+                ruleData = JSON.parse(r.ruleData);
+            } catch (e) {
+                logger.error(`Corrupt ruleData for rule ${r.id} in group ${groupId}`, e);
+                ruleData = null;
+            }
+            return { ...r, ruleData };
+        });
     }
 
     async clearRules(groupId) {
@@ -794,7 +800,12 @@ class Database {
             [userJid]
         );
         if (row) {
-            row.optionsData = JSON.parse(row.optionsData);
+            try {
+                row.optionsData = JSON.parse(row.optionsData);
+            } catch (e) {
+                logger.error(`Corrupt optionsData for pending action of ${userJid}`, e);
+                row.optionsData = null;
+            }
         }
         return row;
     }

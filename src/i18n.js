@@ -282,6 +282,10 @@ const strings = {
         he: '▶️ אכיפת חוקים עבור הקבוצה *{{groupName}}* חזרה לפעילות כרגיל.',
         en: '▶️ Enforcement for *{{groupName}}* has resumed.'
     },
+    'enforcement_not_paused': {
+        he: 'ℹ️ אכיפת החוקים כבר פעילה ולא מושהית.',
+        en: 'ℹ️ Enforcement is already active and not paused.'
+    },
     'invalid_pause_duration': {
         he: '❌ לא הוגדר זמן נכון. אנא שלח השהיה בצירוף מספר שעות. לדוגמה: `pause 24`',
         en: '❌ Invalid duration. Please provide hours. Example: `pause 24`'

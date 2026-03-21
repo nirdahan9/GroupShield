@@ -40,10 +40,10 @@ function cleanChromeCache() {
                 try {
                     fs.rmSync(fullPath, { recursive: true, force: true });
                     cleaned++;
-                } catch (e) { }
+                } catch (e) { logger.warn(`Could not remove Chrome cache entry: ${fullPath}`, e.message); }
             }
         }
-    } catch (e) { }
+    } catch (e) { logger.warn('Could not read Chrome cache directory for cleanup', e.message); }
 
     if (cleaned > 0) logger.info(`Cleaned ${cleaned} Chrome cache directories`);
 }
@@ -357,6 +357,7 @@ process.on('SIGINT', () => {
 
 process.on('SIGTERM', () => {
     logger.info('SIGTERM received');
+    setRestartReason('sigterm', 'System stop');
     cleanupRuntimeResources();
     database.close();
     process.exit(0);

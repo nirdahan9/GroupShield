@@ -51,6 +51,7 @@ function evaluateMessage(rules, msgInfo, lang = 'he') {
  */
 function checkAllowedMessages(ruleData, content, msgType, lang) {
     const violations = [];
+    if (!ruleData) return violations;
     const allowedList = ruleData.messages || [];
     const matchMode = ruleData.matchMode || 'exact';
 
@@ -113,6 +114,7 @@ function checkNonTextRule(ruleData, msgType, lang) {
  */
 function checkForbiddenMessages(ruleData, content, lang) {
     const violations = [];
+    if (!ruleData) return violations;
     const forbiddenList = ruleData.messages || [];
     const matchMode = ruleData.matchMode || 'contains';
     const normalizedContent = content.trim().toLowerCase();
@@ -141,6 +143,7 @@ function checkForbiddenMessages(ruleData, content, lang) {
  */
 function checkTimeWindow(ruleData, lang) {
     const violations = [];
+    if (!ruleData) return violations;
 
     const now = new Date();
     const parts = JERUSALEM_PARTS_FORMATTER.formatToParts(now);

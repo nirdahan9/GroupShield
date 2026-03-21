@@ -132,11 +132,12 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
                 privateStatus = '✅';
                 logger.info(`Removal notice sent to ${number}`);
                 await database.updateEnforcementActionStep(actionId, 'warningStatus', 'success');
-                await new Promise(r => setTimeout(r, 2000));
             } catch (e) {
                 logger.error(`Warning failed for ${number}`, e);
                 await database.updateEnforcementActionStep(actionId, 'warningStatus', 'failed', e.message);
             }
+            // Brief delay to allow the warning message to be delivered before removal
+            await new Promise(r => setTimeout(r, 2000));
         } else {
             await database.updateEnforcementActionStep(actionId, 'warningStatus', 'skipped');
         }
@@ -246,7 +247,11 @@ async function sendReport(client, groupConfig, report, lang) {
             await client.sendMessage(groupConfig.ownerJid, report);
         } else if (target.startsWith('phone:')) {
             const phone = target.split(':')[1];
-            await client.sendMessage(phone + '@s.whatsapp.net', report);
+            if (!phone) {
+                await client.sendMessage(groupConfig.ownerJid, report);
+            } else {
+                await client.sendMessage(phone + '@s.whatsapp.net', report);
+            }
         } else if (target === 'mgmt_group' && groupConfig.mgmtGroupId) {
             await client.sendMessage(groupConfig.mgmtGroupId, report);
         } else {
@@ -309,12 +314,13 @@ async function handleUndo(client, msg, groupConfig, lang) {
     }
 
     const createdAtMs = new Date(action.createdAt).getTime();
-    if (!Number.isNaN(createdAtMs)) {
-        const ageMs = Date.now() - createdAtMs;
-        const maxUndoMs = 24 * 60 * 60 * 1000;
-        if (ageMs > maxUndoMs) {
-            return t('undo_expired', lang);
-        }
+    if (Number.isNaN(createdAtMs)) {
+        return t('undo_failed', lang, { error: lang === 'he' ? 'תאריך פעולה לא תקין' : 'Invalid action date' });
+    }
+    const ageMs = Date.now() - createdAtMs;
+    const maxUndoMs = 24 * 60 * 60 * 1000;
+    if (ageMs > maxUndoMs) {
+        return t('undo_expired', lang);
     }
 
     let effectiveGroupConfig = groupConfig;
@@ -340,11 +346,16 @@ async function handleUndo(client, msg, groupConfig, lang) {
         } catch (e) { /* May not be blocked */ }
 
         // 2. Add back to group
+        let reAddSuccess = false;
         try {
             const chat = await withRetry(() => client.getChatById(effectiveGroupConfig.groupId), 3, 800);
             await chat.addParticipants([targetJid]);
+            reAddSuccess = true;
         } catch (e) {
             logger.error(`Failed to re-add ${targetNumber}`, e);
+        }
+        if (!reAddSuccess) {
+            return t('undo_failed', lang, { error: lang === 'he' ? 'לא ניתן להוסיף את המשתמש חזרה לקבוצה' : 'Could not re-add user to group' });
         }
 
         // 3. Reset warnings

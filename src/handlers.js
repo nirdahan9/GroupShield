@@ -26,7 +26,7 @@ async function processMessage(client, msg, spamMap, rateLimiter) {
 
     // Intercept messages from users currently being removed
     if (isPendingRemoval(senderJid)) {
-        try { await msg.delete(true); } catch (e) { }
+        try { await msg.delete(true); } catch (e) { logger.warn(`Could not delete message from user being removed: ${senderJid}`, e.message); }
         return;
     }
 
@@ -417,11 +417,11 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
     // If user is pending agreement, reject their message and remove them
     const isPending = await database.isPendingMember(groupJid, senderJid);
     if (isPending) {
-        try { await msg.delete(true); } catch (e) { }
+        try { await msg.delete(true); } catch (e) { logger.warn(`Could not delete message from unapproved pending member: ${senderJid}`, e.message); }
 
         // Notify DM
         const dmMsg = t('welcome_unapproved_message', lang);
-        try { await client.sendMessage(senderJid, dmMsg); } catch (e) { }
+        try { await client.sendMessage(senderJid, dmMsg); } catch (e) { logger.warn(`Could not send DM to unapproved member: ${senderJid}`, e.message); }
 
         // Remove from group
         try {
@@ -466,7 +466,7 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
         const spamResult = checkAntiSpam(spamMap, spamKey, spamRule.ruleData);
         if (spamResult.isWarning) {
             // Send warning emoji reaction
-            try { await msg.react('⚠️'); } catch (e) { }
+            try { await msg.react('⚠️'); } catch (e) { logger.warn(`Could not react to spam warning message`, e.message); }
         }
         if (spamResult.isSpam) {
             await executeEnforcement(
@@ -535,7 +535,7 @@ async function buildMgmtGroupStatusResponse(client, content, groups, lang) {
         try {
             const chat = await withRetry(() => client.getChatById(g.groupId), 3, 700);
             memberCount = chat.participants ? chat.participants.length : 0;
-        } catch (e) { }
+        } catch (e) { logger.warn(`Could not fetch member count for group ${g.groupId}`, e.message); }
 
         const activeWarnings = await database.getActiveWarningsCount(g.groupId);
 

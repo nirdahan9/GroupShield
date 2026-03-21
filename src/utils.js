@@ -97,14 +97,9 @@ class RateLimiter {
             const waitTime = this.delay - timeSinceLastAction;
             await new Promise(resolve => setTimeout(resolve, waitTime));
         }
-        try {
-            const result = await action();
-            this.lastAction = Date.now();
-            this.actionsThisMinute.push(this.lastAction);
-            return result;
-        } catch (error) {
-            throw error;
-        }
+        this.lastAction = Date.now();
+        this.actionsThisMinute.push(this.lastAction);
+        return await action();
     }
 }
 
