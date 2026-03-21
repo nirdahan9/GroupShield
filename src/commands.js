@@ -364,12 +364,23 @@ async function buildGroupRulesMessage(groupConfig, lang) {
                 break;
             }
             case 'block_non_text': {
-                if (rd.mode === 'all_non_text') {
+                const mediaTypeLabels = {
+                    all_non_text: { he: 'הכל (כל סוג לא-טקסט)', en: 'All non-text types' },
+                    image: { he: 'תמונות', en: 'Images' },
+                    video: { he: 'וידאו', en: 'Video' },
+                    sticker: { he: 'סטיקרים', en: 'Stickers' },
+                    document: { he: 'מסמכים', en: 'Documents' },
+                    audio: { he: 'אודיו', en: 'Audio' },
+                    other_non_text: { he: 'שאר לא-טקסט', en: 'Other non-text' }
+                };
+                const getLabel = (type) => (mediaTypeLabels[type] && mediaTypeLabels[type][lang]) || type;
+                if (Array.isArray(rd.blockedTypes) && rd.blockedTypes.includes('all_non_text')) {
                     lines.push(lang === 'he' ? '🖼️ *מדיה:* כל סוגי המדיה חסומים' : '🖼️ *Media:* all non-text blocked');
-                } else if (Array.isArray(rd.blockedTypes)) {
+                } else if (Array.isArray(rd.blockedTypes) && rd.blockedTypes.length > 0) {
+                    const labels = rd.blockedTypes.map(getLabel).join(', ');
                     lines.push(lang === 'he'
-                        ? `🖼️ *מדיה חסומה:* ${rd.blockedTypes.join(', ')}`
-                        : `🖼️ *Blocked media:* ${rd.blockedTypes.join(', ')}`);
+                        ? `🖼️ *מדיה חסומה:* ${labels}`
+                        : `🖼️ *Blocked media:* ${labels}`);
                 }
                 break;
             }
@@ -387,16 +398,17 @@ async function buildGroupRulesMessage(groupConfig, lang) {
     // Enforcement summary
     if (enforcement) {
         const steps = [];
-        if (enforcement.deleteMsg)  steps.push(lang === 'he' ? 'מחיקה' : 'delete');
-        if (enforcement.warnPrivate) steps.push(lang === 'he' ? 'אזהרה' : 'warn');
-        if (enforcement.removeUser)  steps.push(lang === 'he' ? 'הסרה' : 'remove');
-        if (enforcement.blockUser)   steps.push(lang === 'he' ? 'חסימה' : 'block');
-        if (enforcement.reportAdmin) steps.push(lang === 'he' ? 'דיווח' : 'report');
+        if (enforcement.deleteMessage)    steps.push(lang === 'he' ? '🗑️ מחיקה' : '🗑️ delete');
+        if (enforcement.privateWarning)   steps.push(lang === 'he' ? '📩 הודעת הסרה' : '📩 removal notice');
+        if (enforcement.removeFromGroup)  steps.push(lang === 'he' ? '🚫 הסרה' : '🚫 remove');
+        if (enforcement.blockUser)        steps.push(lang === 'he' ? '🔒 חסימה' : '🔒 block');
+        if (enforcement.sendReport)       steps.push(lang === 'he' ? '📋 דיווח' : '📋 report');
+        if (enforcement.warnPrivateDm)    steps.push(lang === 'he' ? '💬 הודעה פרטית בכל אזהרה' : '💬 private DM per warning');
         const maxWarn = groupConfig.warningCount ?? 1;
         lines.push('');
         lines.push(lang === 'he'
-            ? `⚖️ *אכיפה:* ${steps.join(' → ')} | אזהרות מקסימלי: ${maxWarn}`
-            : `⚖️ *Enforcement:* ${steps.join(' → ')} | Max warnings: ${maxWarn}`);
+            ? `⚖️ *אכיפה:* ${steps.join(' → ')} | אזהרות לפני הסרה: ${maxWarn}`
+            : `⚖️ *Enforcement:* ${steps.join(' → ')} | Warnings before removal: ${maxWarn}`);
     }
 
     return lines.join('\n');
@@ -493,8 +505,9 @@ async function stopEnforcement(client, senderJid, groupConfig, lang) {
         // Disable enforcement and cleanup DB config
         await database.setGroupActive(groupConfig.groupId, false);
         await database.deleteGroup(groupConfig.groupId);
-        // Always clear the owner's linked group (not the caller's JID, which may be a mgmt group admin or null)
+        // Always clear the owner's linked group and mark as stopped so no setup hint is sent
         await database.updateUserGroup(groupConfig.ownerJid, null);
+        await database.updateUserSetupState(groupConfig.ownerJid, { step: 'stopped' });
 
         // Leave managed group
         try {

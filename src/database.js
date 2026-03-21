@@ -152,6 +152,17 @@ class Database {
             )`);
 
             // Check if welcomeMessageEnabled column exists, if not, add it (schema migration)
+            // Migrate enforcement table: add warnPrivateDm column
+            this.db.all("PRAGMA table_info(enforcement)", (err, rows) => {
+                if (!err && rows) {
+                    const hasWarnPrivateDm = rows.some(r => r.name === 'warnPrivateDm');
+                    if (!hasWarnPrivateDm) {
+                        this.db.run("ALTER TABLE enforcement ADD COLUMN warnPrivateDm INTEGER DEFAULT 0");
+                        logger.info("Migrated schema: Added warnPrivateDm to enforcement");
+                    }
+                }
+            });
+
             this.db.all("PRAGMA table_info(groups)", (err, rows) => {
                 if (!err && rows) {
                     const hasWelcomeCol = rows.some(r => r.name === 'welcomeMessageEnabled');
@@ -549,16 +560,17 @@ class Database {
 
     async setEnforcement(groupId, config) {
         await this._run(
-            `INSERT OR REPLACE INTO enforcement 
-             (groupId, deleteMessage, privateWarning, removeFromGroup, blockUser, sendReport)
-             VALUES (?, ?, ?, ?, ?, ?)`,
+            `INSERT OR REPLACE INTO enforcement
+             (groupId, deleteMessage, privateWarning, removeFromGroup, blockUser, sendReport, warnPrivateDm)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [
                 groupId,
                 config.deleteMessage ? 1 : 0,
                 config.privateWarning ? 1 : 0,
                 config.removeFromGroup ? 1 : 0,
                 config.blockUser ? 1 : 0,
-                config.sendReport ? 1 : 0
+                config.sendReport ? 1 : 0,
+                config.warnPrivateDm ? 1 : 0
             ]
         );
     }
@@ -571,7 +583,8 @@ class Database {
                 privateWarning: true,
                 removeFromGroup: true,
                 blockUser: false,
-                sendReport: true
+                sendReport: true,
+                warnPrivateDm: false
             };
         }
         return {
@@ -579,7 +592,8 @@ class Database {
             privateWarning: !!row.privateWarning,
             removeFromGroup: !!row.removeFromGroup,
             blockUser: !!row.blockUser,
-            sendReport: !!row.sendReport
+            sendReport: !!row.sendReport,
+            warnPrivateDm: !!row.warnPrivateDm
         };
     }
 

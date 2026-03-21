@@ -8,9 +8,40 @@ const { evaluateMessage, checkAntiSpam } = require('./ruleEngine');
 const { executeEnforcement, handleUndo, isPendingRemoval } = require('./enforcement');
 const setupFlow = require('./setupFlow');
 const commands = require('./commands');
+const { Buttons } = require('whatsapp-web.js');
 
 const ADMIN_CACHE_TTL_MS = config.get('performance.adminCacheTtlMs', 60000);
 const groupAdminCache = new Map();
+
+/**
+ * Send a bot reply, automatically using WhatsApp Buttons for simple numbered choices (1–3 options).
+ * Falls back to plain text if buttons fail or there are more than 3 options.
+ */
+async function sendBotReply(client, to, text) {
+    if (!text) return;
+    try {
+        const isMultiSelect = text.includes('מופרדים') || text.includes('separated by');
+        if (!isMultiSelect) {
+            const optionLines = text.split('\n').filter(l => /^[1-3]️⃣/.test(l.trim()));
+            if (optionLines.length >= 1 && optionLines.length <= 3) {
+                // Strip numbered option lines from body; keep only the question text
+                const bodyLines = text.split('\n').filter(l => !/^[1-3]️⃣/.test(l.trim()));
+                const body = bodyLines.join('\n').trim() || text;
+                const buttons = optionLines.map((_, i) => ({ id: String(i + 1), body: String(i + 1) }));
+                try {
+                    const btnMsg = new Buttons(body, buttons);
+                    await client.sendMessage(to, btnMsg);
+                    return;
+                } catch (btnErr) {
+                    logger.warn('Buttons message failed, falling back to text', btnErr.message);
+                }
+            }
+        }
+    } catch (e) {
+        logger.warn('sendBotReply buttons parse error', e.message);
+    }
+    await client.sendMessage(to, text);
+}
 
 /**
  * Process incoming message
@@ -102,21 +133,25 @@ async function handleDM(client, msg, senderJid, content) {
     if (inSetup) {
         const response = await setupFlow.processSetupMessage(client, senderJid, content);
         if (response) {
-            await client.sendMessage(msg.from, response);
+            await sendBotReply(client, msg.from, response);
         }
         return;
     }
 
-    // User has not started setup yet
+    // User has not started setup yet (and hasn't explicitly stopped enforcement)
+    let setupState = {};
+    try { setupState = user && user.setupState ? JSON.parse(user.setupState) : {}; } catch (e) { setupState = {}; }
     if (!user || !user.groupId) {
-        await client.sendMessage(msg.from, t('setup_start_hint', lang));
+        if (setupState.step !== 'stopped') {
+            await client.sendMessage(msg.from, t('setup_start_hint', lang));
+        }
         return;
     }
 
     // User has completed setup — handle commands
     const response = await commands.executeCommand(client, senderJid, content, lang);
     if (response) {
-        await client.sendMessage(msg.from, response);
+        await sendBotReply(client, msg.from, response);
         return;
     }
 

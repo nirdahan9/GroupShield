@@ -160,13 +160,17 @@ const strings = {
         he: '1️⃣ מחיקת ההודעה — ההודעה תימחק מהקבוצה',
         en: '1️⃣ Delete message — the message will be removed from the group'
     },
+    'enforcement_step_2': {
+        he: '2️⃣ הודעת הסרה בפרטי — המשתמש יקבל הודעה פרטית רק בעת הסרה',
+        en: '2️⃣ Removal notice (DM) — user receives a private message only upon removal'
+    },
     'enforcement_step_2_warning': {
-        he: '2️⃣ הודעה פרטית (אזהרה) — המשתמש יקבל אזהרה בפרטי',
-        en: '2️⃣ Private message (Warning) — user receives warning in DM'
+        he: '2️⃣ הודעת הסרה בפרטי — המשתמש יקבל הודעה פרטית רק בעת הסרה',
+        en: '2️⃣ Removal notice (DM) — user receives a private message only upon removal'
     },
     'enforcement_step_2_notice': {
-        he: '2️⃣ הודעה פרטית (התראה) — המשתמש יקבל הודעת הרחקה בפרטי',
-        en: '2️⃣ Private message (Notice) — user receives removal notice in DM'
+        he: '2️⃣ הודעת הסרה בפרטי — המשתמש יקבל הודעה פרטית רק בעת הסרה',
+        en: '2️⃣ Removal notice (DM) — user receives a private message only upon removal'
     },
     'enforcement_step_3': {
         he: '3️⃣ הסרה מהקבוצה — המשתמש יוצא מהקבוצה',
@@ -193,6 +197,14 @@ const strings = {
     'warnings_saved': {
         he: '✅ מספר אזהרות: {{count}}',
         en: '✅ Warning count: {{count}}'
+    },
+    'ask_warn_private_dm': {
+        he: '💬 *הודעה פרטית בעת אזהרה*\n\nהאם לשלוח למשתמש הודעה פרטית בכל פעם שהוא מקבל אזהרה (לפני הסרה)?\n\n1️⃣ כן — שלח אזהרה פרטית\n2️⃣ לא — אל תשלח',
+        en: '💬 *Private message per warning*\n\nShould the user receive a private DM each time they receive a warning (before removal)?\n\n1️⃣ Yes — send private warning\n2️⃣ No — don\'t send'
+    },
+    'warn_private_dm_saved': {
+        he: '✅ הודעה פרטית בעת אזהרה: {{status}}',
+        en: '✅ Private warning DM: {{status}}'
     },
 
     // ── Exempt Users ─────────────────────────────────────────────────────
@@ -372,12 +384,12 @@ const strings = {
 
     // ── Commands ─────────────────────────────────────────────────────────
     'help_user': {
-        he: '🛡️ *פקודות GroupShield*\n\n📊 *מידע:*\n• *עזרה* — תפריט זה\n• *סטטוס* — מצב הבוט והקבוצה\n• *חוקי הקבוצה* — הצג את חוקי הקבוצה הנוכחיים\n\n🛡️ *חסינים:*\n• *הוסף חסין 05X-XXX-XXXX* — הוסף חסין\n• *הסר חסין 05X-XXX-XXXX* — הסר חסין\n• *רשימת חסינים* — הצג חסינים\n\n⚠️ *אזהרות:*\n• *אפס אזהרות 05X-XXX-XXXX* — אפס אזהרות\n\n🔄 *שינוי שם קבוצה:*\n• *אימות שם <requestId>* — נכון, שונה לשם החדש\n• *לא אימות שם <requestId>* — לא נכון, השאר את הישן\n\n⚙️ *מערכת:*\n• *התחל* — התחלת הגדרות\n• *הגדרות* — תצורת קבוצה מחדש\n• *עדכן אכיפה* — עדכון אכיפה ואזהרות\n• *איפוס* — איפוס מלא\n• *השהה <n>* — (למשל `pause 24`) להשהיית אכיפה ל-n שעות\n• *המשך אכיפה* — לביטול השהיה וחזרה לפעילות\n• *הפסק אכיפה* — הפסקת אכיפה ועזיבת הקבוצה\n• *שפה* — החלפת שפה',
-        en: '🛡️ *GroupShield Commands*\n\n📊 *Info:*\n• *help* — this menu\n• *status* — bot and group status\n• *group rules* — view the current rules for the group\n\n🛡️ *Exemptions:*\n• *exempt add 05X-XXX-XXXX* — add exempt\n• *exempt remove 05X-XXX-XXXX* — remove exempt\n• *exempt list* — list exempt users\n\n⚠️ *Warnings:*\n• *warnings reset 05X-XXX-XXXX* — reset warnings\n\n🔄 *Group name changes:*\n• *verify name <requestId>* — yes, name was changed\n• *verify_not name <requestId>* — no, keep old name\n\n⚙️ *System:*\n• *start* — begin setup\n• *settings* — full reconfiguration\n• *update enforcement* — quick enforcement + warnings update\n• *reset* — full reset\n• *pause <n>* — pause enforcement for n hours\n• *resume* — cancel pause and resume enforcement\n• *stop enforcement* — stop enforcement and leave groups\n• *language* — switch language'
+        he: '🛡️ *פקודות GroupShield*\n\n📊 *מידע:*\n• *עזרה* — תפריט זה\n• *סטטוס* — מצב הבוט, הקבוצה ומספר האזהרות הפעילות\n• *חוקי הקבוצה* — הצג את כל החוקים ושלבי האכיפה הנוכחיים\n\n🛡️ *חסינים:*\n• *הוסף חסין 05X-XXX-XXXX* — הוסף משתמש שלא ייאכפו עליו חוקים\n• *הסר חסין 05X-XXX-XXXX* — הסר משתמש מרשימת החסינים\n• *רשימת חסינים* — הצג את כל המשתמשים החסינים\n\n⚠️ *אזהרות:*\n• *אפס אזהרות 05X-XXX-XXXX* — מחיקת כל האזהרות של משתמש\n• *בטל אזהרה 05X-XXX-XXXX* — הפחתת אזהרה אחת למשתמש\n\n⚙️ *מערכת:*\n• *התחל* — הגדרת קבוצה חדשה\n• *הגדרות* — הגדרה מחדש של הקבוצה הקיימת מהתחלה\n• *עדכן אכיפה* — עדכון מהיר של שלבי האכיפה ומספר האזהרות בלבד\n• *איפוס* — מחיקת כל נתוני הקבוצה ותחילה מחדש\n• *השהה <n>* — השהיית אכיפה למשך n שעות (לדוגמה: `השהה 24`)\n• *המשך אכיפה* — ביטול השהיה וחזרה לאכיפה פעילה\n• *הפסק אכיפה* — עצירת האכיפה לצמיתות ויציאה מהקבוצה\n• *שפה* — החלפת שפת הבוט (עברית ↔ English)',
+        en: '🛡️ *GroupShield Commands*\n\n📊 *Info:*\n• *help* — this menu\n• *status* — bot status, group name and active warnings count\n• *group rules* — display all current rules and enforcement steps\n\n🛡️ *Exemptions:*\n• *exempt add 05X-XXX-XXXX* — add a user who won\'t be enforced\n• *exempt remove 05X-XXX-XXXX* — remove a user from the exempt list\n• *exempt list* — list all exempt users\n\n⚠️ *Warnings:*\n• *warnings reset 05X-XXX-XXXX* — clear all warnings for a user\n• *undo warning 05X-XXX-XXXX* — subtract one warning from a user\n\n⚙️ *System:*\n• *start* — set up a new group\n• *settings* — fully reconfigure the current group from scratch\n• *update enforcement* — quickly update enforcement steps and warning count only\n• *reset* — delete all group data and start over\n• *pause <n>* — pause enforcement for n hours (e.g., `pause 24`)\n• *resume* — cancel pause and resume active enforcement\n• *stop enforcement* — permanently stop enforcement and leave the group\n• *language* — switch language (Hebrew ↔ English)'
     },
     'help_developer': {
-        he: '🛡️ *פקודות GroupShield (מפתח)*\n\n📊 *מידע ותפעול:*\n• *עזרה* — תפריט זה\n• *סטטוס* — מצב הבוט והקבוצה\n• *סטטוס כל הקבוצות* — סקירת כל הקבוצות הנאכפות (מפתח)\n• *חוקי הקבוצה* — הצג חוקים מוגדרים לקבוצה\n\n🛡️ *ניהול קבוצה:*\n• *הוסף חסין 05X-XXX-XXXX*\n• *הסר חסין 05X-XXX-XXXX*\n• *רשימת חסינים*\n• *אפס אזהרות 05X-XXX-XXXX*\n• *אימות שם <requestId>*\n• *לא אימות שם <requestId>*\n• *התחל* / *הגדרות* / *עדכן אכיפה* / *איפוס* / *השהה* / *המשך אכיפה* / *הפסק אכיפה* / *שפה*\n\n🧰 *מפתח בלבד:*\n• *גיבוי* — יצירת גיבוי מיידי\n• *ניקוי* — ניקוי אזהרות שפג תוקפן ופעולות תקועות\n• *ריסטארט* — אתחול הבוט',
-        en: '🛡️ *GroupShield Commands (Developer)*\n\n📊 *Info & Operations:*\n• *help* — this menu\n• *status* — bot and group status\n• *all groups status* — full status of all enforced groups (Developer)\n• *group rules* — view configured rules for the group\n\n🛡️ *Group management:*\n• *exempt add 05X-XXX-XXXX*\n• *exempt remove 05X-XXX-XXXX*\n• *exempt list*\n• *warnings reset 05X-XXX-XXXX*\n• *verify name <requestId>*\n• *verify_not name <requestId>*\n• *start* / *settings* / *update enforcement* / *reset* / *pause* / *resume* / *stop enforcement* / *language*\n\n🧰 *Developer only:*\n• *backup* — create immediate backup\n• *cleanup* — clear expired warnings and stale actions\n• *restart* — restart bot'
+        he: '🛡️ *פקודות GroupShield (מפתח)*\n\n📊 *מידע:*\n• *עזרה* — תפריט זה\n• *סטטוס* — מצב הבוט, הקבוצה ומספר האזהרות הפעילות\n• *חוקי הקבוצה* — הצג את כל החוקים ושלבי האכיפה הנוכחיים\n\n🛡️ *ניהול קבוצה:*\n• *הוסף חסין 05X-XXX-XXXX* — הוסף משתמש שלא ייאכפו עליו חוקים\n• *הסר חסין 05X-XXX-XXXX* — הסר משתמש מרשימת החסינים\n• *רשימת חסינים* — הצג את כל המשתמשים החסינים\n• *אפס אזהרות 05X-XXX-XXXX* — מחיקת כל האזהרות של משתמש\n• *בטל אזהרה 05X-XXX-XXXX* — הפחתת אזהרה אחת למשתמש\n• *התחל* — הגדרת קבוצה חדשה\n• *הגדרות* — הגדרה מחדש של הקבוצה הקיימת מהתחלה\n• *עדכן אכיפה* — עדכון מהיר של שלבי האכיפה ומספר האזהרות\n• *איפוס* — מחיקת כל נתוני הקבוצה ותחילה מחדש\n• *השהה <n>* — השהיית אכיפה למשך n שעות\n• *המשך אכיפה* — ביטול השהיה וחזרה לאכיפה פעילה\n• *הפסק אכיפה* — עצירת האכיפה לצמיתות ויציאה מהקבוצה\n• *שפה* — החלפת שפת הבוט\n\n🧰 *מפתח בלבד:*\n• *סטטוס כל הקבוצות* — סקירת כל הקבוצות הנאכפות במערכת\n• *גיבוי* — יצירת גיבוי מיידי של מסד הנתונים\n• *ניקוי* — ניקוי אזהרות שפג תוקפן ופעולות תקועות\n• *ריסטארט* — אתחול מחדש של הבוט',
+        en: '🛡️ *GroupShield Commands (Developer)*\n\n📊 *Info:*\n• *help* — this menu\n• *status* — bot status, group name and active warnings count\n• *group rules* — display all current rules and enforcement steps\n\n🛡️ *Group management:*\n• *exempt add 05X-XXX-XXXX* — add a user who won\'t be enforced\n• *exempt remove 05X-XXX-XXXX* — remove a user from the exempt list\n• *exempt list* — list all exempt users\n• *warnings reset 05X-XXX-XXXX* — clear all warnings for a user\n• *undo warning 05X-XXX-XXXX* — subtract one warning from a user\n• *start* — set up a new group\n• *settings* — fully reconfigure the current group from scratch\n• *update enforcement* — quickly update enforcement steps and warning count only\n• *reset* — delete all group data and start over\n• *pause <n>* — pause enforcement for n hours\n• *resume* — cancel pause and resume active enforcement\n• *stop enforcement* — permanently stop enforcement and leave the group\n• *language* — switch language\n\n🧰 *Developer only:*\n• *all groups status* — overview of all enforced groups in the system\n• *backup* — create immediate database backup\n• *cleanup* — clear expired warnings and stale enforcement actions\n• *restart* — restart the bot'
     },
     'status_message': {
         he: '📊 *סטטוס GroupShield*\n🟢 פעיל\n🛡️ *קבוצה:* {{groupName}} ({{memberCount}} חברים)\n⚠️ *אזהרות פעילות:* {{activeWarnings}}\n🕒 {{time}}',
@@ -414,8 +426,20 @@ const strings = {
         en: '✅ Full reset completed.\nSend *"start"* to begin again.'
     },
     'stop_enforcement_done': {
-        he: '🛑 האכיפה הופסקה לקבוצה *{{groupName}}*. יצאתי מהקבוצה (וגם מקבוצת הנהלה אם הוגדרה).',
-        en: '🛑 Enforcement stopped for *{{groupName}}*. I left the group (and management group if configured).'
+        he: '🛑 האכיפה הופסקה לקבוצה *{{groupName}}*.\nיצאתי מהקבוצה ומחקתי את כל נתוניה.\n\nתודה שהשתמשת ב-GroupShield 🛡️',
+        en: '🛑 Enforcement stopped for *{{groupName}}*.\nI left the group and deleted all its data.\n\nThank you for using GroupShield 🛡️'
+    },
+    'setup_reset_mid': {
+        he: '🔄 ההגדרות אופסו. נתחיל מחדש — בחר שפה:',
+        en: '🔄 Configuration reset. Starting over — choose language:'
+    },
+    'setup_back_done': {
+        he: '↩️ חזרנו שלב אחד אחורה.',
+        en: '↩️ Went back one step.'
+    },
+    'setup_no_prev_step': {
+        he: 'ℹ️ אין שלב קודם לחזור אליו.',
+        en: 'ℹ️ No previous step to go back to.'
     },
     'error_generic': {
         he: '❌ שגיאה: {{error}}',

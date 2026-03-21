@@ -27,6 +27,26 @@ async function processSetupMessage(client, senderJid, content) {
 
     const step = state.step || 'welcome';
 
+    // ── Global mid-setup commands ──────────────────────────────────────────
+    const trimmed = (content || '').trim().toLowerCase();
+
+    // "איפוס" / "reset" during setup → restart from language selection
+    if ((trimmed === 'איפוס' || trimmed === 'reset') && step !== 'language' && step !== 'welcome') {
+        await saveState(senderJid, { step: 'language' });
+        return t('setup_reset_mid', lang);
+    }
+
+    // "חזור" / "back" during setup → go back one step
+    if ((trimmed === 'חזור' || trimmed === 'back') && state.prevStep) {
+        const prev = state.prevStep;
+        const prompt = getStepPrompt(prev, lang, state);
+        await saveState(senderJid, { ...state, step: prev, prevStep: null });
+        return t('setup_back_done', lang) + (prompt ? '\n\n' + prompt : '');
+    }
+    if ((trimmed === 'חזור' || trimmed === 'back') && !state.prevStep) {
+        return t('setup_no_prev_step', lang);
+    }
+
     // Handle each step
     switch (step) {
         case 'welcome':
@@ -39,8 +59,6 @@ async function processSetupMessage(client, senderJid, content) {
             return await handleGroupConfirm(client, senderJid, content, state, lang);
         case 'admin_check':
             return await handleAdminCheck(client, senderJid, content, state, lang);
-        case 'group_verify_admin':
-            return await handleGroupVerifyAdmin(client, senderJid, content, state, lang);
         case 'rules_type':
             return await handleRulesType(client, senderJid, content, state, lang);
         case 'rules_content':
@@ -69,14 +87,16 @@ async function processSetupMessage(client, senderJid, content) {
             return await handleSpamMax(client, senderJid, content, state, lang);
         case 'spam_window':
             return await handleSpamWindow(client, senderJid, content, state, lang);
-        case 'enforcement':
-            return await handleEnforcement(client, senderJid, content, state, lang);
-        case 'quick_enforcement':
-            return await handleQuickEnforcement(client, senderJid, content, state, lang);
         case 'warnings':
             return await handleWarnings(client, senderJid, content, state, lang);
+        case 'warn_private_dm':
+            return await handleWarnPrivateDm(client, senderJid, content, state, lang);
+        case 'enforcement':
+            return await handleEnforcement(client, senderJid, content, state, lang);
         case 'quick_warnings':
             return await handleQuickWarnings(client, senderJid, content, state, lang);
+        case 'quick_enforcement':
+            return await handleQuickEnforcement(client, senderJid, content, state, lang);
         case 'exempt':
             return await handleExempt(client, senderJid, content, state, lang);
         case 'report_target':
@@ -94,10 +114,32 @@ async function processSetupMessage(client, senderJid, content) {
         case 'summary':
             return await handleSummary(client, senderJid, content, state, lang);
         default:
-            // Reset to welcome
-            await saveState(senderJid, { step: 'welcome' });
+            await saveState(senderJid, { step: 'language' });
             return t('welcome', lang);
     }
+}
+
+/**
+ * Return the prompt text for a given step (used for "back" navigation)
+ */
+function getStepPrompt(step, lang, state) {
+    const prompts = {
+        language: 'welcome',
+        group_name: 'ask_group_name',
+        rules_type: 'ask_rules_type',
+        non_text_rule: 'ask_non_text_rule',
+        non_text_types: 'ask_non_text_types',
+        time_window: 'ask_time_window',
+        antispam: 'ask_antispam',
+        warnings: 'ask_warnings',
+        warn_private_dm: 'ask_warn_private_dm',
+        exempt: 'ask_exempt',
+        report_target: 'ask_report_target',
+        welcome_msg: 'ask_welcome_msg'
+    };
+    if (step === 'enforcement') return buildEnforcementQuestion(lang, state.warningCount || 0);
+    const key = prompts[step];
+    return key ? t(key, lang) : null;
 }
 
 // ── State Management ─────────────────────────────────────────────────────
@@ -259,15 +301,14 @@ async function handleGroupConfirm(client, jid, content, state, lang) {
                 return t('group_not_admin', lang);
             }
 
-            // Bot is admin — perform second verification by participant count
-            const participantsCount = chat.participants ? chat.participants.length : 0;
+            // Bot is admin — proceed directly to rules setup
             await saveState(jid, {
-                step: 'group_verify_admin',
+                step: 'rules_type',
+                prevStep: 'group_confirm',
                 groupId: groupId,
-                groupName: state.candidateGroupName,
-                candidateGroupExpectedCount: participantsCount
+                groupName: state.candidateGroupName
             });
-            return t('group_admin_confirmed', lang) + '\n\n' + t('ask_group_verify_admin', lang);
+            return t('group_admin_confirmed', lang) + '\n\n' + t('ask_rules_type', lang);
         } catch (e) {
             logger.error('Failed to check admin status', e);
             return t('error_generic', lang, { error: e.message });
@@ -309,14 +350,14 @@ async function handleAdminCheck(client, jid, content, state, lang) {
                 return t('group_not_admin', lang);
             }
 
-            const participantsCount = chat.participants ? chat.participants.length : 0;
+            // Bot is now admin — proceed directly to rules setup
             await saveState(jid, {
-                step: 'group_verify_admin',
+                step: 'rules_type',
+                prevStep: 'group_confirm',
                 groupId: groupId,
-                groupName: state.candidateGroupName,
-                candidateGroupExpectedCount: participantsCount
+                groupName: state.candidateGroupName
             });
-            return t('group_admin_confirmed', lang) + '\n\n' + t('ask_group_verify_admin', lang);
+            return t('group_admin_confirmed', lang) + '\n\n' + t('ask_rules_type', lang);
         } catch (e) {
             logger.error('Failed to re-check admin', e);
             return t('error_generic', lang, { error: e.message });
@@ -325,34 +366,6 @@ async function handleAdminCheck(client, jid, content, state, lang) {
     return t('group_not_admin', lang);
 }
 
-async function handleGroupVerifyAdmin(client, jid, content, state, lang) {
-    const expected = parseInt(content.trim(), 10);
-    if (isNaN(expected) || expected < 1) {
-        return t('ask_group_verify_admin', lang);
-    }
-
-    try {
-        const chat = await client.getChatById(state.groupId || state.candidateGroupId);
-        const actual = chat.participants ? chat.participants.length : 0;
-        if (actual !== expected) {
-            return t('group_verify_admin_failed', lang, {
-                expected: expected.toString(),
-                actual: actual.toString()
-            }) + '\n\n' + t('ask_group_verify_admin', lang);
-        }
-    } catch (e) {
-        logger.error('Failed to verify enforced group participant count', e);
-        return t('error_generic', lang, { error: e.message });
-    }
-
-    await saveState(jid, {
-        step: 'rules_type',
-        groupId: state.groupId || state.candidateGroupId,
-        groupName: state.groupName || state.candidateGroupName
-    });
-
-    return t('group_verify_admin_success', lang) + '\n\n' + t('ask_rules_type', lang);
-}
 
 async function handleRulesType(client, jid, content, state, lang) {
     const choice = content.trim();
@@ -590,7 +603,7 @@ function buildEnforcementQuestion(lang, warningCount = 0) {
 async function handleEnforcement(client, jid, content, state, lang) {
     const choices = content.trim().split(/[,\s]+/).map(s => parseInt(s.trim())).filter(n => !isNaN(n));
     if (choices.length === 0) {
-        return buildEnforcementQuestion(lang);
+        return buildEnforcementQuestion(lang, state.warningCount || 0);
     }
 
     const enforcementConfig = {
@@ -598,10 +611,11 @@ async function handleEnforcement(client, jid, content, state, lang) {
         privateWarning: choices.includes(2),
         removeFromGroup: choices.includes(3),
         blockUser: choices.includes(4),
-        sendReport: choices.includes(5)
+        sendReport: choices.includes(5),
+        warnPrivateDm: !!state.warnPrivateDm
     };
 
-    await saveState(jid, { ...state, step: 'exempt', enforcementConfig });
+    await saveState(jid, { ...state, step: 'exempt', prevStep: 'enforcement', enforcementConfig });
     return t('enforcement_saved', lang) + '\n\n' + t('ask_exempt', lang);
 }
 
@@ -616,7 +630,8 @@ async function handleQuickEnforcement(client, jid, content, state, lang) {
         privateWarning: choices.includes(2),
         removeFromGroup: choices.includes(3),
         blockUser: choices.includes(4),
-        sendReport: choices.includes(5)
+        sendReport: choices.includes(5),
+        warnPrivateDm: !!state.warnPrivateDm
     };
 
     if (!state.groupId) {
@@ -636,8 +651,20 @@ async function handleWarnings(client, jid, content, state, lang) {
     if (isNaN(count) || count < 0 || count > 99) {
         return t('ask_warnings', lang);
     }
-    await saveState(jid, { ...state, step: 'enforcement', warningCount: count });
-    return t('warnings_saved', lang, { count: count.toString() }) + '\n\n' + buildEnforcementQuestion(lang, count);
+    await saveState(jid, { ...state, step: 'warn_private_dm', prevStep: 'warnings', warningCount: count });
+    return t('warnings_saved', lang, { count: count.toString() }) + '\n\n' + t('ask_warn_private_dm', lang);
+}
+
+async function handleWarnPrivateDm(client, jid, content, state, lang) {
+    const choice = content.trim();
+    if (choice === '1' || choice.includes('כן') || choice.toLowerCase() === 'yes') {
+        await saveState(jid, { ...state, step: 'enforcement', prevStep: 'warn_private_dm', warnPrivateDm: true });
+        return t('warn_private_dm_saved', lang, { status: lang === 'he' ? 'מופעל' : 'Enabled' }) + '\n\n' + buildEnforcementQuestion(lang, state.warningCount || 0);
+    } else if (choice === '2' || choice.includes('לא') || choice.toLowerCase() === 'no') {
+        await saveState(jid, { ...state, step: 'enforcement', prevStep: 'warn_private_dm', warnPrivateDm: false });
+        return t('warn_private_dm_saved', lang, { status: lang === 'he' ? 'כבוי' : 'Disabled' }) + '\n\n' + buildEnforcementQuestion(lang, state.warningCount || 0);
+    }
+    return t('ask_warn_private_dm', lang);
 }
 
 async function handleQuickWarnings(client, jid, content, state, lang) {
@@ -824,6 +851,10 @@ async function buildSummary(state, reportTarget, mgmtGroupId, lang) {
     if (state.enforcementConfig.removeFromGroup) enfSteps.push(t('enforcement_step_3', lang));
     if (state.enforcementConfig.blockUser) enfSteps.push(t('enforcement_step_4', lang));
     if (state.enforcementConfig.sendReport) enfSteps.push(t('enforcement_step_5', lang));
+    if (state.enforcementConfig.warnPrivateDm) {
+        const warnLabel = lang === 'he' ? '💬 הודעה פרטית בכל אזהרה' : '💬 Private DM per warning';
+        enfSteps.push(warnLabel);
+    }
 
     const reportStr = reportTarget === 'dm'
         ? (lang === 'he' ? 'הודעה פרטית' : 'DM')
@@ -1006,7 +1037,7 @@ async function startSetup(jid, preferredLang = 'he') {
     if (!user) {
         user = await database.createUser(jid, preferredLang);
     }
-    await saveState(jid, { step: 'welcome' });
+    await saveState(jid, { step: 'language' });
     return t('welcome', user.language || preferredLang);
 }
 

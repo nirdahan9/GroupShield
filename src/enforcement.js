@@ -57,7 +57,7 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
     });
 
     // Check if we should warn or enforce
-    if (maxWarnings > 0 && enforcementConfig.privateWarning) {
+    if (maxWarnings > 0 && enforcementConfig.warnPrivateDm) {
         const currentCount = await database.getWarningCount(groupId, senderJid);
         if (currentCount < maxWarnings) {
             // Still in warning phase
