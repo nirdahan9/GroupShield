@@ -7,12 +7,28 @@ const strings = {
         en: `🛡️ *Welcome to GroupShield!*\n\nI'm a bot that helps enforce rules in WhatsApp groups.\nLet's set up your group.\n\nChoose language / בחר שפה:\n\n1️⃣ 🇮🇱 עברית\n2️⃣ 🇬🇧 English`
     },
     'lang_set': {
-        he: '✅ השפה הוגדרה לעברית.\n\nבואו נתחיל! 👇',
-        en: '✅ Language set to English.\n\nLet\'s begin! 👇'
+        he: '✅ השפה הוגדרה לעברית.\n\n💡 *פקודות זמינות בכל עת:*\n• *איפוס* — מחק והתחל מהתחלה\n• *חזור* — חזור לשלב הקודם\n• *יציאה* — צא ממצב ההגדרה\n\nבואו נתחיל! 👇',
+        en: '✅ Language set to English.\n\n💡 *Commands available anytime:*\n• *reset* — clear and start over\n• *back* — go to previous step\n• *exit* — leave setup mode\n\nLet\'s begin! 👇'
     },
     'ask_group_name': {
-        he: '📋 *שלב 1: קישור קבוצה*\n\nקודם כל, הוסף אותי לקבוצה שאתה רוצה שאאכוף ומנה אותי כ*מנהל*.\n\nלאחר מכן, שלח לי את *שם הקבוצה* (כפי שהוא מופיע בוואטסאפ).\n\n✳️ תשובה לדוגמה:\nמשפחה',
-        en: '📋 *Step 1: Link Group*\n\nFirst, add me to the group you want me to enforce and make me an *admin*.\n\nThen, send me the *group name* (as it appears in WhatsApp).\n\n✳️ Example reply:\nFamily'
+        he: '📋 *שלב 1: קישור קבוצה*\n\nיש שתי דרכים להוסיף אותי לקבוצה:\n\n*אפשרות א׳ — הוספה ידנית:*\nהוסף אותי לקבוצה ומנה אותי כ*מנהל*, ואז שלח את *שם הקבוצה*.\n\n*אפשרות ב׳ — לינק הצטרפות:*\nשלח לי לינק הצטרפות לקבוצה (chat.whatsapp.com/...) ואצטרף אוטומטית.\nחשוב: עדיין יש למנות אותי כמנהל לאחר ההצטרפות.\n\n✳️ תשובה לדוגמה:\nמשפחה\nאו: https://chat.whatsapp.com/ABC123',
+        en: '📋 *Step 1: Link Group*\n\nThere are two ways to add me to a group:\n\n*Option A — Manual:*\nAdd me to the group and make me an *admin*, then send the *group name*.\n\n*Option B — Invite link:*\nSend me a group invite link (chat.whatsapp.com/...) and I\'ll join automatically.\nNote: you still need to make me admin after I join.\n\n✳️ Example reply:\nFamily\nOr: https://chat.whatsapp.com/ABC123'
+    },
+    'invite_link_joining': {
+        he: '🔗 מצטרף לקבוצה דרך הלינק...',
+        en: '🔗 Joining group via invite link...'
+    },
+    'invite_link_joined_not_admin': {
+        he: '✅ הצטרפתי לקבוצה *{{name}}* ({{count}} משתתפים)!\n\nעכשיו אנא מנה אותי כ*מנהל* בקבוצה ושלח *"בדוק"* כשמוכן.',
+        en: '✅ Joined *{{name}}* ({{count}} participants)!\n\nNow please make me an *admin* in the group and send *"check"* when ready.'
+    },
+    'invite_link_joined_admin': {
+        he: '✅ הצטרפתי לקבוצה *{{name}}* ואני כבר מנהל!',
+        en: '✅ Joined *{{name}}* and I\'m already an admin!'
+    },
+    'invite_link_failed': {
+        he: '❌ לא הצלחתי להצטרף דרך הלינק.\nשגיאה: {{error}}\n\nנסה להוסיף אותי לקבוצה ידנית ושלח את שם הקבוצה.',
+        en: '❌ Failed to join via invite link.\nError: {{error}}\n\nTry adding me to the group manually and send the group name.'
     },
     'group_searching': {
         he: '🔍 מחפש את הקבוצה...',
@@ -105,8 +121,8 @@ const strings = {
         en: '📅 Which day? (send number)\n\n1️⃣ Sunday\n2️⃣ Monday\n3️⃣ Tuesday\n4️⃣ Wednesday\n5️⃣ Thursday\n6️⃣ Friday\n7️⃣ Saturday\n0️⃣ Every day'
     },
     'ask_time_start': {
-        he: '🕐 שעת התחלה?\nאפשר לשלוח שעה בלבד או שעה:דקות\n\n✳️ תשובות מוצעות:\n06:00\n22:30\n6',
-        en: '🕐 Start time?\nYou can send hour only or hour:minute\n\n✳️ Suggested replies:\n06:00\n22:30\n6'
+        he: '🕐 שעת התחלה?\nאפשר לשלוח שעה בלבד או שעה:דקות\nאו שלח *"כל היום"* לבחור 00:00–23:59\n\n✳️ תשובות מוצעות:\n06:00\n22:30\nכל היום',
+        en: '🕐 Start time?\nYou can send hour only or hour:minute\nOr send *"all day"* for 00:00–23:59\n\n✳️ Suggested replies:\n06:00\n22:30\nall day'
     },
     'ask_time_end': {
         he: '🕐 שעת סיום?\nאפשר לשלוח שעה בלבד או שעה:דקות\n\n✳️ תשובות מוצעות:\n23:00\n06:15\n23',
@@ -161,16 +177,16 @@ const strings = {
         en: '1️⃣ Delete message — the message will be removed from the group'
     },
     'enforcement_step_2': {
-        he: '2️⃣ הודעת הסרה בפרטי — המשתמש יקבל הודעה פרטית רק בעת הסרה',
-        en: '2️⃣ Removal notice (DM) — user receives a private message only upon removal'
+        he: '2️⃣ הודעת הסרה בפרטי — המשתמש יקבל הודעה פרטית בעת הסרה',
+        en: '2️⃣ Removal notice (DM) — user receives a private message upon removal'
     },
     'enforcement_step_2_warning': {
-        he: '2️⃣ הודעת הסרה בפרטי — המשתמש יקבל הודעה פרטית רק בעת הסרה',
-        en: '2️⃣ Removal notice (DM) — user receives a private message only upon removal'
+        he: '2️⃣ הודעת הסרה בפרטי — המשתמש יקבל הודעה פרטית בעת הסרה',
+        en: '2️⃣ Removal notice (DM) — user receives a private message upon removal'
     },
     'enforcement_step_2_notice': {
-        he: '2️⃣ הודעת הסרה בפרטי — המשתמש יקבל הודעה פרטית רק בעת הסרה',
-        en: '2️⃣ Removal notice (DM) — user receives a private message only upon removal'
+        he: '2️⃣ הודעת הסרה בפרטי — המשתמש יקבל הודעה פרטית בעת הסרה',
+        en: '2️⃣ Removal notice (DM) — user receives a private message upon removal'
     },
     'enforcement_step_3': {
         he: '3️⃣ הסרה מהקבוצה — המשתמש יוצא מהקבוצה',
@@ -305,11 +321,11 @@ const strings = {
 
     // ── Summary & Completion ─────────────────────────────────────────────
     'setup_summary': {
-        he: '📋 *סיכום הגדרות GroupShield*\n\n🏷️ *קבוצה:* {{groupName}}\n📏 *חוקי תוכן:* {{rulesType}}\n🧠 *התאמת תוכן:* {{rulesMode}}\n🖼️ *הודעות לא-טקסט:* {{nonTextRule}}\n⏰ *חלון זמנים:* {{timeWindow}}\n🔁 *אנטי-ספאם:* {{antiSpam}}\n⚖️ *שלבי אכיפה:* {{enforcement}}\n⚠️ *אזהרות:* {{warnings}}\n🛡️ *חסינים:* {{exempt}}\n📨 *דיווח:* {{report}}\n👋 *הודעת קבלת פנים:* {{welcome}}\n\nלאשר ולהפעיל?\n\n1️⃣ אשר ✅\n2️⃣ התחל מחדש 🔄',
+        he: '📋 *סיכום הגדרות GroupShield*\n\n🏷️ *קבוצה:* {{groupName}}\n📏 *חוקי תוכן:* {{rulesType}}\n🧠 *התאמת תוכן:* {{rulesMode}}\n🖼️ *הודעות לא-טקסט:* {{nonTextRule}}\n⏰ *חלון זמנים:* {{timeWindow}}\n🔁 *אנטי-ספאם:* {{antiSpam}}\n⚖️ *שלבי אכיפה:*\n{{enforcement}}\n⚠️ *אזהרות:* {{warnings}}\n🛡️ *חסינים:* {{exempt}}\n📨 *דיווח:* {{report}}\n👋 *הודעת קבלת פנים:* {{welcome}}\n\nלאשר ולהפעיל?\n\n1️⃣ אשר ✅\n2️⃣ התחל מחדש 🔄',
         en: '📋 *GroupShield Configuration Summary*\n\n🏷️ *Group:* {{groupName}}\n📏 *Content rules:* {{rulesType}}\n🧠 *Match mode:* {{rulesMode}}\n🖼️ *Non-text messages:* {{nonTextRule}}\n⏰ *Time window:* {{timeWindow}}\n🔁 *Anti-spam:* {{antiSpam}}\n⚖️ *Enforcement:* {{enforcement}}\n⚠️ *Warnings:* {{warnings}}\n🛡️ *Exempt:* {{exempt}}\n📨 *Reports:* {{report}}\n👋 *Welcome Message:* {{welcome}}\n\nConfirm and activate?\n\n1️⃣ Confirm ✅\n2️⃣ Start over 🔄'
     },
     'setup_complete': {
-        he: '🛡️✅ *GroupShield פעיל!*\n\nהבוט מאכוף כעת את החוקים בקבוצה *{{groupName}}*.\n\nשלח *"עזרה"* לרשימת פקודות.',
+        he: '🛡️✅ *GroupShield פעיל!*\n\nהבוט אוכף כעת את החוקים בקבוצה *{{groupName}}*.\n\nשלח *"עזרה"* לרשימת פקודות.',
         en: '🛡️✅ *GroupShield Active!*\n\nThe bot is now enforcing rules in *{{groupName}}*.\n\nSend *"help"* for a list of commands.'
     },
 
@@ -440,6 +456,14 @@ const strings = {
     'setup_no_prev_step': {
         he: 'ℹ️ אין שלב קודם לחזור אליו.',
         en: 'ℹ️ No previous step to go back to.'
+    },
+    'setup_exit': {
+        he: '👋 יצאת ממצב ההגדרה.\n\nשלח כל הודעה כדי להתחיל מחדש.',
+        en: '👋 You have exited setup mode.\n\nSend any message to start again.'
+    },
+    'reserved_name_error': {
+        he: '❌ שם זה שמור לפקודת בוט ולא ניתן להשתמש בו.\nאנא בחר שם אחר.',
+        en: '❌ This name is reserved as a bot command and cannot be used.\nPlease choose a different name.'
     },
     'error_generic': {
         he: '❌ שגיאה: {{error}}',

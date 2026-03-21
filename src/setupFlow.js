@@ -4,6 +4,8 @@ const logger = require('./logger');
 const { t } = require('./i18n');
 const { parsePhoneNumber, getNormalizedJid, extractNumber } = require('./utils');
 
+const RESERVED_COMMANDS = new Set(['איפוס', 'reset', 'חזור', 'back', 'יציאה', 'exit']);
+
 /**
  * Process a DM message as part of the setup/command flow
  * Returns the response message string, or null if not handled
@@ -34,6 +36,12 @@ async function processSetupMessage(client, senderJid, content) {
     if ((trimmed === 'איפוס' || trimmed === 'reset') && step !== 'language' && step !== 'welcome') {
         await saveState(senderJid, { step: 'language' });
         return t('setup_reset_mid', lang);
+    }
+
+    // "יציאה" / "exit" → exit setup mode entirely
+    if ((trimmed === 'יציאה' || trimmed === 'exit') && step !== 'language' && step !== 'welcome') {
+        await saveState(senderJid, { step: 'stopped' });
+        return t('setup_exit', lang);
     }
 
     // "חזור" / "back" during setup → go back one step
@@ -223,6 +231,46 @@ async function handleLanguage(client, jid, content, state, lang) {
 async function handleGroupName(client, jid, content, state, lang) {
     const groupName = content.trim();
     if (!groupName) return t('ask_group_name', lang);
+    if (RESERVED_COMMANDS.has(groupName.toLowerCase())) return t('reserved_name_error', lang);
+
+    // Invite link flow
+    const inviteLinkMatch = groupName.match(/chat\.whatsapp\.com\/([A-Za-z0-9]+)/i);
+    if (inviteLinkMatch) {
+        const inviteCode = inviteLinkMatch[1];
+        await client.sendMessage(jid, t('invite_link_joining', lang));
+        try {
+            const groupId = await client.acceptInvite(inviteCode);
+            await new Promise(r => setTimeout(r, 2000));
+            const chat = await client.getChatById(groupId);
+            const name = chat.name;
+            const count = chat.participants ? chat.participants.length : 0;
+            const botInfo = await client.info;
+            const botJid = botInfo.wid._serialized;
+            const botParticipant = chat.participants.find(p => p.id._serialized === botJid);
+            const isAdmin = botParticipant && (botParticipant.isAdmin || botParticipant.isSuperAdmin);
+
+            const canClaim = await database.canOwnerClaimGroup(groupId, jid);
+            if (!canClaim) {
+                await saveState(jid, { step: 'group_name' });
+                return t('group_already_managed', lang);
+            }
+            const usedAsMgmt = await database.isGroupUsedAsMgmt(groupId);
+            if (usedAsMgmt) {
+                await saveState(jid, { step: 'group_name' });
+                return t('group_used_as_mgmt', lang);
+            }
+
+            if (!isAdmin) {
+                await saveState(jid, { ...state, step: 'admin_check', candidateGroupId: groupId, candidateGroupName: name });
+                return t('invite_link_joined_not_admin', lang, { name, count: count.toString() });
+            }
+            await saveState(jid, { step: 'rules_type', prevStep: 'group_confirm', groupId, groupName: name });
+            return t('invite_link_joined_admin', lang, { name }) + '\n\n' + t('ask_rules_type', lang);
+        } catch (e) {
+            logger.error('Failed to join via invite link', e);
+            return t('invite_link_failed', lang, { error: e.message });
+        }
+    }
 
     // Search for the group among bot's groups
     try {
@@ -389,6 +437,7 @@ async function handleRulesContent(client, jid, content, state, lang) {
             ? t('ask_allowed_messages', lang)
             : t('ask_forbidden_messages', lang);
     }
+    if (messages.some(m => RESERVED_COMMANDS.has(m.toLowerCase()))) return t('reserved_name_error', lang);
 
     await saveState(jid, {
         ...state,
@@ -478,6 +527,14 @@ async function handleTimeDay(client, jid, content, state, lang) {
 }
 
 async function handleTimeStart(client, jid, content, state, lang) {
+    const trimmedInput = content.trim().toLowerCase();
+    if (trimmedInput === 'כל היום' || trimmedInput === 'all day') {
+        const dayKey = `day_${state.timeDay}`;
+        const range = { day: state.timeDay, startMinute: 0, endMinute: 1439, startHour: 0, endHour: 23 };
+        const nextWindows = [...(state.timeWindows || []), range];
+        await saveState(jid, { ...state, step: 'time_more', timeStartMinutes: 0, timeEndMinutes: 1439, timeWindow: range, timeWindows: nextWindows });
+        return t('time_range_added', lang, { day: t(dayKey, lang), start: '00:00', end: '23:59' }) + '\n\n' + t('ask_time_more', lang);
+    }
     const minutes = parseTimeToMinutes(content);
     if (minutes === null) {
         return t('ask_time_start', lang);
