@@ -13,7 +13,7 @@ const groupAdminCache = new Map();
 
 async function sendBotReply(client, to, text) {
     if (!text) return;
-    await client.sendMessage(to, text);
+    await client.sendMessage(to, text, { linkPreview: false });
 }
 
 /**
@@ -59,7 +59,7 @@ async function handleDM(client, msg, senderJid, content) {
     if (setupFlow.isSetupTrigger(content)) {
         const response = await setupFlow.startSetup(senderJid, lang);
         if (response) {
-            await client.sendMessage(msg.from, response);
+            await client.sendMessage(msg.from, response, { linkPreview: false });
         }
         return;
     }
@@ -75,7 +75,7 @@ async function handleDM(client, msg, senderJid, content) {
             if (response) {
                 await sendBotReply(client, msg.from, response);
             } else {
-                await client.sendMessage(msg.from, t('unknown_command', lang));
+                await client.sendMessage(msg.from, t('unknown_command', lang), { linkPreview: false });
             }
         }
         return;
@@ -100,10 +100,10 @@ async function handleDM(client, msg, senderJid, content) {
 
                 if (isAgree) {
                     await database.removePendingMember(row.groupId, senderJid);
-                    await client.sendMessage(msg.from, t('welcome_agreed', lang, { groupName: groupConfig.groupName }));
+                    await client.sendMessage(msg.from, t('welcome_agreed', lang, { groupName: groupConfig.groupName }), { linkPreview: false });
                     logger.info(`User ${extractNumber(senderJid)} agreed to rules in ${groupConfig.groupName}`);
                 } else if (isDisagree) {
-                    await client.sendMessage(msg.from, t('welcome_disagreed', lang));
+                    await client.sendMessage(msg.from, t('welcome_disagreed', lang), { linkPreview: false });
                     try {
                         const chat = await client.getChatById(row.groupId);
                         await chat.removeParticipants([senderJid]);
@@ -135,7 +135,7 @@ async function handleDM(client, msg, senderJid, content) {
         // Only show setup hint if user has previously interacted with the bot
         // (prevents spamming warned group members who never opened the bot)
         if (user && setupState.step !== 'stopped') {
-            await client.sendMessage(msg.from, t('setup_start_hint', lang));
+            await client.sendMessage(msg.from, t('setup_start_hint', lang), { linkPreview: false });
         }
         return;
     }
@@ -148,7 +148,7 @@ async function handleDM(client, msg, senderJid, content) {
     }
 
     // No command matched — show help
-    await client.sendMessage(msg.from, t('unknown_command', lang));
+    await client.sendMessage(msg.from, t('unknown_command', lang), { linkPreview: false });
 }
 
 /**
@@ -448,7 +448,7 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
 
         // Notify DM
         const dmMsg = t('welcome_unapproved_message', lang);
-        try { await client.sendMessage(senderJid, dmMsg); } catch (e) { logger.warn(`Could not send DM to unapproved member: ${senderJid}`, e.message); }
+        try { await client.sendMessage(senderJid, dmMsg, { linkPreview: false }); } catch (e) { logger.warn(`Could not send DM to unapproved member: ${senderJid}`, e.message); }
 
         // Remove from group
         try {
@@ -654,7 +654,7 @@ async function handleGroupNotification(client, notification) {
                         });
 
                         await database.addPendingMember(groupConfig.groupId, addedJid);
-                        await client.sendMessage(addedJid, welcomeText);
+                        await client.sendMessage(addedJid, welcomeText, { linkPreview: false });
                         await database.markPendingMemberNotified(groupConfig.groupId, addedJid);
                         logger.info(`Sent welcome rules DM to ${addedNum} for group ${groupConfig.groupName}`);
                     } catch (e) {
@@ -695,12 +695,12 @@ async function handleBotDemotionOrRemoval(client, groupConfig, action) {
 async function sendNoticeToReporter(client, groupConfig, text) {
     try {
         if (groupConfig.reportTarget === 'mgmt_group' && groupConfig.mgmtGroupId) {
-            await client.sendMessage(groupConfig.mgmtGroupId, text);
+            await client.sendMessage(groupConfig.mgmtGroupId, text, { linkPreview: false });
         } else if (groupConfig.reportTarget && groupConfig.reportTarget.startsWith('phone:')) {
             const phone = groupConfig.reportTarget.split(':')[1];
-            await client.sendMessage(phone + '@s.whatsapp.net', text);
+            await client.sendMessage(phone + '@s.whatsapp.net', text, { linkPreview: false });
         } else {
-            await client.sendMessage(groupConfig.ownerJid, text);
+            await client.sendMessage(groupConfig.ownerJid, text, { linkPreview: false });
         }
     } catch (e) {
         logger.error(`Failed to send notice to reporter for ${groupConfig.groupId}`, e);
@@ -892,12 +892,12 @@ async function refreshManagedGroupNames(client) {
             });
 
             if (g.reportTarget === 'mgmt_group' && g.mgmtGroupId) {
-                await client.sendMessage(g.mgmtGroupId, prompt);
+                await client.sendMessage(g.mgmtGroupId, prompt, { linkPreview: false });
             } else if (g.reportTarget && g.reportTarget.startsWith('phone:')) {
                 const phone = g.reportTarget.split(':')[1];
-                await client.sendMessage(phone + '@s.whatsapp.net', prompt);
+                await client.sendMessage(phone + '@s.whatsapp.net', prompt, { linkPreview: false });
             } else {
-                await client.sendMessage(g.ownerJid, prompt);
+                await client.sendMessage(g.ownerJid, prompt, { linkPreview: false });
             }
 
             logger.info(`Detected group name change for ${storedName} -> ${detectedName} (request ${requestId})`);
