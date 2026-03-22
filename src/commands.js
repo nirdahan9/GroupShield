@@ -9,6 +9,7 @@ const { extractNumber, parsePhoneNumber, getNormalizedJid } = require('./utils')
 const setupFlow = require('./setupFlow');
 const backup = require('./backup');
 const health = require('./health');
+const { getGroqStats } = require('./llm');
 
 /**
  * Parse and execute admin commands (from DM or management group)
@@ -458,9 +459,14 @@ async function buildFullGroupsStatus(lang) {
 
     const now = new Date().toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\//g, '.');
 
+    const groq = getGroqStats();
+    const groqLine = lang === 'he'
+        ? `\n🤖 Groq: ${groq.count.toLocaleString()}/${groq.cap.toLocaleString()} req החודש (${groq.pct}%)`
+        : `\n🤖 Groq: ${groq.count.toLocaleString()}/${groq.cap.toLocaleString()} req this month (${groq.pct}%)`;
+
     const sysBlock = lang === 'he'
-        ? `📊 *סטטוס בוט (Chrome)*\n🟢 פעיל\n📅 *תאריך ושעה:* ${now}\n🖥️ זיכרון מערכת: ${usedRamMB}MB / ${totalRamMB}MB (${ramPct}%)\n🧠 זיכרון תהליך (Heap): ${heapUsedMB}MB / ${heapTotalMB}MB (${heapPct}%)\n📦 RSS (זיכרון פיזי): ${rssMB}MB / ${totalRamMB}MB (${rssPct}%)\n\n🏥 *בריאות המערכת*\nסטטוס: ${isHealthy ? '🟢 בריא' : '🟡 בעיות'}\nזמן פעילות: ${uptimeHrs}h ${uptimeMins}m\nהודעה אחרונה: ${lastMsgMinutes} דקות\nשגיאות (24h): ${errorCount24h}`
-        : `📊 *Bot Status (Chrome)*\n🟢 Active\n📅 *Date & time:* ${now}\n🖥️ System RAM: ${usedRamMB}MB / ${totalRamMB}MB (${ramPct}%)\n🧠 Process heap: ${heapUsedMB}MB / ${heapTotalMB}MB (${heapPct}%)\n📦 RSS (physical): ${rssMB}MB / ${totalRamMB}MB (${rssPct}%)\n\n🏥 *System Health*\nStatus: ${isHealthy ? '🟢 Healthy' : '🟡 Issues'}\nUptime: ${uptimeHrs}h ${uptimeMins}m\nLast message: ${lastMsgMinutes}m ago\nErrors (24h): ${errorCount24h}`;
+        ? `📊 *סטטוס בוט (Chrome)*\n🟢 פעיל\n📅 *תאריך ושעה:* ${now}\n🖥️ זיכרון מערכת: ${usedRamMB}MB / ${totalRamMB}MB (${ramPct}%)\n🧠 זיכרון תהליך (Heap): ${heapUsedMB}MB / ${heapTotalMB}MB (${heapPct}%)\n📦 RSS (זיכרון פיזי): ${rssMB}MB / ${totalRamMB}MB (${rssPct}%)\n\n🏥 *בריאות המערכת*\nסטטוס: ${isHealthy ? '🟢 בריא' : '🟡 בעיות'}\nזמן פעילות: ${uptimeHrs}h ${uptimeMins}m\nהודעה אחרונה: ${lastMsgMinutes} דקות\nשגיאות (24h): ${errorCount24h}${groqLine}`
+        : `📊 *Bot Status (Chrome)*\n🟢 Active\n📅 *Date & time:* ${now}\n🖥️ System RAM: ${usedRamMB}MB / ${totalRamMB}MB (${ramPct}%)\n🧠 Process heap: ${heapUsedMB}MB / ${heapTotalMB}MB (${heapPct}%)\n📦 RSS (physical): ${rssMB}MB / ${totalRamMB}MB (${rssPct}%)\n\n🏥 *System Health*\nStatus: ${isHealthy ? '🟢 Healthy' : '🟡 Issues'}\nUptime: ${uptimeHrs}h ${uptimeMins}m\nLast message: ${lastMsgMinutes}m ago\nErrors (24h): ${errorCount24h}${groqLine}`;
 
     if (!allGroups || allGroups.length === 0) {
         return sysBlock + '\n\n' + (lang === 'he' ? '📋 אין קבוצות מוגדרות במערכת.' : '📋 No groups configured in the system.');
