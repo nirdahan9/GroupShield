@@ -130,23 +130,47 @@ function checkForbiddenMessages(ruleData, content, lang) {
             const normTarget = normalizeForSmartMatch(forbidden);
             if (!normTarget) return false;
 
-            // Pass 1: Standard normalization
-            const normMsg = normalizeForSmartMatch(content);
-            if (smartMatchesForbidden(normMsg, normTarget)) return true;
+            const isHebrew = /[\u05D0-\u05EA]/.test(forbidden.trim());
 
-            // Pass 2: Homoglyph normalization — digit/Latin/Cyrillic/Arabic substitutions
-            const homoMsg = normalizeForSmartMatch(applyHomoglyphs(content.toLowerCase()));
-            if (homoMsg !== normMsg && smartMatchesForbidden(homoMsg, normTarget)) return true;
+            if (isHebrew) {
+                // ── Hebrew word: existing bypass-detection passes ──────────────
+                // Pass 1: Standard normalization
+                const normMsg = normalizeForSmartMatch(content);
+                if (smartMatchesForbidden(normMsg, normTarget)) return true;
 
-            // Pass 3: Hebrew-only — strips inserted foreign letters (קaללה → קללה)
-            const hebrewMsg = normMsg.replace(/[^\u05D0-\u05EA\u05F0-\u05F4]/g, '');
-            if (hebrewMsg !== normMsg && smartMatchesForbidden(hebrewMsg, normTarget)) return true;
+                // Pass 2: Homoglyph normalization — digit/Latin/Cyrillic/Arabic substitutions
+                const homoMsg = normalizeForSmartMatch(applyHomoglyphs(content.toLowerCase()));
+                if (homoMsg !== normMsg && smartMatchesForbidden(homoMsg, normTarget)) return true;
 
-            // Pass 4: Latin transliteration — only for messages with NO Hebrew (full Latin bypass)
-            // e.g. "kalla" for קללה, "kus" for כוס
-            if (normTarget.length >= 2 && !/[\u05D0-\u05EA]/.test(content)) {
-                const transPattern = buildTransliterationPattern(normTarget);
-                if (transPattern && transPattern.test(content.toLowerCase())) return true;
+                // Pass 3: Hebrew-only — strips inserted foreign letters (קaללה → קללה)
+                const hebrewMsg = normMsg.replace(/[^\u05D0-\u05EA\u05F0-\u05F4]/g, '');
+                if (hebrewMsg !== normMsg && smartMatchesForbidden(hebrewMsg, normTarget)) return true;
+
+                // Pass 4: Latin transliteration — only for messages with NO Hebrew (full Latin bypass)
+                // e.g. "kalla" for קללה, "kus" for כוס
+                if (normTarget.length >= 2 && !/[\u05D0-\u05EA]/.test(content)) {
+                    const transPattern = buildTransliterationPattern(normTarget);
+                    if (transPattern && transPattern.test(content.toLowerCase())) return true;
+                }
+            } else {
+                // ── Latin/English word: Unicode word-boundary matching ─────────
+                // Prevents false positives ("ass" in "assessment") while catching
+                // bypass attempts via character repetition ("fuuuuck" → "fuck").
+                const escaped = escapeRegex(forbidden.trim());
+                const wbRegex = new RegExp('(?<![\\p{L}\\p{N}])' + escaped + '(?![\\p{L}\\p{N}])', 'iu');
+
+                // Pass E0: word-boundary on raw content
+                if (wbRegex.test(content)) return true;
+
+                // Pass E1: collapse all character repetitions, then re-check
+                // catches "fuuuuck" → "fuck", "shhiit" → "shit", etc.
+                const derepContent = content.replace(/(.)\1+/gi, '$1');
+                const derepForbidden = forbidden.trim().replace(/(.)\1+/gi, '$1');
+                const wbDerepRegex = new RegExp(
+                    '(?<![\\p{L}\\p{N}])' + escapeRegex(derepForbidden) + '(?![\\p{L}\\p{N}])',
+                    'iu'
+                );
+                if (wbDerepRegex.test(derepContent)) return true;
             }
 
             return false;
