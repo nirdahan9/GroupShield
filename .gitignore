@@ -13,3 +13,4 @@ backups/
 .agents/
 *.txt
 !README.md
+src/.restart_reason
