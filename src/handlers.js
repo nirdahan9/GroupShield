@@ -55,11 +55,22 @@ async function handleDM(client, msg, senderJid, content) {
     const user = await database.getUser(senderJid);
     const lang = user ? user.language || 'he' : 'he';
 
-    // Explicit setup start trigger
+    // Explicit setup start trigger (anyone, including developer)
     if (setupFlow.isSetupTrigger(content)) {
         const response = await setupFlow.startSetup(senderJid, lang);
         if (response) {
             await client.sendMessage(msg.from, response);
+        }
+        return;
+    }
+
+    // Developer bypass — commands always work, regardless of setup state
+    if (config.isDeveloper(senderJid)) {
+        const response = await commands.executeCommand(client, senderJid, content, lang);
+        if (response) {
+            await sendBotReply(client, msg.from, response);
+        } else {
+            await client.sendMessage(msg.from, t('unknown_command', lang));
         }
         return;
     }
@@ -107,17 +118,6 @@ async function handleDM(client, msg, senderJid, content) {
         const response = await setupFlow.processSetupMessage(client, senderJid, content);
         if (response) {
             await sendBotReply(client, msg.from, response);
-        }
-        return;
-    }
-
-    // Developer bypass — can use commands without a configured group
-    if (config.isDeveloper(senderJid)) {
-        const response = await commands.executeCommand(client, senderJid, content, lang);
-        if (response) {
-            await sendBotReply(client, msg.from, response);
-        } else {
-            await client.sendMessage(msg.from, t('unknown_command', lang));
         }
         return;
     }
