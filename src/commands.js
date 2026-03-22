@@ -8,6 +8,7 @@ const { t } = require('./i18n');
 const { extractNumber, parsePhoneNumber, getNormalizedJid } = require('./utils');
 const setupFlow = require('./setupFlow');
 const backup = require('./backup');
+const health = require('./health');
 
 /**
  * Parse and execute admin commands (from DM or management group)
@@ -418,21 +419,30 @@ async function buildGroupRulesMessage(groupConfig, lang) {
 async function buildFullGroupsStatus(lang) {
     const allGroups = await database.getAllGroups();
 
-    // Memory & uptime stats
+    // ── Memory & health stats ─────────────────────────────────────────
     const mem = process.memoryUsage();
-    const heapUsedMB = (mem.heapUsed / 1024 / 1024).toFixed(1);
-    const heapTotalMB = (mem.heapTotal / 1024 / 1024).toFixed(1);
-    const rssMB = (mem.rss / 1024 / 1024).toFixed(1);
-    const freeRamMB = (os.freemem() / 1024 / 1024).toFixed(0);
-    const totalRamMB = (os.totalmem() / 1024 / 1024).toFixed(0);
+    const totalRamMB = Math.round(os.totalmem() / 1024 / 1024);
+    const usedRamMB = Math.round((os.totalmem() - os.freemem()) / 1024 / 1024);
+    const ramPct = ((usedRamMB / totalRamMB) * 100).toFixed(1);
+    const heapUsedMB = Math.round(mem.heapUsed / 1024 / 1024);
+    const heapTotalMB = Math.round(mem.heapTotal / 1024 / 1024);
+    const heapPct = ((heapUsedMB / heapTotalMB) * 100).toFixed(1);
+    const rssMB = Math.round(mem.rss / 1024 / 1024);
+    const rssPct = ((rssMB / totalRamMB) * 100).toFixed(1);
+
     const uptimeSec = Math.floor(process.uptime());
     const uptimeHrs = Math.floor(uptimeSec / 3600);
     const uptimeMins = Math.floor((uptimeSec % 3600) / 60);
-    const now = new Date().toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem', hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: '2-digit' });
+
+    const lastMsgMinutes = Math.floor((Date.now() - health.lastMessageTime) / 60000);
+    const errorCount24h = health.errorWindow.filter(t => Date.now() - t < 86400000).length;
+    const isHealthy = errorCount24h < 10;
+
+    const now = new Date().toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\//g, '.');
 
     const sysBlock = lang === 'he'
-        ? `💻 *מידע מערכת*\n🕒 ${now}\n⏱️ פעיל: ${uptimeHrs}ש ${uptimeMins}ד\n💾 RAM: ${freeRamMB}MB פנוי / ${totalRamMB}MB סה״כ\n🧠 Heap: ${heapUsedMB}MB / ${heapTotalMB}MB | RSS: ${rssMB}MB`
-        : `💻 *System Info*\n🕒 ${now}\n⏱️ Uptime: ${uptimeHrs}h ${uptimeMins}m\n💾 RAM: ${freeRamMB}MB free / ${totalRamMB}MB total\n🧠 Heap: ${heapUsedMB}MB / ${heapTotalMB}MB | RSS: ${rssMB}MB`;
+        ? `📊 *סטטוס בוט (Chrome)*\n🟢 פעיל\n📅 *תאריך ושעה:* ${now}\n🖥️ זיכרון מערכת: ${usedRamMB}MB / ${totalRamMB}MB (${ramPct}%)\n🧠 זיכרון תהליך (Heap): ${heapUsedMB}MB / ${heapTotalMB}MB (${heapPct}%)\n📦 RSS (זיכרון פיזי): ${rssMB}MB / ${totalRamMB}MB (${rssPct}%)\n\n🏥 *בריאות המערכת*\nסטטוס: ${isHealthy ? '🟢 בריא' : '🟡 בעיות'}\nזמן פעילות: ${uptimeHrs}h ${uptimeMins}m\nהודעה אחרונה: ${lastMsgMinutes} דקות\nשגיאות (24h): ${errorCount24h}`
+        : `📊 *Bot Status (Chrome)*\n🟢 Active\n📅 *Date & time:* ${now}\n🖥️ System RAM: ${usedRamMB}MB / ${totalRamMB}MB (${ramPct}%)\n🧠 Process heap: ${heapUsedMB}MB / ${heapTotalMB}MB (${heapPct}%)\n📦 RSS (physical): ${rssMB}MB / ${totalRamMB}MB (${rssPct}%)\n\n🏥 *System Health*\nStatus: ${isHealthy ? '🟢 Healthy' : '🟡 Issues'}\nUptime: ${uptimeHrs}h ${uptimeMins}m\nLast message: ${lastMsgMinutes}m ago\nErrors (24h): ${errorCount24h}`;
 
     if (!allGroups || allGroups.length === 0) {
         return sysBlock + '\n\n' + (lang === 'he' ? '📋 אין קבוצות מוגדרות במערכת.' : '📋 No groups configured in the system.');
