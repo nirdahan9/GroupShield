@@ -7,8 +7,8 @@ const config = require('./config');
 
 const RESERVED_COMMANDS = new Set(['איפוס', 'reset', 'חזור', 'back', 'יציאה', 'exit']);
 
-// ── Predefined curse-word list (Hebrew) ──────────────────────────────────────
-const CURSE_WORDS_HE = [
+// ── Predefined curse-word list (Hebrew + English) ────────────────────────────
+const CURSE_WORDS = [
     // ── גניטליה / מין ────────────────────────────────────────────────────────
     'כוס', 'כוסאמק', 'כוסמק', 'כסאמק', 'כסמק', 'כוסית',
     'כוס אמא', 'כוס אמו', 'כוס אמך', 'כוס אמם', 'כוס של אמא',
@@ -83,10 +83,42 @@ const CURSE_WORDS_HE = [
     'ח׳ביל', 'חביל', 'פאחד',
     'ח׳ול', 'חול', 'זפת',
     'בהיים',
-    // ── אנגלית גסה בשימוש ישראלי ─────────────────────────────────────────────
+    // ── אנגלית גסה בכתיב עברי (ישראלים שכותבים אנגלית בעברית) ─────────────────
     'פאק', 'פאקינג', 'פאק יו', 'וואט דה פאק',
     'סאק', 'סאק מיי', 'ביץ', 'בסטרד',
     'אסהול', 'קאנט', 'מאדרפאקר', 'סאן אוף אביץ',
+    // ── English — sexual / body ───────────────────────────────────────────────
+    'fuck', 'fucking', 'fucker', 'fucked', 'fucks', 'fuckin',
+    'fuck you', 'fuck off', 'fuck this', 'fuck that', 'fuck him', 'fuck her',
+    'wtf', 'what the fuck', 'go fuck yourself',
+    'motherfucker', 'motherfucking', 'mf',
+    'shit', 'shithead', 'shitface', 'shithole', 'bullshit', 'piece of shit',
+    'holy shit', 'aw shit', 'pile of shit',
+    'ass', 'asshole', 'asswipe', 'jackass', 'dumbass', 'smartass', 'fatass',
+    'dickhead', 'dick', 'cock', 'cocksucker', 'cock sucker',
+    'cunt', 'cunts',
+    'pussy', 'pussies',
+    'bitch', 'bitches', 'son of a bitch', 'son of a whore',
+    'bastard', 'bastards',
+    'whore', 'slut', 'skank', 'hoe', 'hoes', 'prostitute',
+    'wanker', 'wank', 'twat', 'prick', 'bollocks', 'tosser',
+    'blowjob', 'blow job', 'handjob', 'hand job',
+    // ── English — slurs ───────────────────────────────────────────────────────
+    'nigger', 'nigga', 'niger',
+    'faggot', 'fag', 'dyke',
+    'retard', 'retarded', 'spastic',
+    'kike', 'chink', 'spic', 'wetback', 'gook', 'towelhead', 'raghead',
+    // ── English — insults / stupidity ─────────────────────────────────────────
+    'idiot', 'idiots', 'moron', 'morons', 'imbecile',
+    'dumbfuck', 'dumb fuck', 'stupid fuck', 'dumb shit', 'dumbshit',
+    'loser', 'piece of trash', 'piece of garbage', 'scumbag', 'scum',
+    'lowlife', 'dirtbag', 'sleazebag', 'scumbucket',
+    'jerk', 'jerk off', 'jerkoff',
+    // ── English — death wishes / aggression ───────────────────────────────────
+    'go to hell', 'go to hell and die', 'rot in hell',
+    'drop dead', 'die', 'kill yourself', 'kys', 'go die',
+    'i hope you die', 'i hope you rot',
+    'get the fuck out', 'get lost',
     // ── גסויות כלליות ────────────────────────────────────────────────────────
     'יא זבל', 'יא חמור', 'יא מנוול', 'יא ממזר',
     'יא שרמוטה', 'יא אידיוט', 'יא מפגר', 'יא כלב',
@@ -534,7 +566,7 @@ async function handleRulesType(client, jid, content, state, lang) {
             ...state,
             step: 'non_text_rule',
             rulesType: 'curses',
-            rulesMessages: CURSE_WORDS_HE,
+            rulesMessages: CURSE_WORDS,
             rulesMatchMode: 'smart'
         });
         return t('curses_preset_selected', lang) + '\n\n' + t('ask_non_text_rule', lang);
@@ -1124,7 +1156,7 @@ async function handleSummary(client, jid, content, state, lang) {
                 });
             } else if (state.rulesType === 'curses') {
                 await database.addRule(groupId, 'forbidden_messages', {
-                    messages: CURSE_WORDS_HE,
+                    messages: CURSE_WORDS,
                     matchMode: 'smart'
                 });
             }
