@@ -108,6 +108,9 @@ function checkNonTextRule(ruleData, msgType, lang) {
     return violations;
 }
 
+// Emoji that are unambiguously offensive (middle finger + skin tone variants)
+const FORBIDDEN_EMOJIS = new Set(['🖕','🖕🏻','🖕🏼','🖕🏽','🖕🏾','🖕🏿']);
+
 /**
  * Check forbidden messages rule
  * Specific messages are banned; everything else is allowed
@@ -115,6 +118,17 @@ function checkNonTextRule(ruleData, msgType, lang) {
 function checkForbiddenMessages(ruleData, content, lang) {
     const violations = [];
     if (!ruleData) return violations;
+
+    // Curses preset: forbidden emoji check (rule engine, no LLM needed)
+    if (ruleData.isCursesPreset) {
+        for (const emoji of FORBIDDEN_EMOJIS) {
+            if (content.includes(emoji)) {
+                violations.push(t('reason_forbidden_content', lang));
+                return violations;
+            }
+        }
+    }
+
     const forbiddenList = ruleData.messages || [];
     const matchMode = ruleData.matchMode || 'contains';
     const normalizedContent = content.trim().toLowerCase();
@@ -181,6 +195,18 @@ function checkForbiddenMessages(ruleData, content, lang) {
                 // e.g. "fvck" → "fuck", "sh1t" → "shit", "a55" → "ass"
                 const phoneticContent = applyEnglishPhoneticMap(cleanContent);
                 if (wbRegex.test(phoneticContent)) return true;
+
+                // Pass E5: multi-word phrase spaceless bypass
+                // e.g. "g o t o h e l l" → "gotohell" vs "go to hell" → "gotohell"
+                if (forbidden.includes(' ')) {
+                    const noSpaceForbidden = forbidden.trim().replace(/\s+/g, '');
+                    const wbNoSpaceRegex = new RegExp(
+                        '(?<![\\p{L}\\p{N}])' + escapeRegex(noSpaceForbidden) + '(?![\\p{L}\\p{N}])',
+                        'iu'
+                    );
+                    if (wbNoSpaceRegex.test(cleanContent)) return true;
+                    if (wbNoSpaceRegex.test(cleanContent.replace(/(.)\1+/gi, '$1'))) return true;
+                }
             }
 
             return false;
@@ -566,9 +592,10 @@ function smartMatchesForbidden(normMessage, normForbidden) {
  */
 function stripInvisibleChars(text) {
     return text
-        .normalize('NFKD')
+        .normalize('NFKC')  // fullwidth Latin: Ｆｕｃｋ → Fuck; also decomposes ligatures
+        .normalize('NFKD')  // then decompose remaining combining marks
         .replace(/[\u0000-\u001F\u007F-\u009F\u00AD\u200B-\u200F\u202A-\u202F\u2060-\u206F\uFEFF]/gu, '')
-        .replace(/\p{M}/gu, '');   // combining diacritics: f̃ùćk → fuck
+        .replace(/\p{M}/gu, '');   // strip combining diacritics: f̃ùćk → fuck
 }
 
 /**
@@ -610,22 +637,43 @@ function collapseSpacedLetters(text) {
 const ENGLISH_PHONETIC_MAP = {
     // fuck
     'fvck': 'fuck', 'phuck': 'fuck', 'phuk': 'fuck', 'fcuk': 'fuck',
-    'fook': 'fuck', 'fuk': 'fuck',   'fuq':  'fuck', 'fyck': 'fuck',
-    'f@ck': 'fuck', 'f4ck': 'fuck',  'f*ck': 'fuck',
+    'fook': 'fuck', 'fuk':  'fuck',  'fuq':  'fuck', 'fyck': 'fuck',
+    'f@ck': 'fuck', 'f4ck': 'fuck',  'f*ck': 'fuck', 'feck': 'fuck',
+    'fucc': 'fuck', 'fack': 'fuck',  'fuc':  'fuck',
     // shit
-    'sh1t': 'shit', 'shyt': 'shit',  'sh!t': 'shit',
+    'sh1t': 'shit', 'shyt': 'shit',  'sh!t': 'shit', 'sheit': 'shit',
+    'shitt': 'shit', 'shi+': 'shit',
     // ass
-    'a55': 'ass', '@ss': 'ass', 'azz': 'ass', '4ss': 'ass', 'a$$': 'ass',
+    'a55':  'ass', '@ss': 'ass', 'azz': 'ass', '4ss': 'ass', 'a$$': 'ass',
+    // asshole
+    '@sshole': 'asshole', 'a55hole': 'asshole', 'azzhole': 'asshole',
     // bitch
-    'b1tch': 'bitch', 'biatch': 'bitch', 'biotch': 'bitch', 'b!tch': 'bitch',
+    'b1tch':  'bitch', 'biatch': 'bitch', 'biotch': 'bitch', 'b!tch': 'bitch',
+    'bich':   'bitch', 'bytch':  'bitch',
     // cunt
-    'c0nt': 'cunt', 'kunt': 'cunt',
+    'c0nt': 'cunt', 'kunt': 'cunt', 'c*nt': 'cunt', 'cvnt': 'cunt',
     // dick
-    'd1ck': 'dick', 'd!ck': 'dick',
+    'd1ck': 'dick', 'd!ck': 'dick', 'dikc': 'dick', 'd*ck': 'dick',
+    // cock
+    'c0ck': 'cock', 'k0ck': 'cock', 'c*ck': 'cock',
     // pussy
-    'pu$$y': 'pussy', 'pvssy': 'pussy',
+    'pu$$y': 'pussy', 'pvssy': 'pussy', 'p*ssy': 'pussy',
+    // nigger
+    'n1gger': 'nigger', 'nigg3r': 'nigger', 'n1gg3r': 'nigger', 'n!gger': 'nigger',
+    // faggot
+    'f4ggot': 'faggot', 'f@ggot': 'faggot', 'faggt': 'faggot',
+    // whore
+    'wh0re': 'whore', 'wh0r3': 'whore', 'wh*re': 'whore',
+    // slut
+    'sl0t': 'slut', 'sl!t': 'slut',
+    // hell
+    'h3ll': 'hell',
+    // damn
+    'd4mn': 'damn', 'dmn': 'damn',
     // bastard
     'b@stard': 'bastard',
+    // motherfucker
+    'mofo': 'motherfucker', 'm0f0': 'motherfucker', 'mf': 'motherfucker',
 };
 
 function applyEnglishPhoneticMap(text) {

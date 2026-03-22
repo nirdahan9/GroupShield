@@ -83,6 +83,29 @@ function detectsInjection(text) {
 // Returns true if the message is worth checking with the LLM.
 // Only messages that PASSED the rule engine reach here.
 
+// Fast single-row edit distance — returns true if dist ≤ 1
+function editDist1(a, b) {
+    if (Math.abs(a.length - b.length) > 1) return false;
+    const m = a.length, n = b.length;
+    let row = Array.from({ length: n + 1 }, (_, i) => i);
+    for (let i = 1; i <= m; i++) {
+        let prev = row[0];
+        row[0] = i;
+        for (let j = 1; j <= n; j++) {
+            const temp = row[j];
+            row[j] = a[i - 1] === b[j - 1] ? prev : 1 + Math.min(prev, row[j], row[j - 1]);
+            prev = temp;
+        }
+    }
+    return row[n] <= 1;
+}
+
+// Top English curse words for near-miss detection (words ≥ 4 chars only)
+const NEAR_MISS_TARGETS = [
+    'fuck', 'shit', 'bitch', 'cunt', 'dick', 'cock',
+    'nigger', 'bastard', 'whore', 'slut', 'pussy', 'asshole'
+];
+
 function isSuspicious(text) {
     if (!text || text.length < 2) return false;
     const lower = text.toLowerCase();
@@ -96,13 +119,16 @@ function isSuspicious(text) {
     // 3. All-caps short message (aggressive tone)
     if (text.length <= 25 && /[A-Z]{3,}/.test(text) && text === text.toUpperCase() && /[A-Z]/.test(text)) return true;
 
-    // 4. Mixed-script single "word" (could be a disguised curse)
-    // e.g. "כ0ס" already handled by ruleEngine homoglyphs,
-    // but patterns like "f-u-c-k" (dashes between letters) slip through
+    // 4. Mixed-script single "word" with separator chars — "f-u-c-k", "כ.ו.ס"
     if (/[a-zA-Z\u05D0-\u05EA][-_.][a-zA-Z\u05D0-\u05EA][-_.][a-zA-Z\u05D0-\u05EA]/.test(text)) return true;
 
-    // 5. "Go _ yourself" or "kill _" patterns with pronouns
+    // 5. Death-wish patterns
     if (/\b(go\s+\w+\s+yourself|kill\s+(yourself|ur?self)|hope\s+you\s+(die|rot|burn))\b/.test(lower)) return true;
+
+    // 6. Near-miss: word within edit-distance 1 of a top curse word
+    // Catches "fucc", "bich", "fack", "cnut" — bypasses not in the phonetic map
+    const words = lower.replace(/[^a-z\s]/g, ' ').split(/\s+/).filter(w => w.length >= 4);
+    if (words.some(w => NEAR_MISS_TARGETS.some(c => w !== c && editDist1(w, c)))) return true;
 
     return false;
 }
