@@ -123,7 +123,6 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
 
     let privateStatus = '❌';
     let removeStatus = '❌';
-    let blockStatus = '❌';
 
     try {
         // STEP 1: Delete message
@@ -175,23 +174,7 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
             await database.updateEnforcementActionStep(actionId, 'removeStatus', 'skipped');
         }
 
-        // STEP 4: Block user
-        if (enforcementConfig.blockUser) {
-            try {
-                const contact = await client.getContactById(targetJid);
-                await contact.block();
-                blockStatus = '✅';
-                logger.info(`Blocked ${number}`);
-                await database.updateEnforcementActionStep(actionId, 'blockStatus', 'success');
-            } catch (e) {
-                logger.error(`Block failed for ${number}`, e);
-                await database.updateEnforcementActionStep(actionId, 'blockStatus', 'failed', e.message);
-            }
-        } else {
-            await database.updateEnforcementActionStep(actionId, 'blockStatus', 'skipped');
-        }
-
-        // STEP 5: Send report
+        // STEP 4: Send report
         if (enforcementConfig.sendReport) {
             let pushname = 'Unknown';
             try {
@@ -208,7 +191,6 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
                 content: content || msgType,
                 privateStatus,
                 removeStatus,
-                blockStatus,
                 time: formattedTime,
                 violationId: actionId
             });

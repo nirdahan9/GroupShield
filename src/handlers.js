@@ -312,16 +312,16 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
             return;
         }
 
-        const isGeneralMultiGroupCommand = 
+        const isGeneralMultiGroupCommand =
+            mgmtCommand === '?' || mgmtCommand === 'עזרה' || mgmtCommand === 'help' ||
+            mgmtCommand === 'סטטוס' || mgmtCommand === 'status' ||
+            mgmtCommand === 'חוקי הקבוצה' || mgmtCommand === 'group rules' ||
             mgmtCommand.startsWith('הוסף חסין ') || mgmtCommand.startsWith('exempt add ') ||
             mgmtCommand.startsWith('הסר חסין ') || mgmtCommand.startsWith('exempt remove ') ||
             mgmtCommand === 'רשימת חסינים' || mgmtCommand === 'exempt list' ||
             mgmtCommand.startsWith('אפס אזהרות ') || mgmtCommand.startsWith('warnings reset ') ||
-            mgmtCommand === 'התחל' || mgmtCommand === 'start' || mgmtCommand === 'setup' || mgmtCommand === 'start setup' ||
-            mgmtCommand === 'הגדרות' || mgmtCommand === 'settings' ||
             mgmtCommand === 'עדכן אכיפה' || mgmtCommand === 'update enforcement' ||
-            mgmtCommand === 'איפוס' || mgmtCommand === 'reset' ||
-            mgmtCommand === 'חוקי הקבוצה' || mgmtCommand === 'group rules';
+            mgmtCommand === 'איפוס' || mgmtCommand === 'reset';
 
         if (isGeneralMultiGroupCommand) {
             let targetGroupConf = null;

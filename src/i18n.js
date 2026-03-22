@@ -169,8 +169,8 @@ const strings = {
 
     // ── Enforcement ──────────────────────────────────────────────────────
     'ask_enforcement': {
-        he: '⚖️ *שלב 6: שלבי אכיפה*\n\nבחר אילו שלבים הבוט יבצע בהפרה.\n*הסדר קבוע* — בחר אילו להפעיל:\n\n{{steps}}\n\nשלח את המספרים שברצונך להפעיל, מופרדים בפסיקים.\nלדוגמה: 1,2,3,5',
-        en: '⚖️ *Step 6: Enforcement Steps*\n\nChoose which steps the bot takes on violation.\n*Fixed order* — choose which to enable:\n\n{{steps}}\n\nSend the numbers you want to enable, separated by commas.\nExample: 1,2,3,5'
+        he: '⚖️ *שלב 6: שלבי אכיפה*\n\nבחר אילו שלבים הבוט יבצע בהפרה.\n*הסדר קבוע* — בחר אילו להפעיל:\n\n{{steps}}\n\nשלח את המספרים שברצונך להפעיל, מופרדים בפסיקים.\nלדוגמה: 1,2,3,4',
+        en: '⚖️ *Step 6: Enforcement Steps*\n\nChoose which steps the bot takes on violation.\n*Fixed order* — choose which to enable:\n\n{{steps}}\n\nSend the numbers you want to enable, separated by commas.\nExample: 1,2,3,4'
     },
     'enforcement_step_1': {
         he: '1️⃣ מחיקת ההודעה — ההודעה תימחק מהקבוצה',
@@ -193,12 +193,8 @@ const strings = {
         en: '3️⃣ Remove from group — user is removed from the group'
     },
     'enforcement_step_4': {
-        he: '4️⃣ חסימת המשתמש — הבוט יחסום את המשתמש בוואטסאפ',
-        en: '4️⃣ Block user — bot blocks the user on WhatsApp'
-    },
-    'enforcement_step_5': {
-        he: '5️⃣ שליחת דיווח — נשלח דו״ח ליעד הדיווח שהוגדר',
-        en: '5️⃣ Send report — sends enforcement report to configured report target'
+        he: '4️⃣ שליחת דיווח — נשלח דו״ח ליעד הדיווח שהוגדר',
+        en: '4️⃣ Send report — sends enforcement report to configured report target'
     },
     'enforcement_saved': {
         he: '✅ שלבי אכיפה נשמרו.',
@@ -225,7 +221,7 @@ const strings = {
 
     // ── Exempt Users ─────────────────────────────────────────────────────
     'ask_exempt': {
-        he: '🛡️ *שלב 7: משתמשים חסינים*\n\nשלח מספרי טלפון של משתמשים שלא ייאכפו עליהם חוקים.\nמספר אחד בכל שורה, בפורמט בינלאומי או מקומי.\n\nלדוגמה:\n+1 202-555-0187\n+972-52-123-4567\n\nאו שלח *"דלג"* לדלג.',
+        he: '🛡️ *שלב 7: משתמשים חסינים*\n\n💡 *שים לב:* מנהלי הקבוצה חסינים אוטומטית — אין צורך להוסיף אותם.\n\nשלח מספרי טלפון של משתמשים נוספים שלא ייאכפו עליהם חוקים.\nמספר אחד בכל שורה, בפורמט בינלאומי או מקומי.\n\nלדוגמה:\n+1 202-555-0187\n+972-52-123-4567\n\nאו שלח *"דלג"* לדלג.',
         en: '🛡️ *Step 7: Exempt Users*\n\nSend phone numbers of users exempt from rules.\nOne number per line, in international or local format.\n\nExample:\n+1 202-555-0187\n+972-52-123-4567\n\nOr send *"skip"* to skip.'
     },
     'exempt_saved': {

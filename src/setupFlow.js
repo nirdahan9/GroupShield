@@ -651,8 +651,7 @@ function buildEnforcementQuestion(lang, warningCount = 0) {
         t('enforcement_step_1', lang),
         t(step2Key, lang),
         t('enforcement_step_3', lang),
-        t('enforcement_step_4', lang),
-        t('enforcement_step_5', lang)
+        t('enforcement_step_4', lang)
     ].join('\n');
     return t('ask_enforcement', lang, { steps });
 }
@@ -667,8 +666,7 @@ async function handleEnforcement(client, jid, content, state, lang) {
         deleteMessage: choices.includes(1),
         privateWarning: choices.includes(2),
         removeFromGroup: choices.includes(3),
-        blockUser: choices.includes(4),
-        sendReport: choices.includes(5),
+        sendReport: choices.includes(4),
         warnPrivateDm: !!state.warnPrivateDm
     };
 
@@ -686,8 +684,7 @@ async function handleQuickEnforcement(client, jid, content, state, lang) {
         deleteMessage: choices.includes(1),
         privateWarning: choices.includes(2),
         removeFromGroup: choices.includes(3),
-        blockUser: choices.includes(4),
-        sendReport: choices.includes(5),
+        sendReport: choices.includes(4),
         warnPrivateDm: !!state.warnPrivateDm
     };
 
@@ -919,8 +916,7 @@ async function buildSummary(state, reportTarget, mgmtGroupId, lang) {
     if (state.enforcementConfig.deleteMessage) enfSteps.push(t('enforcement_step_1', lang));
     if (state.enforcementConfig.privateWarning) enfSteps.push(t('enforcement_step_2', lang));
     if (state.enforcementConfig.removeFromGroup) enfSteps.push(t('enforcement_step_3', lang));
-    if (state.enforcementConfig.blockUser) enfSteps.push(t('enforcement_step_4', lang));
-    if (state.enforcementConfig.sendReport) enfSteps.push(t('enforcement_step_5', lang));
+    if (state.enforcementConfig.sendReport) enfSteps.push(t('enforcement_step_4', lang));
     if (state.enforcementConfig.warnPrivateDm) {
         const warnLabel = lang === 'he' ? '💬 הודעה פרטית בכל אזהרה' : '💬 Private DM per warning';
         enfSteps.push(warnLabel);
