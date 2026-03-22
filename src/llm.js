@@ -3,36 +3,51 @@
 // Falls back silently on error — never blocks message flow.
 
 const https = require('https');
+const fs = require('fs');
+const path = require('path');
 const config = require('./config');
 const logger = require('./logger');
 
-const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const MODEL = 'llama-3.1-8b-instant';
 const TIMEOUT_MS = 4000;
 
-// ── Usage tracking ────────────────────────────────────────────────────────────
-// Rolling 1-minute window + total counter (for status messages)
+// ── Monthly usage tracking (persisted across restarts) ────────────────────────
 
-const GROQ_MINUTE_CAP = 30; // Groq free tier limit (display reference only)
-const callTimestamps = [];  // timestamps of calls in the last 60s
-let totalCalls = 0;
+const GROQ_MONTHLY_CAP = 14000;
+const USAGE_FILE = path.join(__dirname, '..', 'groq_usage.json');
+
+function currentMonth() {
+    return new Date().toISOString().slice(0, 7); // e.g. "2026-03"
+}
+
+function loadUsage() {
+    try {
+        const data = JSON.parse(fs.readFileSync(USAGE_FILE, 'utf8'));
+        if (data.month === currentMonth()) return data;
+    } catch {}
+    return { month: currentMonth(), count: 0 };
+}
+
+function saveUsage(u) {
+    try { fs.writeFileSync(USAGE_FILE, JSON.stringify(u)); } catch (e) {
+        logger.warn('Failed to save Groq usage stats', e.message);
+    }
+}
+
+let usage = loadUsage();
 
 function recordCall() {
-    const now = Date.now();
-    callTimestamps.push(now);
-    totalCalls++;
-    // Evict entries older than 60s
-    const cutoff = now - 60_000;
-    while (callTimestamps.length && callTimestamps[0] < cutoff) callTimestamps.shift();
+    const m = currentMonth();
+    if (usage.month !== m) usage = { month: m, count: 0 };
+    usage.count++;
+    saveUsage(usage);
 }
 
 function getGroqStats() {
-    const now = Date.now();
-    const cutoff = now - 60_000;
-    while (callTimestamps.length && callTimestamps[0] < cutoff) callTimestamps.shift();
-    const lastMinute = callTimestamps.length;
-    const pct = Math.round((lastMinute / GROQ_MINUTE_CAP) * 100);
-    return { lastMinute, cap: GROQ_MINUTE_CAP, pct, total: totalCalls };
+    const m = currentMonth();
+    if (usage.month !== m) usage = { month: m, count: 0 };
+    const pct = Math.round((usage.count / GROQ_MONTHLY_CAP) * 100);
+    return { count: usage.count, cap: GROQ_MONTHLY_CAP, pct, month: usage.month };
 }
 
 // ── Suspicion score ───────────────────────────────────────────────────────────

@@ -842,7 +842,7 @@ async function buildStatusMessage(client) {
     }
 
     const groq = getGroqStats();
-    const groqLine = `🤖 Groq: ${groq.lastMinute}/${groq.cap} req/min (${groq.pct}%) | סה״כ: ${groq.total}`;
+    const groqLine = `🤖 Groq: ${groq.count.toLocaleString()}/${groq.cap.toLocaleString()} req החודש (${groq.pct}%)`;
     status += `\n⏱️ Uptime: ${uptimeStr}\n💾 Memory: ${rssMB}MB (system: ${usedMemMB}/${totalMemMB}MB)\n${groqLine}\n🕒 ${time}`;
     return status;
 }
