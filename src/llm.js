@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const config = require('./config');
 const logger = require('./logger');
+const { CONTEXT_WORDS } = require('./cursesList');
 
 const MODEL = 'llama-3.1-8b-instant';
 const TIMEOUT_MS = 4000;
@@ -77,6 +78,18 @@ function detectsInjection(text) {
     if (/מעכשיו\s+אתה|אתה\s+כעת/i.test(text)) return true;
 
     return false;
+}
+
+// ── Context-word detector ─────────────────────────────────────────────────────
+// Words with dual meanings — always sent to LLM regardless of suspicion score.
+
+function containsContextWord(text) {
+    const lower = text.toLowerCase();
+    return CONTEXT_WORDS.some(w => {
+        const isHebrew = /[\u05D0-\u05EA]/.test(w);
+        if (isHebrew) return lower.includes(w);
+        return new RegExp(`\\b${w}\\b`, 'i').test(lower);
+    });
 }
 
 // ── Suspicion score ───────────────────────────────────────────────────────────
@@ -221,8 +234,8 @@ async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfi
         return;
     }
 
-    // Layer 2: suspicion score — only call LLM for suspicious messages
-    if (!isSuspicious(content)) return;
+    // Layer 2: route to LLM if message is suspicious OR contains a context-dependent word
+    if (!isSuspicious(content) && !containsContextWord(content)) return;
 
     const apiKey = config.get('groq.apiKey');
     if (!apiKey) return;
