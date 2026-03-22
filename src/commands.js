@@ -152,6 +152,25 @@ async function executeCommand(client, senderJid, command, lang, overrideGroupCon
             return buildFullGroupsStatus(lang);
         }
 
+        // ── Developer: stop enforcement for any group by name ─────────
+        const stopDevMatch = cmd.match(/^הפסק אכיפה (.+)$/i) || cmd.match(/^stop enforcement (.+)$/i);
+        if (stopDevMatch) {
+            if (!isDeveloper) return t('developer_only_command', lang);
+            const targetName = stopDevMatch[1].trim();
+            const allGroups = await database.getAllGroups();
+            const found = allGroups && allGroups.find(g =>
+                g.groupName && g.groupName.toLowerCase() === targetName.toLowerCase()
+            ) || (allGroups && allGroups.find(g =>
+                g.groupName && g.groupName.toLowerCase().includes(targetName.toLowerCase())
+            ));
+            if (!found) {
+                return lang === 'he'
+                    ? `❌ לא נמצאה קבוצה בשם "${targetName}". השתמש ב"סטטוס מפתח" לרשימת הקבוצות.`
+                    : `❌ No group found named "${targetName}". Use "dev status" to list groups.`;
+            }
+            return await stopEnforcement(client, found.ownerJid, found, lang);
+        }
+
         // ── View group rules ─────────────────────────────────────────
         if (cmdLower === 'חוקי הקבוצה' || cmdLower === 'group rules') {
             if (!groupConfig) return t('no_group_linked', lang);
@@ -397,7 +416,6 @@ async function buildGroupRulesMessage(groupConfig, lang) {
         if (enforcement.deleteMessage)    steps.push(lang === 'he' ? '🗑️ מחיקה' : '🗑️ delete');
         if (enforcement.privateWarning)   steps.push(lang === 'he' ? '📩 הודעת הסרה' : '📩 removal notice');
         if (enforcement.removeFromGroup)  steps.push(lang === 'he' ? '🚫 הסרה' : '🚫 remove');
-        if (enforcement.blockUser)        steps.push(lang === 'he' ? '🔒 חסימה' : '🔒 block');
         if (enforcement.sendReport)       steps.push(lang === 'he' ? '📋 דיווח' : '📋 report');
         if (enforcement.warnPrivateDm)    steps.push(lang === 'he' ? '💬 הודעה פרטית בכל אזהרה' : '💬 private DM per warning');
         const maxWarn = groupConfig.warningCount ?? 1;
