@@ -10,35 +10,29 @@ const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const MODEL = 'llama-3.1-8b-instant';
 const TIMEOUT_MS = 4000;
 
-// ── Rate limiting ─────────────────────────────────────────────────────────────
-// Per-group: max N calls per minute
-// Global: max M calls per minute (Groq free tier = 30 req/min)
+// ── Usage tracking ────────────────────────────────────────────────────────────
+// Rolling 1-minute window + total counter (for status messages)
 
-const PER_GROUP_MAX = 3;   // max LLM calls per group per minute
-const GLOBAL_MAX    = 20;  // conservative ceiling across all groups
+const GROQ_MINUTE_CAP = 30; // Groq free tier limit (display reference only)
+const callTimestamps = [];  // timestamps of calls in the last 60s
+let totalCalls = 0;
 
-const groupRateMap = new Map(); // groupId → { count, resetAt }
-let globalCount = 0;
-let globalResetAt = 0;
-
-function isRateLimited(groupId) {
+function recordCall() {
     const now = Date.now();
+    callTimestamps.push(now);
+    totalCalls++;
+    // Evict entries older than 60s
+    const cutoff = now - 60_000;
+    while (callTimestamps.length && callTimestamps[0] < cutoff) callTimestamps.shift();
+}
 
-    // Global counter
-    if (now > globalResetAt) { globalCount = 0; globalResetAt = now + 60_000; }
-    if (globalCount >= GLOBAL_MAX) return true;
-
-    // Per-group counter
-    let entry = groupRateMap.get(groupId);
-    if (!entry || now > entry.resetAt) {
-        entry = { count: 0, resetAt: now + 60_000 };
-        groupRateMap.set(groupId, entry);
-    }
-    if (entry.count >= PER_GROUP_MAX) return true;
-
-    globalCount++;
-    entry.count++;
-    return false;
+function getGroqStats() {
+    const now = Date.now();
+    const cutoff = now - 60_000;
+    while (callTimestamps.length && callTimestamps[0] < cutoff) callTimestamps.shift();
+    const lastMinute = callTimestamps.length;
+    const pct = Math.round((lastMinute / GROQ_MINUTE_CAP) * 100);
+    return { lastMinute, cap: GROQ_MINUTE_CAP, pct, total: totalCalls };
 }
 
 // ── Suspicion score ───────────────────────────────────────────────────────────
@@ -135,11 +129,11 @@ function callGroq(text) {
  */
 async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfig, enforcementConfig, rateLimiter, lang) {
     if (!isSuspicious(content)) return;
-    if (isRateLimited(groupConfig.groupId)) return;
 
     const apiKey = config.get('groq.apiKey');
     if (!apiKey) return;
 
+    recordCall();
     try {
         const isViolation = await callGroq(content);
         if (isViolation !== true) return;
@@ -158,4 +152,4 @@ async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfi
     }
 }
 
-module.exports = { checkWithLLM };
+module.exports = { checkWithLLM, getGroqStats };

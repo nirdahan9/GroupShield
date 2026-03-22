@@ -816,6 +816,7 @@ function invalidateGroupAdminCache(groupJid) {
  */
 async function buildStatusMessage(client) {
     const os = require('os');
+    const { getGroqStats } = require('./llm');
     const totalMemMB = (os.totalmem() / 1024 / 1024).toFixed(0);
     const freeMemMB = (os.freemem() / 1024 / 1024).toFixed(0);
     const usedMemMB = totalMemMB - freeMemMB;
@@ -840,7 +841,9 @@ async function buildStatusMessage(client) {
         }
     }
 
-    status += `\n⏱️ Uptime: ${uptimeStr}\n💾 Memory: ${rssMB}MB (system: ${usedMemMB}/${totalMemMB}MB)\n🕒 ${time}`;
+    const groq = getGroqStats();
+    const groqLine = `🤖 Groq: ${groq.lastMinute}/${groq.cap} req/min (${groq.pct}%) | סה״כ: ${groq.total}`;
+    status += `\n⏱️ Uptime: ${uptimeStr}\n💾 Memory: ${rssMB}MB (system: ${usedMemMB}/${totalMemMB}MB)\n${groqLine}\n🕒 ${time}`;
     return status;
 }
 
