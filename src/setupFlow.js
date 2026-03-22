@@ -786,6 +786,29 @@ async function handleMgmtGroupName(client, jid, content, state, lang) {
     const groupName = content.trim();
     if (!groupName) return t('ask_mgmt_group_name', lang);
 
+    // Invite link flow for management group
+    const inviteLinkMatch = groupName.match(/chat\.whatsapp\.com\/([A-Za-z0-9]+)/i);
+    if (inviteLinkMatch) {
+        const inviteCode = inviteLinkMatch[1];
+        await client.sendMessage(jid, t('invite_link_joining', lang));
+        try {
+            const groupId = await client.acceptInvite(inviteCode);
+            await new Promise(r => setTimeout(r, 2000));
+            const chat = await client.getChatById(groupId);
+            const name = chat.name;
+
+            if (groupId === state.groupId) return t('mgmt_group_cannot_be_enforced', lang);
+            const existingManaged = await database.getGroup(groupId);
+            if (existingManaged) return t('mgmt_group_cannot_be_enforced', lang);
+
+            await saveState(jid, { ...state, step: 'welcome_msg', reportTarget: 'mgmt_group', mgmtGroupId: groupId, mgmtGroupName: name, mgmtGroupConfirmed: true });
+            return t('invite_link_joined_admin', lang, { name }) + '\n\n' + t('ask_welcome_msg', lang);
+        } catch (e) {
+            logger.error('Failed to join mgmt group via invite link', e);
+            return t('invite_link_failed', lang, { error: e.message });
+        }
+    }
+
     try {
         const chatsPromise = client.getChats();
         const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('getChats timeout')), 15000));
@@ -796,20 +819,10 @@ async function handleMgmtGroupName(client, jid, content, state, lang) {
             g.name.toLowerCase().includes(groupName.toLowerCase())
         ));
 
-        if (!match) {
-            return t('group_not_found', lang);
-        }
-
-        // A management group cannot be the enforced group itself
-        if (match.id._serialized === state.groupId) {
-            return t('mgmt_group_cannot_be_enforced', lang);
-        }
-
-        // A management group cannot be another enforced group
+        if (!match) return t('group_not_found', lang);
+        if (match.id._serialized === state.groupId) return t('mgmt_group_cannot_be_enforced', lang);
         const existingManaged = await database.getGroup(match.id._serialized);
-        if (existingManaged) {
-            return t('mgmt_group_cannot_be_enforced', lang);
-        }
+        if (existingManaged) return t('mgmt_group_cannot_be_enforced', lang);
 
         const count = match.participants ? match.participants.length : 0;
         await saveState(jid, {
@@ -828,8 +841,8 @@ async function handleMgmtGroupName(client, jid, content, state, lang) {
 async function handleMgmtGroupConfirm(client, jid, content, state, lang) {
     const choice = content.trim();
     if (choice === '1' || choice.includes('כן') || choice.toLowerCase() === 'yes') {
-        await saveState(jid, { ...state, step: 'mgmt_group_verify_count' });
-        return t('ask_mgmt_group_verify_count', lang);
+        await saveState(jid, { ...state, step: 'welcome_msg', reportTarget: 'mgmt_group', mgmtGroupConfirmed: true });
+        return t('ask_welcome_msg', lang);
     } else {
         await saveState(jid, { ...state, step: 'mgmt_group_name' });
         return t('ask_mgmt_group_name', lang);

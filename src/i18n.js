@@ -247,8 +247,8 @@ const strings = {
         en: '📱 Send the phone number for reports:\n\n✳️ Suggested replies:\n+1 202-555-0187\n+972521234567'
     },
     'ask_mgmt_group_name': {
-        he: '👥 שלח את שם קבוצת ההנהלה (הוסף אותי לקבוצה קודם):\n\n✳️ תשובה לדוגמה:\nהנהלה',
-        en: '👥 Send the management group name (add me to the group first):\n\n✳️ Example reply:\nManagement'
+        he: '👥 *קבוצת הנהלה*\n\nיש שתי דרכים:\n\n*אפשרות א׳ — הוספה ידנית:*\nהוסף אותי לקבוצת ההנהלה ושלח את *שמה*.\n\n*אפשרות ב׳ — לינק הצטרפות:*\nשלח לינק הצטרפות (chat.whatsapp.com/...) ואצטרף אוטומטית.\n\n✳️ דוגמה:\nהנהלה\nאו: https://chat.whatsapp.com/ABC123',
+        en: '👥 *Management Group*\n\nTwo options:\n\n*Option A — Manual:*\nAdd me to the management group and send its *name*.\n\n*Option B — Invite link:*\nSend an invite link (chat.whatsapp.com/...) and I\'ll join automatically.\n\n✳️ Example:\nManagement\nOr: https://chat.whatsapp.com/ABC123'
     },
     'mgmt_group_confirm': {
         he: '✅ מצאתי קבוצת הנהלה!\n\n📌 *שם:* {{name}}\n👥 *משתתפים:* {{count}}\n\nזו הקבוצה הנכונה?\n\n1️⃣ כן ✅\n2️⃣ לא, חפש שוב ❌',
@@ -331,7 +331,7 @@ const strings = {
 
     // ── Enforcement Messages ─────────────────────────────────────────────
     'violation_warning': {
-        he: '⚠️ *אזהרה ({{current}}/{{max}})*\n\nהודעתך בקבוצה *{{groupName}}* הפרה את החוקים.\n📝 *סיבה:* {{reason}}\n\nנותרו לך {{remaining}} אזהרות לפני אכיפה.',
+        he: '⚠️ *אזהרה ({{current}}/{{max}})*\n\nהודעתך בקבוצה *{{groupName}}* הפרה את החוקים.\n📝 *סיבה:* {{reason}}\n\nנותרו לך {{remaining}} אזהרות לפני נקיטת הליכי ענישה.',
         en: '⚠️ *Warning ({{current}}/{{max}})*\n\nYour message in *{{groupName}}* violated the rules.\n📝 *Reason:* {{reason}}\n\nYou have {{remaining}} warnings remaining.'
     },
     'violation_removed': {

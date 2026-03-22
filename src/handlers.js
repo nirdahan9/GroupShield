@@ -132,7 +132,9 @@ async function handleDM(client, msg, senderJid, content) {
     let setupState = {};
     try { setupState = user && user.setupState ? JSON.parse(user.setupState) : {}; } catch (e) { setupState = {}; }
     if (!user || !user.groupId) {
-        if (setupState.step !== 'stopped') {
+        // Only show setup hint if user has previously interacted with the bot
+        // (prevents spamming warned group members who never opened the bot)
+        if (user && setupState.step !== 'stopped') {
             await client.sendMessage(msg.from, t('setup_start_hint', lang));
         }
         return;
