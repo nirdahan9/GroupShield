@@ -127,10 +127,18 @@ function checkForbiddenMessages(ruleData, content, lang) {
             return normalizedContent === target;
         }
         if (matchMode === 'smart') {
-            const normMsg = normalizeForSmartMatch(content);
             const normTarget = normalizeForSmartMatch(forbidden);
             if (!normTarget) return false;
-            return smartMatchesForbidden(normMsg, normTarget);
+
+            // Standard normalization
+            const normMsg = normalizeForSmartMatch(content);
+            if (smartMatchesForbidden(normMsg, normTarget)) return true;
+
+            // Homoglyph normalization — catches digit/Latin/Arabic substitutions (0→ס, l→ו, etc.)
+            const homoMsg = normalizeForSmartMatch(applyHomoglyphs(content.toLowerCase()));
+            if (homoMsg !== normMsg && smartMatchesForbidden(homoMsg, normTarget)) return true;
+
+            return false;
         }
         // contains (default)
         return normalizedContent.includes(target);
@@ -258,16 +266,47 @@ function escapeRegex(string) {
 
 /**
  * Normalize text for smart matching:
- * - Remove whitespace and Unicode direction marks
- * - Remove all non-alphanumeric characters (punctuation, special chars)
- * - Collapse 3+ repeated characters to 2 (מיייל → מייל)
+ * 1. Strip zero-width / invisible / bidirectional control chars
+ * 2. Strip Unicode combining marks (Hebrew nikud, cantillation, etc.)
+ * 3. Remove everything that is not a letter or digit (emoji, punctuation, spaces…)
+ * 4. Collapse 3+ identical consecutive characters to 2 (מיייל → מייל)
  */
 function normalizeForSmartMatch(text) {
     return text
         .toLowerCase()
-        .replace(/[\s\u200f\u200e\u00ad\u200b]+/g, '')
+        // Invisible / zero-width / bidirectional control characters
+        .replace(/[\u0000-\u001F\u007F-\u009F\u00AD\u200B-\u200F\u202A-\u202F\u2060-\u206F\uFEFF]/gu, '')
+        // Unicode combining marks — strips Hebrew niqqud, cantillation, diacritics
+        .replace(/\p{M}/gu, '')
+        // Keep only letters and digits; removes spaces, emoji, punctuation, RTL marks, etc.
         .replace(/[^\p{L}\p{N}]/gu, '')
+        // Collapse 3+ repeated chars (מיייל → מייל)
         .replace(/(.)\1{2,}/g, '$1$1');
+}
+
+/**
+ * Map of look-alike characters → Hebrew equivalents.
+ * Applied to the INCOMING MESSAGE only (forbidden words are already Hebrew).
+ * Covers common digit/Latin/Arabic substitutions used to bypass filters.
+ */
+const HOMOGLYPH_MAP = {
+    // Digits → Hebrew letters
+    '0': 'ס',   // 0 ≈ ס
+    '6': 'ב',   // 6 ≈ ב
+    '7': 'ל',   // 7 ≈ ל
+    // Latin → Hebrew look-alikes
+    'o': 'ס',   // o ≈ ס
+    'i': 'י',   // i ≈ י
+    'l': 'ו',   // l ≈ ו
+    // Arabic letters → Hebrew look-alikes
+    '\u0648': 'ו',   // Arabic Waw (و) ≈ ו
+    '\u064a': 'י',   // Arabic Ya (ي) ≈ י
+    '\u0643': 'כ',   // Arabic Kaf (ك) ≈ כ
+    '\u0644': 'ל',   // Arabic Lam (ل) ≈ ל
+};
+
+function applyHomoglyphs(text) {
+    return text.split('').map(ch => HOMOGLYPH_MAP[ch] || ch).join('');
 }
 
 const HEBREW_PREFIXES = ['ובה', 'ולה', 'ומה', 'וב', 'ול', 'ומ', 'וש', 'וה', 'ו', 'ב', 'ל', 'כ', 'מ', 'ש', 'ה'];
@@ -343,7 +382,7 @@ function fuzzyMatchesAnyWord(normMessage, normTarget) {
 
 /**
  * Smart match: checks a normalized message against a normalized forbidden word
- * using containment, Hebrew morphological variants, and fuzzy matching.
+ * using containment, Hebrew morphological variants, fuzzy matching, and reversed word.
  */
 function smartMatchesForbidden(normMessage, normForbidden) {
     // 1. Direct containment
@@ -354,8 +393,14 @@ function smartMatchesForbidden(normMessage, normForbidden) {
         if (variant.length >= 2 && normMessage.includes(variant)) return true;
     }
 
-    // 3. Fuzzy match (typos)
+    // 3. Fuzzy match (typos) — single-character edit distance, words ≥ 5 chars only
     if (fuzzyMatchesAnyWord(normMessage, normForbidden)) return true;
+
+    // 4. Reversed word — e.g. הללק instead of קללה (≥ 4 chars to avoid false positives)
+    if (normForbidden.length >= 4) {
+        const reversed = normForbidden.split('').reverse().join('');
+        if (normMessage.includes(reversed)) return true;
+    }
 
     return false;
 }
