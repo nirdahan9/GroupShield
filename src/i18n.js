@@ -422,8 +422,8 @@ const strings = {
 
     // ── General ──────────────────────────────────────────────────────────
     'unknown_command': {
-        he: '❓ לא זיהיתי את ההודעה.\nשלח *"עזרה"* לרשימת פקודות, או *"התחל"* כדי להתחיל הגדרה.',
-        en: '❓ I could not recognize this message.\nSend *"help"* for commands, or *"start"* to begin setup.'
+        he: '❓ לא זיהיתי את ההודעה.\nשלח *"עזרה"* לרשימת פקודות, או *"התחל"* כדי להתחיל הגדרה.\n\n❓ I could not recognize this message.\nSend *"help"* for commands, or *"start"* to begin setup.',
+        en: '❓ לא זיהיתי את ההודעה.\nשלח *"עזרה"* לרשימת פקודות, או *"התחל"* כדי להתחיל הגדרה.\n\n❓ I could not recognize this message.\nSend *"help"* for commands, or *"start"* to begin setup.'
     },
     'setup_start_hint': {
         he: '👋 כדי להתחיל הגדרת בוט, שלח *"התחל"*.',
