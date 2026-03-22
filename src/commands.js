@@ -1,4 +1,5 @@
 // src/commands.js - Admin command handlers
+const os = require('os');
 const { setRestartReason } = require('./restartTracker');
 const config = require('./config');
 const logger = require('./logger');
@@ -151,7 +152,7 @@ async function executeCommand(client, senderJid, command, lang, overrideGroupCon
             return t('cleanup_done', lang, { removed: String(removed) });
         }
 
-        if (cmdLower === 'סטטוס כל הקבוצות' || cmdLower === 'all groups status') {
+        if (cmdLower === 'סטטוס מפתח' || cmdLower === 'dev status') {
             if (!isDeveloper) return t('developer_only_command', lang);
             return buildFullGroupsStatus(lang);
         }
@@ -417,8 +418,24 @@ async function buildGroupRulesMessage(groupConfig, lang) {
 async function buildFullGroupsStatus(lang) {
     const allGroups = await database.getAllGroups();
 
+    // Memory & uptime stats
+    const mem = process.memoryUsage();
+    const heapUsedMB = (mem.heapUsed / 1024 / 1024).toFixed(1);
+    const heapTotalMB = (mem.heapTotal / 1024 / 1024).toFixed(1);
+    const rssMB = (mem.rss / 1024 / 1024).toFixed(1);
+    const freeRamMB = (os.freemem() / 1024 / 1024).toFixed(0);
+    const totalRamMB = (os.totalmem() / 1024 / 1024).toFixed(0);
+    const uptimeSec = Math.floor(process.uptime());
+    const uptimeHrs = Math.floor(uptimeSec / 3600);
+    const uptimeMins = Math.floor((uptimeSec % 3600) / 60);
+    const now = new Date().toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem', hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: '2-digit' });
+
+    const sysBlock = lang === 'he'
+        ? `💻 *מידע מערכת*\n🕒 ${now}\n⏱️ פעיל: ${uptimeHrs}ש ${uptimeMins}ד\n💾 RAM: ${freeRamMB}MB פנוי / ${totalRamMB}MB סה״כ\n🧠 Heap: ${heapUsedMB}MB / ${heapTotalMB}MB | RSS: ${rssMB}MB`
+        : `💻 *System Info*\n🕒 ${now}\n⏱️ Uptime: ${uptimeHrs}h ${uptimeMins}m\n💾 RAM: ${freeRamMB}MB free / ${totalRamMB}MB total\n🧠 Heap: ${heapUsedMB}MB / ${heapTotalMB}MB | RSS: ${rssMB}MB`;
+
     if (!allGroups || allGroups.length === 0) {
-        return lang === 'he' ? '📋 אין קבוצות מוגדרות במערכת.' : '📋 No groups configured in the system.';
+        return sysBlock + '\n\n' + (lang === 'he' ? '📋 אין קבוצות מוגדרות במערכת.' : '📋 No groups configured in the system.');
     }
 
     // Fetch all errors and pending names once
@@ -427,8 +444,8 @@ async function buildFullGroupsStatus(lang) {
 
     const lines = [];
     lines.push(lang === 'he'
-        ? `📋 *סטטוס כל הקבוצות (${allGroups.length})*\n${'─'.repeat(30)}`
-        : `📋 *All Groups Status (${allGroups.length})*\n${'─'.repeat(30)}`);
+        ? `${sysBlock}\n\n📋 *קבוצות (${allGroups.length})*\n${'─'.repeat(30)}`
+        : `${sysBlock}\n\n📋 *Groups (${allGroups.length})*\n${'─'.repeat(30)}`);
 
     for (const g of allGroups) {
         // ── Status ────────────────────────────────────────────────────
