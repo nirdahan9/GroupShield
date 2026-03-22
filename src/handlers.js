@@ -111,6 +111,17 @@ async function handleDM(client, msg, senderJid, content) {
         return;
     }
 
+    // Developer bypass — can use commands without a configured group
+    if (config.isDeveloper(senderJid)) {
+        const response = await commands.executeCommand(client, senderJid, content, lang);
+        if (response) {
+            await sendBotReply(client, msg.from, response);
+        } else {
+            await client.sendMessage(msg.from, t('unknown_command', lang));
+        }
+        return;
+    }
+
     // User has not started setup yet (and hasn't explicitly stopped enforcement)
     let setupState = {};
     try { setupState = user && user.setupState ? JSON.parse(user.setupState) : {}; } catch (e) { setupState = {}; }
