@@ -683,5 +683,6 @@ module.exports = {
     pauseEnforcement,
     stopEnforcement,
     approveGroupNameChange,
-    stopEnforcementOnNameRejection
+    stopEnforcementOnNameRejection,
+    buildFullGroupsStatus
 };

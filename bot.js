@@ -12,6 +12,7 @@ const database = require('./src/database');
 const { setRestartReason, getRestartReason, formatRestartMessage } = require('./src/restartTracker');
 const { RateLimiter } = require('./src/utils');
 const handlers = require('./src/handlers');
+const { buildFullGroupsStatus } = require('./src/commands');
 const health = require('./src/health');
 const backup = require('./src/backup');
 
@@ -326,7 +327,7 @@ function cleanupRuntimeResources() {
 
 async function sendStatusToDeveloper(client) {
     try {
-        const status = await handlers.buildStatusMessage(client);
+        const status = await buildFullGroupsStatus('he');
         await client.sendMessage(DEVELOPER_JID, status);
     } catch (e) {
         logger.error('Failed to send status', e);
@@ -338,7 +339,7 @@ function handleStartupNotification(client) {
         try {
             const restartData = getRestartReason();
             const restartLine = formatRestartMessage(VERSION, restartData);
-            const statusMsg = await handlers.buildStatusMessage(client);
+            const statusMsg = await buildFullGroupsStatus('he');
             await client.sendMessage(DEVELOPER_JID, restartLine + '\n\n' + statusMsg);
             logger.info('Startup notification sent to developer');
         } catch (e) {
