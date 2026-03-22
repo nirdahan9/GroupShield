@@ -45,12 +45,6 @@ async function executeCommand(client, senderJid, command, lang, overrideGroupCon
             return await setupFlow.startSetup(senderJid, lang);
         }
 
-        // ── Settings ─────────────────────────────────────────────────
-        if (cmdLower === 'הגדרות' || cmdLower === 'settings') {
-            await setupFlow.resetSetup(senderJid);
-            return await setupFlow.processSetupMessage(client, senderJid, '');
-        }
-
         // ── Reset All Configuration ──────────────────────────────────
         if (cmdLower === 'איפוס' || cmdLower === 'reset') {
             if (!groupConfig) return t('no_group_linked', lang);
