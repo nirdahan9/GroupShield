@@ -7,6 +7,45 @@ const config = require('./config');
 
 const RESERVED_COMMANDS = new Set(['איפוס', 'reset', 'חזור', 'back', 'יציאה', 'exit']);
 
+// ── Predefined curse-word list (Hebrew) ──────────────────────────────────────
+const CURSE_WORDS_HE = [
+    // גניטליה / מין
+    'כוס', 'כוסאמק', 'כוסמק', 'כסאמק', 'כסמק', 'כוס אמא', 'כוס אמו',
+    'כוס אמך', 'כוס אמם', 'כוס של אמא', 'בסהלק', 'כסח',
+    'זין', 'זיון', 'זיונים', 'זיני', 'לזיין', 'מזיין', 'מזדיין',
+    'תזדיין', 'תזיין', 'נזדיין', 'יזדיין', 'יזיין', 'לך לזיין',
+    'לך תזדיין', 'תזדיין לי', 'מזיינת', 'מזדיינת',
+    'תחת', 'תחתים', 'פומפה',
+    // זנות / השפלה
+    'זונה', 'זונות', 'שרמוטה', 'שרמוטות', 'יצאנית', 'יצאניות',
+    'בן זונה', 'יבן זונה', 'בן שרמוטה', 'בנת זונה', 'בת זונה',
+    'סרסור', 'מוכת תחת', 'זין עלייך', 'זין עליה', 'זין עליו',
+    // צואה / גוף
+    'חרא', 'חרה', 'חרות', 'חרי', 'חרטא', 'חרטות',
+    'בת חרא', 'בן חרא', 'מלא חרא', 'אוכל חרא',
+    // ממזר / נבלה
+    'ממזר', 'ממזרים', 'ממזרת', 'ממזרות',
+    'נבלה', 'נבלות', 'מנוול', 'מנוולת', 'מנוולים',
+    'כלבה', 'בן כלב', 'בן כלבה', 'בן זבל',
+    // אידיוט / טיפש
+    'אידיוט', 'אידיוטית', 'אידיוטים', 'טמבל', 'טמבלה', 'טמבלים',
+    'מפגר', 'מפגרת', 'מפגרים', 'אוויל',
+    'בהמה', 'בהמות', 'מורון', 'דביל', 'דבילה', 'קריטין', 'אימבציל',
+    'נכה שכל', 'חסר מוח',
+    // קללות ישירות
+    'תמות', 'תשרף', 'תחרב', 'לעזאזל', 'לך לעזאזל', 'תלך לעזאזל',
+    'תסתלק', 'תסתלק מפה', 'שייך לגיהנום', 'תתנקב',
+    'ייקב את שמך', 'יהיה לך רע', 'ארור', 'ארורה', 'ארורים',
+    // עלבונות / כינויים פוגעניים
+    'כושי', 'כושית', 'חבשי', 'ערס', 'ערסים', 'ערסית',
+    'פרחה', 'פרחות', 'שיגץ', 'שיקסה',
+    // גסויות כלליות
+    'יא זבל', 'יא חמור', 'יא מנוול', 'יא ממזר',
+    'פלצן', 'פלצנות', 'דפוק', 'דפוקה',
+    'מסריח', 'מסריחה', 'נחש', 'שרץ', 'חזיר', 'חזירה', 'חזירים',
+    'זקן מנוול', 'זקנה מנוולת',
+];
+
 /**
  * Process a DM message as part of the setup/command flow
  * Returns the response message string, or null if not handled
@@ -427,6 +466,15 @@ async function handleRulesType(client, jid, content, state, lang) {
     } else if (choice === '3') {
         await saveState(jid, { ...state, step: 'non_text_rule', rulesType: 'none' });
         return t('ask_non_text_rule', lang);
+    } else if (choice === '4') {
+        await saveState(jid, {
+            ...state,
+            step: 'non_text_rule',
+            rulesType: 'curses',
+            rulesMessages: CURSE_WORDS_HE,
+            rulesMatchMode: 'smart'
+        });
+        return t('curses_preset_selected', lang) + '\n\n' + t('ask_non_text_rule', lang);
     }
     return t('ask_rules_type', lang);
 }
@@ -896,12 +944,14 @@ async function buildSummary(state, reportTarget, mgmtGroupId, lang) {
     const rulesTypeMap = {
         'allowed': lang === 'he' ? 'הודעות מותרות בלבד' : 'Allowed messages only',
         'forbidden': lang === 'he' ? 'הודעות אסורות' : 'Forbidden messages',
-        'none': lang === 'he' ? 'ללא חוקי תוכן' : 'No content rules'
+        'none': lang === 'he' ? 'ללא חוקי תוכן' : 'No content rules',
+        'curses': lang === 'he' ? 'חסימת קללות (רשימה מוכנה)' : 'Curse blocking (preset list)'
     };
 
     const rulesModeValue = state.rulesType === 'allowed'
         ? 'exact'
-        : (state.rulesType === 'forbidden' ? 'contains' : 'n/a');
+        : (state.rulesType === 'curses' ? 'smart'
+            : (state.rulesType === 'forbidden' ? 'contains' : 'n/a'));
     const rulesMode = rulesModeValue === 'n/a'
         ? (lang === 'he' ? 'לא רלוונטי' : 'N/A')
         : getRuleMatchModeLabel(rulesModeValue, lang);
@@ -1008,6 +1058,11 @@ async function handleSummary(client, jid, content, state, lang) {
                 await database.addRule(groupId, 'forbidden_messages', {
                     messages: state.rulesMessages,
                     matchMode: state.rulesMatchMode || 'contains'
+                });
+            } else if (state.rulesType === 'curses') {
+                await database.addRule(groupId, 'forbidden_messages', {
+                    messages: CURSE_WORDS_HE,
+                    matchMode: 'smart'
                 });
             }
             if (state.timeWindows && state.timeWindows.length > 0) {
