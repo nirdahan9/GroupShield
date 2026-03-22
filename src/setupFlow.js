@@ -38,8 +38,8 @@ async function processSetupMessage(client, senderJid, content) {
         return t('setup_reset_mid', lang);
     }
 
-    // "יציאה" / "exit" → exit setup mode entirely
-    if ((trimmed === 'יציאה' || trimmed === 'exit') && step !== 'language' && step !== 'welcome') {
+    // "יציאה" / "exit" → exit setup mode entirely (from any step)
+    if (trimmed === 'יציאה' || trimmed === 'exit') {
         await saveState(senderJid, { step: 'stopped' });
         return t('setup_exit', lang);
     }
@@ -1063,7 +1063,7 @@ async function isInSetup(jid) {
     if (!user || !user.setupState) return false;
     try {
         const state = JSON.parse(user.setupState);
-        return !!state.step && state.step !== 'done';
+        return !!state.step && state.step !== 'done' && state.step !== 'stopped';
     } catch {
         return false;
     }
