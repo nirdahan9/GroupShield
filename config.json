@@ -52,6 +52,7 @@
         "groupNameRefreshIntervalMs": 300000,
         "warningsCleanup": "15 4 * * *",
         "unknownGroupExitEnabled": true,
-        "unknownGroupExit": "30 4 * * *"
+        "unknownGroupExit": "30 4 * * *",
+        "adminActionTimeoutHours": 4
     }
 }

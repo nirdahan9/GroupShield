@@ -386,7 +386,7 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
 
     // ── Pre-Check for PAUSED / PENDING status ───────────────────────
     if (!isMgmtGroup && groupConfig) {
-        if (groupConfig.status === 'PENDING_ADMIN_ACTION' || groupConfig.status === 'PENDING_ADMIN_RESUME') {
+        if (isPendingAdminAction(groupConfig.status) || groupConfig.status === 'PENDING_ADMIN_RESUME' || groupConfig.status === 'STOPPED_NO_ADMIN') {
             return; // Not enforcing right now
         }
         if (groupConfig.status && groupConfig.status.startsWith('PAUSED_UNTIL:')) {
@@ -620,7 +620,7 @@ async function handleGroupNotification(client, notification) {
             return;
         } else if (action === 'promote') {
             // Edge case: Bot was manually promoted to admin in WhatsApp, bypassing external bot commands
-            if (groupConfig.status === 'PENDING_ADMIN_ACTION' || groupConfig.status === 'PENDING_ADMIN_RESUME') {
+            if (isPendingAdminAction(groupConfig.status) || groupConfig.status === 'PENDING_ADMIN_RESUME') {
                 await database.updateGroupStatus(groupId, 'ACTIVE');
                 logger.info(`Bot was manually promoted back in ${groupConfig.groupName}, automatically resuming enforcement.`);
 
@@ -687,20 +687,63 @@ async function handleGroupNotification(client, notification) {
     }
 }
 
+// Returns true if the group status is in the pending-admin-action family.
+function isPendingAdminAction(status) {
+    return status && status.startsWith('PENDING_ADMIN_ACTION');
+}
+
+// Extracts the deadline embedded in status as 'PENDING_ADMIN_ACTION|ISO'.
+// Returns null if no deadline is stored.
+function getAdminActionDeadline(status) {
+    if (!status || !status.includes('|')) return null;
+    const iso = status.split('|')[1];
+    return iso ? new Date(iso) : null;
+}
+
 async function handleBotDemotionOrRemoval(client, groupConfig, action) {
     logger.info(`Bot was ${action === 'demote' ? 'demoted' : 'removed'} from ${groupConfig.groupName}`);
-    await database.updateGroupStatus(groupConfig.groupId, 'PENDING_ADMIN_ACTION');
 
     const ownerUser = await database.getUser(groupConfig.ownerJid);
     const lang = ownerUser ? ownerUser.language || 'he' : 'he';
 
+    const timeoutHours = config.get('scheduling.adminActionTimeoutHours', 4);
+    const deadline = new Date(Date.now() + timeoutHours * 3600 * 1000);
+    await database.updateGroupStatus(groupConfig.groupId, `PENDING_ADMIN_ACTION|${deadline.toISOString()}`);
+
+    const deadlineStr = deadline.toLocaleString('he-IL', {
+        timeZone: 'Asia/Jerusalem', hour: '2-digit', minute: '2-digit'
+    });
+
     const reason = action === 'demote' ? t('bot_demoted', lang) : t('bot_removed', lang);
     const text = t('bot_action_required', lang, {
         groupName: groupConfig.groupName,
-        reason
+        reason,
+        hours: timeoutHours,
+        deadline: deadlineStr
     });
 
     await sendNoticeToReporter(client, groupConfig, text);
+}
+
+/**
+ * Periodic check: for groups in PENDING_ADMIN_ACTION with an expired deadline,
+ * stop enforcement automatically and notify the reporter.
+ */
+async function checkAdminActionTimeouts(client) {
+    const groups = await database.getGroupsWithPendingAdminAction();
+    for (const group of groups) {
+        const deadline = getAdminActionDeadline(group.status);
+        if (!deadline || Date.now() < deadline.getTime()) continue;
+
+        logger.info(`Admin action timeout expired for ${group.groupName} — stopping enforcement`);
+        await database.updateGroupStatus(group.groupId, 'STOPPED_NO_ADMIN');
+
+        const ownerUser = await database.getUser(group.ownerJid);
+        const lang = ownerUser ? ownerUser.language || 'he' : 'he';
+        const timeoutHours = config.get('scheduling.adminActionTimeoutHours', 4);
+        const msg = t('bot_action_timeout', lang, { groupName: group.groupName, hours: timeoutHours });
+        await sendNoticeToReporter(client, group, msg);
+    }
 }
 
 async function sendNoticeToReporter(client, groupConfig, text) {
@@ -753,7 +796,7 @@ async function handleAdminActionResponse(client, msg, senderJid, content, lang) 
 
     const targetGroup = authorizedGroups[0];
 
-    if (targetGroup.status === 'PENDING_ADMIN_ACTION') {
+    if (isPendingAdminAction(targetGroup.status)) {
         if (text === '1') {
             await database.updateGroupStatus(targetGroup.groupId, 'PENDING_ADMIN_RESUME');
             await msg.reply(t('bot_action_resume_guide', lang));
@@ -925,5 +968,6 @@ module.exports = {
     processMessage,
     handleGroupNotification,
     buildStatusMessage,
-    refreshManagedGroupNames
+    refreshManagedGroupNames,
+    checkAdminActionTimeouts
 };

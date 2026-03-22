@@ -295,8 +295,12 @@ const strings = {
         en: 'I was removed or left the group'
     },
     'bot_action_required': {
-        he: '⚠️ *הפסקה באכיפה - דרושה פעולה*\n\nזיהיתי ש{{reason}} בקבוצה *{{groupName}}*.\nהאכיפה לקבוצה זו הושהתה כעת.\n\nבחר כיצד תרצה להמשיך (השב במספר):\n\n1️⃣ *חזרה לאכוף* - אדריך אותך כיצד להחזיר אותי\n2️⃣ *הפסקת אכיפה לגמרי* - מחיקת כל הנתונים של הקבוצה ממסד הנתונים',
-        en: '⚠️ *Enforcement Paused - Action Required*\n\nI noticed that {{reason}} in the group *{{groupName}}*.\nEnforcement for this group is currently paused.\n\nPlease choose how to proceed (reply with number):\n\n1️⃣ *Resume* - I will guide you on how to bring me back\n2️⃣ *Stop completely* - delete all group data from my database'
+        he: '⚠️ *הפסקה באכיפה - דרושה פעולה*\n\nזיהיתי ש{{reason}} בקבוצה *{{groupName}}*.\nהאכיפה לקבוצה זו הושהתה כעת.\n\n⏰ יש לך *{{hours}} שעות* לתקן את הבעיה (עד {{deadline}}).\nאם לא תפעל עד אז — האכיפה תופסק אוטומטית.\n\nבחר כיצד תרצה להמשיך (השב במספר):\n\n1️⃣ *חזרה לאכוף* - אדריך אותך כיצד להחזיר אותי\n2️⃣ *הפסקת אכיפה לגמרי* - מחיקת כל הנתונים של הקבוצה ממסד הנתונים',
+        en: '⚠️ *Enforcement Paused - Action Required*\n\nI noticed that {{reason}} in the group *{{groupName}}*.\nEnforcement for this group is currently paused.\n\n⏰ You have *{{hours}} hours* to fix the issue (until {{deadline}}).\nIf no action is taken by then — enforcement will stop automatically.\n\nPlease choose how to proceed (reply with number):\n\n1️⃣ *Resume* - I will guide you on how to bring me back\n2️⃣ *Stop completely* - delete all group data from my database'
+    },
+    'bot_action_timeout': {
+        he: '⛔ *אכיפה הופסקה אוטומטית*\n\nחלפו {{hours}} השעות שניתנו לתיקון הבעיה בקבוצה *{{groupName}}*.\nהאכיפה הופסקה לחלוטין.\n\nאם ברצונך לחדש — הוסף אותי בחזרה כמנהל ושלח לי *"בוצע"*.',
+        en: '⛔ *Enforcement Stopped Automatically*\n\nThe {{hours}}-hour window to fix the issue in *{{groupName}}* has expired.\nEnforcement has been stopped.\n\nTo resume — make me admin again and reply with *"done"*.'
     },
     'bot_action_resume_guide': {
         he: '🔄 *החזרה לפעילות*\n\nכדי לחזור לאכוף, אנא בצע את הפעולה הנדרשת (החזר אותי לקבוצה או מנה אותי חזרה למנהל).\n\nלאחר מכן, השב להודעה זו במילה *"בוצע"*.',

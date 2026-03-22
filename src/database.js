@@ -457,7 +457,12 @@ class Database {
     }
 
     async getPendingAdminActionGroups() {
-        return this._all("SELECT * FROM groups WHERE status IN ('PENDING_ADMIN_ACTION', 'PENDING_ADMIN_RESUME')");
+        return this._all("SELECT * FROM groups WHERE status LIKE 'PENDING_ADMIN_ACTION%' OR status = 'PENDING_ADMIN_RESUME'");
+    }
+
+    // Alias used by checkAdminActionTimeouts
+    async getGroupsWithPendingAdminAction() {
+        return this.getPendingAdminActionGroups();
     }
 
     async getAllActiveGroups() {

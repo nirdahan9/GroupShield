@@ -128,6 +128,14 @@ async function startBot() {
         const spamCleanupHandle = scheduleSpamMapCleanup(spamMap);
         runtime.intervals.push(spamCleanupHandle);
 
+        // Check for expired admin-action timeouts every 30 minutes
+        const adminTimeoutHandle = setInterval(async () => {
+            try { await handlers.checkAdminActionTimeouts(client); } catch (e) {
+                logger.warn('Admin action timeout check failed', e.message);
+            }
+        }, 30 * 60 * 1000);
+        runtime.intervals.push(adminTimeoutHandle);
+
         // Send startup notification to developer
         handleStartupNotification(client);
 
