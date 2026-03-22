@@ -340,6 +340,7 @@ function handleStartupNotification(client) {
             const restartLine = formatRestartMessage(VERSION, restartData);
             const statusMsg = await handlers.buildStatusMessage(client);
             await client.sendMessage(DEVELOPER_JID, restartLine + '\n\n' + statusMsg);
+            logger.info('Startup notification sent to developer');
         } catch (e) {
             logger.error('Failed to send startup notification', e);
         }
