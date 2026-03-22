@@ -4,8 +4,8 @@
         "version": "1.0.0"
     },
     "developer": {
-        "jid": "972526980000@s.whatsapp.net",
-        "phone": "972526980000"
+        "jid": "YOUR_WHATSAPP_JID@s.whatsapp.net",
+        "phone": "YOUR_PHONE_NUMBER"
     },
     "memory": {
         "maxMemoryMB": 400,
