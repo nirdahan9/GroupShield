@@ -11,6 +11,19 @@ const REMOVALS_LOG_FILE = path.join(__dirname, '../removals_log.txt');
 // Track users currently undergoing the removal process
 const pendingRemovals = new Set();
 
+function formatContent(content, msgType, lang) {
+    if (content && content.trim()) return `"${content.trim()}"`;
+    const labels = {
+        image:    { he: '📸 [תמונה]',          en: '📸 [Image]' },
+        video:    { he: '🎥 [וידאו]',           en: '🎥 [Video]' },
+        sticker:  { he: '🎭 [סטיקר]',           en: '🎭 [Sticker]' },
+        document: { he: '📄 [מסמך]',            en: '📄 [Document]' },
+        audio:    { he: '🎵 [אודיו]',           en: '🎵 [Audio]' },
+        ptt:      { he: '🎙️ [הקלטה קולית]',    en: '🎙️ [Voice note]' },
+    };
+    return (labels[msgType] && labels[msgType][lang]) || (lang === 'he' ? '[הודעה לא-טקסטואלית]' : '[Non-text message]');
+}
+
 /**
  * Execute enforcement pipeline for a violation
  * Fixed order: 1. Delete → 2. Warning → 3. Remove → 4. Block → 5. Report
@@ -79,7 +92,8 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
                     max: maxWarnings.toString(),
                     groupName: groupConfig.groupName,
                     reason: reason,
-                    remaining: remaining.toString()
+                    remaining: remaining.toString(),
+                    content: formatContent(content, msgType, lang)
                 });
                 await client.sendMessage(targetJid, warnText);
                 logger.info(`Warning ${newCount}/${maxWarnings} sent to ${number}`);
@@ -91,7 +105,7 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
 
             // Report warning if reporting is enabled
             if (enforcementConfig.sendReport) {
-                const warningReport = `⚠️ *${lang === 'he' ? 'אזהרה' : 'Warning'}* (${newCount}/${maxWarnings})\n🏷️ ${groupConfig.groupName}\n👤 ${number}\n📝 ${reason}`;
+                const warningReport = `⚠️ *${lang === 'he' ? 'אזהרה' : 'Warning'}* (${newCount}/${maxWarnings})\n🏷️ ${groupConfig.groupName}\n👤 ${number}\n📝 ${reason}\n💬 ${formatContent(content, msgType, lang)}`;
                 const reportSent = await sendReport(client, groupConfig, warningReport, lang);
                 await database.updateEnforcementActionStep(actionId, 'reportStatus', reportSent ? 'success' : 'failed');
             } else {
@@ -126,6 +140,7 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
                 const warnText = t('violation_removed', lang, {
                     groupName: groupConfig.groupName,
                     reason: reason,
+                    content: formatContent(content, msgType, lang),
                     time: formattedTime
                 });
                 await client.sendMessage(targetJid, warnText);

@@ -331,12 +331,12 @@ const strings = {
 
     // ── Enforcement Messages ─────────────────────────────────────────────
     'violation_warning': {
-        he: '⚠️ *אזהרה ({{current}}/{{max}})*\n\nהודעתך בקבוצה *{{groupName}}* הפרה את החוקים.\n📝 *סיבה:* {{reason}}\n\nנותרו לך {{remaining}} אזהרות לפני נקיטת הליכי ענישה.',
-        en: '⚠️ *Warning ({{current}}/{{max}})*\n\nYour message in *{{groupName}}* violated the rules.\n📝 *Reason:* {{reason}}\n\nYou have {{remaining}} warnings remaining.'
+        he: '⚠️ *אזהרה ({{current}}/{{max}})*\n\nהודעתך בקבוצה *{{groupName}}* הפרה את החוקים.\n📝 *סיבה:* {{reason}}\n💬 *הודעה:* {{content}}\n\nנותרו לך {{remaining}} אזהרות לפני נקיטת הליכי ענישה.',
+        en: '⚠️ *Warning ({{current}}/{{max}})*\n\nYour message in *{{groupName}}* violated the rules.\n📝 *Reason:* {{reason}}\n💬 *Message:* {{content}}\n\nYou have {{remaining}} warnings remaining.'
     },
     'violation_removed': {
-        he: '🚫 *הוסרת מהקבוצה "{{groupName}}"*\n\n📝 *סיבה:* {{reason}}\n📅 *זמן:* {{time}}',
-        en: '🚫 *You were removed from "{{groupName}}"*\n\n📝 *Reason:* {{reason}}\n📅 *Time:* {{time}}'
+        he: '🚫 *הוסרת מהקבוצה "{{groupName}}"*\n\n📝 *סיבה:* {{reason}}\n💬 *הודעה:* {{content}}\n📅 *זמן:* {{time}}',
+        en: '🚫 *You were removed from "{{groupName}}"*\n\n📝 *Reason:* {{reason}}\n💬 *Message:* {{content}}\n📅 *Time:* {{time}}'
     },
     'violation_report': {
         he: '🛡️ *דו"ח GroupShield*\n\n🏷️ *קבוצה:* {{groupName}}\n🆔 *מזהה:* {{violationId}}\n🧾 *מזהה קבוצה:* {{groupId}}\n👤 *שם:* {{pushname}}\n📱 *מספר:* {{number}}\n📝 *סיבה:* {{reason}}\n📝 *תוכן:* "{{content}}"\n📩 *הודעה פרטית:* {{privateStatus}}\n🚫 *הסרה:* {{removeStatus}}\n🔒 *חסימה:* {{blockStatus}}\n🕒 *זמן:* {{time}}',
