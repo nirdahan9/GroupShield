@@ -126,6 +126,12 @@ function checkForbiddenMessages(ruleData, content, lang) {
         if (matchMode === 'exact') {
             return normalizedContent === target;
         }
+        if (matchMode === 'smart') {
+            const normMsg = normalizeForSmartMatch(content);
+            const normTarget = normalizeForSmartMatch(forbidden);
+            if (!normTarget) return false;
+            return smartMatchesForbidden(normMsg, normTarget);
+        }
         // contains (default)
         return normalizedContent.includes(target);
     });
@@ -246,6 +252,112 @@ function checkAntiSpam(spamMap, senderJid, spamConfig) {
  */
 function escapeRegex(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// ─── Smart match helpers ───────────────────────────────────────────────────
+
+/**
+ * Normalize text for smart matching:
+ * - Remove whitespace and Unicode direction marks
+ * - Remove all non-alphanumeric characters (punctuation, special chars)
+ * - Collapse 3+ repeated characters to 2 (מיייל → מייל)
+ */
+function normalizeForSmartMatch(text) {
+    return text
+        .toLowerCase()
+        .replace(/[\s\u200f\u200e\u00ad\u200b]+/g, '')
+        .replace(/[^\p{L}\p{N}]/gu, '')
+        .replace(/(.)\1{2,}/g, '$1$1');
+}
+
+const HEBREW_PREFIXES = ['ובה', 'ולה', 'ומה', 'וב', 'ול', 'ומ', 'וש', 'וה', 'ו', 'ב', 'ל', 'כ', 'מ', 'ש', 'ה'];
+const HEBREW_SUFFIXES = ['ים', 'ות', 'תי', 'נו', 'כם', 'כן', 'הם', 'הן', 'ו', 'י', 'ת', 'ה', 'ך'];
+
+/**
+ * Generate variants of a normalized Hebrew word by stripping common
+ * prefixes and suffixes, to catch morphological inflections.
+ */
+function getHebrewVariants(word) {
+    const variants = new Set([word]);
+    const MIN_STEM = 2; // don't strip if remaining stem is too short
+
+    // Strip prefix
+    for (const prefix of HEBREW_PREFIXES) {
+        if (word.startsWith(prefix) && word.length - prefix.length >= MIN_STEM) {
+            const stem = word.slice(prefix.length);
+            variants.add(stem);
+
+            // Strip suffix from stem too
+            for (const suffix of HEBREW_SUFFIXES) {
+                if (stem.endsWith(suffix) && stem.length - suffix.length >= MIN_STEM) {
+                    variants.add(stem.slice(0, stem.length - suffix.length));
+                }
+            }
+        }
+    }
+
+    // Strip suffix from original
+    for (const suffix of HEBREW_SUFFIXES) {
+        if (word.endsWith(suffix) && word.length - suffix.length >= MIN_STEM) {
+            variants.add(word.slice(0, word.length - suffix.length));
+        }
+    }
+
+    return [...variants];
+}
+
+/**
+ * Levenshtein edit distance between two strings
+ */
+function editDistance(a, b) {
+    const m = a.length, n = b.length;
+    const dp = Array.from({ length: m + 1 }, (_, i) => [i, ...Array(n).fill(0)]);
+    for (let j = 0; j <= n; j++) dp[0][j] = j;
+    for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+            dp[i][j] = a[i - 1] === b[j - 1]
+                ? dp[i - 1][j - 1]
+                : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+        }
+    }
+    return dp[m][n];
+}
+
+/**
+ * Check if any word in the message is within edit distance 1 of the target.
+ * Only applied to words and targets of length >= 5 to avoid false positives.
+ */
+function fuzzyMatchesAnyWord(normMessage, normTarget) {
+    if (normTarget.length < 5) return false;
+    // Split original (pre-normalized) is not available here, so split on
+    // boundaries: find all substrings of similar length
+    const targetLen = normTarget.length;
+    for (let i = 0; i <= normMessage.length - targetLen + 1; i++) {
+        const window = normMessage.slice(i, i + targetLen + 1);
+        if (window.length >= targetLen - 1 && editDistance(window.slice(0, targetLen), normTarget) <= 1) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Smart match: checks a normalized message against a normalized forbidden word
+ * using containment, Hebrew morphological variants, and fuzzy matching.
+ */
+function smartMatchesForbidden(normMessage, normForbidden) {
+    // 1. Direct containment
+    if (normMessage.includes(normForbidden)) return true;
+
+    // 2. Hebrew morphological variants
+    for (const variant of getHebrewVariants(normForbidden)) {
+        if (variant.length >= 2 && normMessage.includes(variant)) return true;
+    }
+
+    // 3. Fuzzy match (typos)
+    if (fuzzyMatchesAnyWord(normMessage, normForbidden)) return true;
+
+    return false;
 }
 
 module.exports = {

@@ -455,11 +455,19 @@ async function handleRulesMatchMode(client, jid, content, state, lang) {
         matchMode = 'exact';
     } else if (choice === '2' || choice.includes('כולל') || choice.toLowerCase() === 'contains') {
         matchMode = 'contains';
+    } else if (choice === '3' || choice.includes('חכם') || choice.toLowerCase() === 'smart') {
+        matchMode = 'smart';
     }
     if (!matchMode) return t('ask_rules_match_mode', lang);
 
+    const modeLabel = matchMode === 'exact'
+        ? (lang === 'he' ? 'התאמה מדויקת' : 'exact match')
+        : matchMode === 'smart'
+            ? (lang === 'he' ? 'חכם' : 'smart')
+            : (lang === 'he' ? 'הכלה' : 'contains');
+
     await saveState(jid, { ...state, step: 'non_text_rule', rulesMatchMode: matchMode });
-    return t('rules_match_mode_saved', lang, { mode: matchMode === 'exact' ? (lang === 'he' ? 'התאמה מדויקת' : 'exact match') : (lang === 'he' ? 'הכלה' : 'contains') }) + '\n\n' + t('ask_non_text_rule', lang);
+    return t('rules_match_mode_saved', lang, { mode: modeLabel }) + '\n\n' + t('ask_non_text_rule', lang);
 }
 
 async function handleNonTextRule(client, jid, content, state, lang) {

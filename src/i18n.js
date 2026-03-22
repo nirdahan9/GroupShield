@@ -105,8 +105,8 @@ const strings = {
         en: '✅ Saved! {{count}} messages configured.'
     },
     'ask_rules_match_mode': {
-        he: '🧠 איך להתאים את הודעות הכלל?\n\n1️⃣ זהה בדיוק — ההודעה חייבת להיות בדיוק הטקסט שציינת\n2️⃣ מכיל ביטוי — מספיק שהטקסט שציינת מופיע בתוך ההודעה\n\n✳️ לדוגמה: אם המילה "קללה" אסורה ובוחרים "מכיל ביטוי" — גם "איזו קללה קשה" תיחשב הפרה.',
-        en: '🧠 How should message matching work for this rule?\n\n1️⃣ Exact match — message must exactly equal your configured text\n2️⃣ Contains phrase — configured text can appear inside a larger message\n\n✳️ Example: if "curse" is forbidden and you choose "contains", then "this is a curse word" is also a violation.'
+        he: '🧠 איך להתאים את הודעות הכלל?\n\n1️⃣ זהה בדיוק — ההודעה חייבת להיות בדיוק הטקסט שציינת\n2️⃣ מכיל ביטוי — מספיק שהטקסט שציינת מופיע בתוך ההודעה\n3️⃣ חכם 🧠 — עמיד לעקיפות: רווחים בין אותיות, תווים מיוחדים, הטיות דקדוקיות ושגיאות כתיב\n\n✳️ לדוגמה: אם המילה "קללה" אסורה במצב חכם — גם "ק ל ל ה", "ק.ל.ל.ה", "הקללה" ו-"קלללה" יחשבו הפרה.',
+        en: '🧠 How should message matching work for this rule?\n\n1️⃣ Exact match — message must exactly equal your configured text\n2️⃣ Contains phrase — configured text can appear inside a larger message\n3️⃣ Smart 🧠 — bypass-resistant: handles spaces between letters, special characters, inflections and typos\n\n✳️ Example: if "curse" is forbidden in smart mode, then "c u r s e", "c.u.r.s.e" and "cursee" also count as violations.'
     },
     'rules_match_mode_saved': {
         he: '✅ מצב התאמת הודעות נשמר: {{mode}}',
