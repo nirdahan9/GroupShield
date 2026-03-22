@@ -130,13 +130,24 @@ function checkForbiddenMessages(ruleData, content, lang) {
             const normTarget = normalizeForSmartMatch(forbidden);
             if (!normTarget) return false;
 
-            // Standard normalization
+            // Pass 1: Standard normalization
             const normMsg = normalizeForSmartMatch(content);
             if (smartMatchesForbidden(normMsg, normTarget)) return true;
 
-            // Homoglyph normalization — catches digit/Latin/Arabic substitutions (0→ס, l→ו, etc.)
+            // Pass 2: Homoglyph normalization — digit/Latin/Cyrillic/Arabic substitutions
             const homoMsg = normalizeForSmartMatch(applyHomoglyphs(content.toLowerCase()));
             if (homoMsg !== normMsg && smartMatchesForbidden(homoMsg, normTarget)) return true;
+
+            // Pass 3: Hebrew-only — strips inserted foreign letters (קaללה → קללה)
+            const hebrewMsg = normMsg.replace(/[^\u05D0-\u05EA\u05F0-\u05F4]/g, '');
+            if (hebrewMsg !== normMsg && smartMatchesForbidden(hebrewMsg, normTarget)) return true;
+
+            // Pass 4: Latin transliteration — only for messages with NO Hebrew (full Latin bypass)
+            // e.g. "kalla" for קללה, "kus" for כוס
+            if (normTarget.length >= 2 && !/[\u05D0-\u05EA]/.test(content)) {
+                const transPattern = buildTransliterationPattern(normTarget);
+                if (transPattern && transPattern.test(content.toLowerCase())) return true;
+            }
 
             return false;
         }
@@ -273,6 +284,9 @@ function escapeRegex(string) {
  */
 function normalizeForSmartMatch(text) {
     return text
+        // NFKD decomposes Unicode presentation forms (e.g. Hebrew FB1D–FB4E שׁ→ש+dot)
+        // into base characters + combining marks, which are then stripped below
+        .normalize('NFKD')
         .toLowerCase()
         // Invisible / zero-width / bidirectional control characters
         .replace(/[\u0000-\u001F\u007F-\u009F\u00AD\u200B-\u200F\u202A-\u202F\u2060-\u206F\uFEFF]/gu, '')
@@ -292,12 +306,19 @@ function normalizeForSmartMatch(text) {
 const HOMOGLYPH_MAP = {
     // Digits → Hebrew letters
     '0': 'ס',   // 0 ≈ ס
+    '1': 'ו',   // 1 ≈ ו / י
     '6': 'ב',   // 6 ≈ ב
     '7': 'ל',   // 7 ≈ ל
     // Latin → Hebrew look-alikes
     'o': 'ס',   // o ≈ ס
     'i': 'י',   // i ≈ י
     'l': 'ו',   // l ≈ ו
+    // Cyrillic → Hebrew look-alikes
+    '\u0441': 'ס',   // Cyrillic с ≈ ס
+    '\u0430': 'א',   // Cyrillic а ≈ א
+    '\u0440': 'ר',   // Cyrillic р ≈ ר
+    '\u0435': 'ה',   // Cyrillic е ≈ ה
+    '\u043e': 'ס',   // Cyrillic о ≈ ס
     // Arabic letters → Hebrew look-alikes
     '\u0648': 'ו',   // Arabic Waw (و) ≈ ו
     '\u064a': 'י',   // Arabic Ya (ي) ≈ י
@@ -307,6 +328,93 @@ const HOMOGLYPH_MAP = {
 
 function applyHomoglyphs(text) {
     return text.split('').map(ch => HOMOGLYPH_MAP[ch] || ch).join('');
+}
+
+// ─── Phonetic substitutions ────────────────────────────────────────────────
+// Hebrew letters that sound identical in Israeli speech
+const PHONETIC_MAP = {
+    'כ': ['ק', 'ח'],
+    'ק': ['כ', 'ח'],
+    'ח': ['כ', 'ק'],
+    'ס': ['ש'],
+    'ש': ['ס'],
+    'ת': ['ט'],
+    'ט': ['ת'],
+    'ב': ['ו'],
+    'ו': ['ב'],
+    'א': ['ע'],
+    'ע': ['א'],
+};
+
+// ─── Visual confusables within Hebrew ─────────────────────────────────────
+// Hebrew letters that look nearly identical to each other
+const HEBREW_VISUAL_CONFUSABLES = {
+    'ד': ['ר'],   // ד and ר differ only by a small bump
+    'ר': ['ד'],
+    'ה': ['ח'],   // ה and ח differ by a gap at the top right
+    'ח': ['ה'],
+    'ו': ['ז'],   // ו and ז differ by a short horizontal stroke
+    'ז': ['ו'],
+    'כ': ['ב'],   // כ and ב are mirror-like shapes
+    'ב': ['כ'],
+};
+
+/**
+ * Generic substitution variant generator.
+ * For each position in the word, substitutes using the given map
+ * and accumulates all resulting combinations (up to maxVariants).
+ */
+function getSubstitutionVariants(word, substitutionMap, maxVariants = 60) {
+    const variants = new Set([word]);
+    const letters = word.split('');
+
+    for (let i = 0; i < letters.length; i++) {
+        const alts = substitutionMap[letters[i]];
+        if (!alts) continue;
+        const snapshot = [...variants];
+        for (const v of snapshot) {
+            if (variants.size >= maxVariants) break;
+            for (const alt of alts) {
+                const chars = v.split('');
+                chars[i] = alt;
+                variants.add(chars.join(''));
+            }
+        }
+        if (variants.size >= maxVariants) break;
+    }
+
+    return [...variants].filter(v => v !== word);
+}
+
+// ─── Latin transliteration ─────────────────────────────────────────────────
+// Maps each Hebrew letter to a regex fragment for its common Latin spellings
+const HEBREW_TO_LATIN_PATTERN = {
+    'א': '(?:[ae]?)',       'ב': '(?:v|b)',          'ג': 'g',
+    'ד': 'd',               'ה': '(?:h|a|)',          'ו': '(?:u|o|v|w|)',
+    'ז': 'z',               'ח': '(?:ch|kh|h)',       'ט': 't',
+    'י': '(?:y|i|)',        'כ': '(?:kh|ch|k)',       'ל': 'l',
+    'מ': 'm',               'נ': 'n',                 'ס': 's',
+    'ע': '(?:[ae]?)',       'פ': '(?:ph|f|p)',        'צ': '(?:tz|ts|z)',
+    'ק': '(?:q|k)',         'ר': 'r',                 'ש': '(?:sh|s)',
+    'ת': 't',               'ך': '(?:kh|ch|k)',       'ם': 'm',
+    'ן': 'n',               'ף': '(?:ph|f|p)',        'ץ': '(?:tz|ts)',
+};
+
+/**
+ * Build a regex that matches common Latin transliterations of a Hebrew word.
+ * Allows 0–2 vowels between each letter's Latin representation.
+ * Only applied when the message contains NO Hebrew characters (full transliteration).
+ */
+function buildTransliterationPattern(word) {
+    if (!word || word.length < 2) return null;
+    const parts = word.split('').map(c => HEBREW_TO_LATIN_PATTERN[c]).filter(Boolean);
+    if (parts.length < 2) return null;
+    try {
+        // \b prevents matching inside another word (e.g. "skill" won't match קללה)
+        return new RegExp('\\b' + parts.join('[aeiou]{0,2}'), 'i');
+    } catch (e) {
+        return null;
+    }
 }
 
 const HEBREW_PREFIXES = ['ובה', 'ולה', 'ומה', 'וב', 'ול', 'ומ', 'וש', 'וה', 'ו', 'ב', 'ל', 'כ', 'מ', 'ש', 'ה'];
@@ -367,7 +475,7 @@ function editDistance(a, b) {
  * Only applied to words and targets of length >= 5 to avoid false positives.
  */
 function fuzzyMatchesAnyWord(normMessage, normTarget) {
-    if (normTarget.length < 5) return false;
+    if (normTarget.length < 4) return false;
     // Split original (pre-normalized) is not available here, so split on
     // boundaries: find all substrings of similar length
     const targetLen = normTarget.length;
@@ -388,18 +496,28 @@ function smartMatchesForbidden(normMessage, normForbidden) {
     // 1. Direct containment
     if (normMessage.includes(normForbidden)) return true;
 
-    // 2. Hebrew morphological variants
+    // 2. Hebrew morphological variants (prefix/suffix stripping)
     for (const variant of getHebrewVariants(normForbidden)) {
         if (variant.length >= 2 && normMessage.includes(variant)) return true;
     }
 
-    // 3. Fuzzy match (typos) — single-character edit distance, words ≥ 5 chars only
+    // 3. Fuzzy match (typos) — single-character edit distance, words ≥ 4 chars
     if (fuzzyMatchesAnyWord(normMessage, normForbidden)) return true;
 
     // 4. Reversed word — e.g. הללק instead of קללה (≥ 4 chars to avoid false positives)
     if (normForbidden.length >= 4) {
         const reversed = normForbidden.split('').reverse().join('');
         if (normMessage.includes(reversed)) return true;
+    }
+
+    // 5. Phonetic substitutions — ק↔כ, ס↔ש, ת↔ט, ב↔ו, א↔ע, ח↔כ
+    for (const variant of getSubstitutionVariants(normForbidden, PHONETIC_MAP)) {
+        if (variant.length >= 2 && normMessage.includes(variant)) return true;
+    }
+
+    // 6. Visual confusables — ד↔ר, ה↔ח, ו↔ז, כ↔ב
+    for (const variant of getSubstitutionVariants(normForbidden, HEBREW_VISUAL_CONFUSABLES)) {
+        if (variant.length >= 2 && normMessage.includes(variant)) return true;
     }
 
     return false;
