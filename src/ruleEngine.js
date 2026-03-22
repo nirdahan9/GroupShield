@@ -154,23 +154,33 @@ function checkForbiddenMessages(ruleData, content, lang) {
                 }
             } else {
                 // ── Latin/English word: Unicode word-boundary matching ─────────
-                // Prevents false positives ("ass" in "assessment") while catching
-                // bypass attempts via character repetition ("fuuuuck" → "fuck").
                 const escaped = escapeRegex(forbidden.trim());
                 const wbRegex = new RegExp('(?<![\\p{L}\\p{N}])' + escaped + '(?![\\p{L}\\p{N}])', 'iu');
-
-                // Pass E0: word-boundary on raw content
-                if (wbRegex.test(content)) return true;
-
-                // Pass E1: collapse all character repetitions, then re-check
-                // catches "fuuuuck" → "fuck", "shhiit" → "shit", etc.
-                const derepContent = content.replace(/(.)\1+/gi, '$1');
                 const derepForbidden = forbidden.trim().replace(/(.)\1+/gi, '$1');
                 const wbDerepRegex = new RegExp(
                     '(?<![\\p{L}\\p{N}])' + escapeRegex(derepForbidden) + '(?![\\p{L}\\p{N}])',
                     'iu'
                 );
+
+                // Pass E0: word-boundary on raw content
+                if (wbRegex.test(content)) return true;
+
+                // Pass E1: de-repetition — "fuuuuck" → "fuck"
+                const derepContent = content.replace(/(.)\1+/gi, '$1');
                 if (wbDerepRegex.test(derepContent)) return true;
+
+                // Pass E2: invisible chars + Cyrillic lookalikes + spaced letters
+                // e.g. "fuсk" (Cyrillic с) → "fuck", zero-width inserted → stripped
+                const cleanContent = applyEnglishNormalizations(content);
+                if (wbRegex.test(cleanContent)) return true;
+
+                // Pass E3: E2 + de-repetition combined
+                if (wbDerepRegex.test(cleanContent.replace(/(.)\1+/gi, '$1'))) return true;
+
+                // Pass E4: phonetic/leet variants → canonical
+                // e.g. "fvck" → "fuck", "sh1t" → "shit", "a55" → "ass"
+                const phoneticContent = applyEnglishPhoneticMap(cleanContent);
+                if (wbRegex.test(phoneticContent)) return true;
             }
 
             return false;
@@ -545,6 +555,98 @@ function smartMatchesForbidden(normMessage, normForbidden) {
     }
 
     return false;
+}
+
+// ─── English normalization helpers ────────────────────────────────────────
+
+/**
+ * Strip invisible / zero-width / bidirectional control characters and combining
+ * diacritics from English content before word-boundary checks.
+ * Mirrors what normalizeForSmartMatch does for Hebrew.
+ */
+function stripInvisibleChars(text) {
+    return text
+        .normalize('NFKD')
+        .replace(/[\u0000-\u001F\u007F-\u009F\u00AD\u200B-\u200F\u202A-\u202F\u2060-\u206F\uFEFF]/gu, '')
+        .replace(/\p{M}/gu, '');   // combining diacritics: f̃ùćk → fuck
+}
+
+/**
+ * Replace Cyrillic characters that are visually identical to Latin ones.
+ * e.g. "fuсk" where с is Cyrillic U+0441 → "fuck"
+ */
+const CYRILLIC_TO_LATIN_MAP = {
+    '\u0430': 'a',  // а → a
+    '\u0435': 'e',  // е → e
+    '\u043E': 'o',  // о → o
+    '\u0440': 'p',  // р → p
+    '\u0441': 'c',  // с → c
+    '\u0445': 'x',  // х → x
+    '\u0443': 'u',  // у → u
+    '\u0456': 'i',  // Ukrainian і → i
+    '\u0454': 'e',  // Ukrainian є → e
+};
+
+function applyCyrillicToLatin(text) {
+    return text.split('').map(ch => CYRILLIC_TO_LATIN_MAP[ch] || ch).join('');
+}
+
+/**
+ * Collapse runs of 3+ single letters separated by spaces into one word.
+ * e.g. "f u c k" → "fuck", "כ ו ס" → "כוס"
+ * Requires at least 3 letters to avoid collapsing normal short phrases.
+ */
+function collapseSpacedLetters(text) {
+    return text.replace(
+        /(^|[\s,!?.])([a-zA-Z\u05D0-\u05EA])((?:\s[a-zA-Z\u05D0-\u05EA]){2,})([\s,!?.]|$)/g,
+        (_, before, first, rest, after) => before + first + rest.replace(/\s/g, '') + after
+    );
+}
+
+/**
+ * Known phonetic/leet bypass variants → canonical English form.
+ * Applied to message content so word-boundary checks work against canonical words.
+ */
+const ENGLISH_PHONETIC_MAP = {
+    // fuck
+    'fvck': 'fuck', 'phuck': 'fuck', 'phuk': 'fuck', 'fcuk': 'fuck',
+    'fook': 'fuck', 'fuk': 'fuck',   'fuq':  'fuck', 'fyck': 'fuck',
+    'f@ck': 'fuck', 'f4ck': 'fuck',  'f*ck': 'fuck',
+    // shit
+    'sh1t': 'shit', 'shyt': 'shit',  'sh!t': 'shit',
+    // ass
+    'a55': 'ass', '@ss': 'ass', 'azz': 'ass', '4ss': 'ass', 'a$$': 'ass',
+    // bitch
+    'b1tch': 'bitch', 'biatch': 'bitch', 'biotch': 'bitch', 'b!tch': 'bitch',
+    // cunt
+    'c0nt': 'cunt', 'kunt': 'cunt',
+    // dick
+    'd1ck': 'dick', 'd!ck': 'dick',
+    // pussy
+    'pu$$y': 'pussy', 'pvssy': 'pussy',
+    // bastard
+    'b@stard': 'bastard',
+};
+
+function applyEnglishPhoneticMap(text) {
+    let result = text.toLowerCase();
+    for (const [variant, canonical] of Object.entries(ENGLISH_PHONETIC_MAP)) {
+        try {
+            const escaped = escapeRegex(variant);
+            result = result.replace(
+                new RegExp('(?<![\\p{L}\\p{N}])' + escaped + '(?![\\p{L}\\p{N}])', 'gu'),
+                canonical
+            );
+        } catch { /* skip on invalid pattern */ }
+    }
+    return result;
+}
+
+/**
+ * Apply all non-destructive English bypass normalizations in sequence.
+ */
+function applyEnglishNormalizations(text) {
+    return collapseSpacedLetters(applyCyrillicToLatin(stripInvisibleChars(text)));
 }
 
 module.exports = {
