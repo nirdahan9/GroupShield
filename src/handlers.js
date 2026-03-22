@@ -64,13 +64,19 @@ async function handleDM(client, msg, senderJid, content) {
         return;
     }
 
-    // Developer bypass — commands always work, regardless of setup state
+    // Developer: if actively in setup → continue setup; otherwise → execute commands directly
     if (config.isDeveloper(senderJid)) {
-        const response = await commands.executeCommand(client, senderJid, content, lang);
-        if (response) {
-            await sendBotReply(client, msg.from, response);
+        const inSetup = await setupFlow.isInSetup(senderJid);
+        if (inSetup) {
+            const response = await setupFlow.processSetupMessage(client, senderJid, content);
+            if (response) await sendBotReply(client, msg.from, response);
         } else {
-            await client.sendMessage(msg.from, t('unknown_command', lang));
+            const response = await commands.executeCommand(client, senderJid, content, lang);
+            if (response) {
+                await sendBotReply(client, msg.from, response);
+            } else {
+                await client.sendMessage(msg.from, t('unknown_command', lang));
+            }
         }
         return;
     }
