@@ -173,8 +173,12 @@ function buildGroupRulesSummary(groupConfig, rules, enforceConfig, t, lang) {
 
     const forbiddenRules = rules.find(r => r.ruleType === 'forbidden_messages');
     if (forbiddenRules) {
-        const messageCount = (forbiddenRules.ruleData.messages || []).length;
-        text += `• ${t('rules_summary_forbidden', lang, { count: messageCount })}\n`;
+        if (forbiddenRules.ruleData.isCursesPreset) {
+            text += `• ${t('rules_summary_no_curses', lang)}\n`;
+        } else {
+            const messageCount = (forbiddenRules.ruleData.messages || []).length;
+            text += `• ${t('rules_summary_forbidden', lang, { count: messageCount })}\n`;
+        }
     }
 
     if (!nonTextRule && !allowedRules && !forbiddenRules) {

@@ -372,10 +372,16 @@ async function buildGroupRulesMessage(groupConfig, lang) {
                 break;
             }
             case 'forbidden_messages': {
-                const count = Array.isArray(rd.messages) ? rd.messages.length : 0;
-                lines.push(lang === 'he'
-                    ? `🚫 *ביטויים אסורים:* ${count} ביטויים (כל הכלה)`
-                    : `🚫 *Forbidden phrases:* ${count} phrases (contains match)`);
+                if (rd.isCursesPreset) {
+                    lines.push(lang === 'he'
+                        ? '🤬 *קללות:* אסור לקלל (זיהוי חכם + עקיפות)'
+                        : '🤬 *Swearing:* no swearing allowed (smart detection)');
+                } else {
+                    const count = Array.isArray(rd.messages) ? rd.messages.length : 0;
+                    lines.push(lang === 'he'
+                        ? `🚫 *ביטויים אסורים:* ${count} ביטויים (כל הכלה)`
+                        : `🚫 *Forbidden phrases:* ${count} phrases (contains match)`);
+                }
                 break;
             }
             case 'block_non_text': {

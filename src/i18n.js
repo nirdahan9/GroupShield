@@ -364,6 +364,7 @@ const strings = {
     'rules_summary_blocked_media': { he: 'אין לשלוח קבצי: {{types}}', en: 'Do not send: {{types}}' },
     'rules_summary_allowed_only': { he: 'מותר לשלוח רק הודעות טקסט שהוגדרו מראש (אחרות יימחקו)', en: 'Only specific allowed text messages can be sent' },
     'rules_summary_forbidden': { he: 'ישנן {{count}} מילים/ביטויים שאסור לכתוב בקבוצה', en: 'There are {{count}} forbidden words/phrases' },
+    'rules_summary_no_curses': { he: 'אסור לקלל בקבוצה', en: 'No swearing allowed in this group' },
     'rules_summary_no_content_rules': { he: 'אין הגבלות על תוכן ההודעות', en: 'No content restrictions' },
     'rules_summary_time_window_title': { he: 'שעות פעילות:', en: 'Active Hours:' },
     'rules_summary_enforcement_title': { he: 'אכיפה (GroupShield):', en: 'Enforcement (GroupShield):' },
