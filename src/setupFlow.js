@@ -3,6 +3,7 @@ const database = require('./database');
 const logger = require('./logger');
 const { t } = require('./i18n');
 const { parsePhoneNumber, getNormalizedJid, extractNumber } = require('./utils');
+const config = require('./config');
 
 const RESERVED_COMMANDS = new Set(['איפוס', 'reset', 'חזור', 'back', 'יציאה', 'exit']);
 
@@ -1050,6 +1051,23 @@ async function handleSummary(client, jid, content, state, lang) {
 
             logger.info(`Setup completed for group ${state.groupName} by ${extractNumber(jid)}`);
             logger.auditLog(jid, 'SETUP_COMPLETE', `Group: ${state.groupName} (${groupId})`, true);
+
+            // Notify developer
+            try {
+                const devJid = config.getDeveloperJid();
+                if (devJid && devJid !== jid) {
+                    let memberCount = '?';
+                    try {
+                        const chat = await client.getChatById(groupId);
+                        memberCount = chat.participants ? chat.participants.length : '?';
+                    } catch (e) { /* ignore */ }
+                    const now = new Date().toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' });
+                    const devMsg = `🛡️ *GroupShield — קבוצה חדשה הופעלה*\n\n📛 *שם קבוצה:* ${state.groupName}\n👤 *הוגדר על ידי:* ${extractNumber(jid)}\n👥 *משתתפים:* ${memberCount}\n📅 *תאריך:* ${now}`;
+                    await client.sendMessage(devJid, devMsg, { linkPreview: false });
+                }
+            } catch (e) {
+                logger.warn('Failed to send developer new-group notification', e);
+            }
 
             return t('setup_complete', lang, { groupName: state.groupName });
         } catch (e) {
