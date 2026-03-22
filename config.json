@@ -39,6 +39,10 @@
         "delayBetweenRemovalsMs": 2500,
         "maxRemovalsPerMinute": 15
     },
+    "groq": {
+        "apiKey": "",
+        "model": "llama-3.1-8b-instant"
+    },
     "warnings": {
         "resetAfterDays": 60
     },

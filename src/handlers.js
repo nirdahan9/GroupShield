@@ -6,6 +6,7 @@ const { getNormalizedJid, extractNumber, resolveContactToPhone, withRetry, build
 const { t } = require('./i18n');
 const { evaluateMessage, checkAntiSpam } = require('./ruleEngine');
 const { executeEnforcement, handleUndo, isPendingRemoval } = require('./enforcement');
+const { checkWithLLM } = require('./llm');
 const setupFlow = require('./setupFlow');
 const commands = require('./commands');
 const ADMIN_CACHE_TTL_MS = config.get('performance.adminCacheTtlMs', 60000);
@@ -515,6 +516,16 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
                 result.violations,
                 content, msgType, groupConfig, enforcementConfig, rateLimiter, lang
             );
+            return;
+        }
+
+        // Message passed the rule engine — LLM fallback for curses-preset groups
+        const hasCursesPreset = contentRules.some(
+            r => r.ruleType === 'forbidden_messages' && r.ruleData?.isCursesPreset
+        );
+        if (hasCursesPreset) {
+            checkWithLLM(client, msg, senderJid, content, msgType, groupConfig, enforcementConfig, rateLimiter, lang)
+                .catch(e => logger.warn('LLM check error', e.message));
         }
     }
 }
