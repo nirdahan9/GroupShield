@@ -54,6 +54,7 @@ async function processMessage(client, msg, spamMap, rateLimiter) {
  * Handle DM (private) messages
  */
 async function handleDM(client, msg, senderJid, content) {
+    logger.info(`DM from ${extractNumber(senderJid)}: "${(content || '').slice(0, 80)}"`);
     const user = await database.getUser(senderJid);
     const lang = user ? user.language || 'he' : 'he';
 
