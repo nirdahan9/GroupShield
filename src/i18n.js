@@ -73,12 +73,16 @@ const strings = {
 
     // ── Rules Setup ──────────────────────────────────────────────────────
     'ask_rules_type': {
-        he: '📏 *שלב 2: הגדרת חוקים*\n\nאיזה סוג חוקי תוכן תרצה?\n\n1️⃣ *הודעות מותרות בלבד* — רק הודעות ספציפיות מותרות\n2️⃣ *הודעות אסורות* — הודעות ספציפיות אסורות, השאר מותר\n3️⃣ *ללא חוקי תוכן* — ללא הגבלת תוכן\n4️⃣ *חסימת קללות* — חסום קללות נפוצות בעברית אוטומטית',
-        en: '📏 *Step 2: Set Rules*\n\nWhat type of content rules do you want?\n\n1️⃣ *Allowed messages only* — only specific messages allowed\n2️⃣ *Forbidden messages* — specific messages blocked, rest allowed\n3️⃣ *No content rules* — no content restrictions\n4️⃣ *Block curses* — automatically block common Hebrew profanity'
+        he: '📏 *שלב 2: הגדרת חוקים*\n\nאיזה סוג חוקי תוכן תרצה?\n\n1️⃣ *חסימת קללות* — חסום קללות נפוצות בעברית ובאנגלית אוטומטית\n2️⃣ *ללא חוקי תוכן* — ללא הגבלת תוכן\n3️⃣ *חוקים בהתאמה אישית* — הגדרת הודעות מותרות/אסורות',
+        en: '📏 *Step 2: Set Rules*\n\nWhat type of content rules do you want?\n\n1️⃣ *Block curses* — automatically block common Hebrew and English profanity\n2️⃣ *No content rules* — no content restrictions\n3️⃣ *Custom rules* — define allowed or forbidden messages'
+    },
+    'ask_rules_custom_type': {
+        he: '⚙️ *חוקים בהתאמה אישית*\n\nבחר סוג:\n\n1️⃣ *הודעות מותרות בלבד* — רק הודעות ספציפיות מותרות\n2️⃣ *הודעות אסורות* — הודעות ספציפיות אסורות, השאר מותר',
+        en: '⚙️ *Custom Rules*\n\nChoose type:\n\n1️⃣ *Allowed messages only* — only specific messages allowed\n2️⃣ *Forbidden messages* — specific messages blocked, rest allowed'
     },
     'curses_preset_selected': {
-        he: '✅ חסימת קללות הופעלה.\nהבוט יחסום קללות נפוצות בעברית עם זיהוי חכם של עקיפות.',
-        en: '✅ Curse blocking enabled.\nThe bot will block common Hebrew profanity using smart bypass detection.'
+        he: '✅ חסימת קללות הופעלה.\nהבוט יחסום קללות נפוצות בעברית ובאנגלית עם זיהוי חכם של עקיפות.',
+        en: '✅ Curse blocking enabled.\nThe bot will block common Hebrew and English profanity using smart bypass detection.'
     },
     'ask_non_text_rule': {
         he: '🖼️ *חוק סוג הודעה*\n\nהאם לחסום הודעות שהן לא טקסט? (תמונה/וידאו/מסמך וכו׳)\n\n1️⃣ כן, לחסום\n2️⃣ לא, לאפשר (ברירת מחדל)',
@@ -452,8 +456,8 @@ const strings = {
         en: '🛑 Enforcement stopped for *{{groupName}}*.\nI left the group and deleted all its data.\n\nThank you for using GroupShield 🛡️'
     },
     'setup_reset_mid': {
-        he: '🔄 ההגדרות אופסו. נתחיל מחדש — בחר שפה:',
-        en: '🔄 Configuration reset. Starting over — choose language:'
+        he: '🔄 ההגדרות אופסו.',
+        en: '🔄 Configuration reset.'
     },
     'setup_back_done': {
         he: '↩️ חזרנו שלב אחד אחורה.',
