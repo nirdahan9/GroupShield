@@ -7,6 +7,8 @@ const config = require('./config');
 
 const { CURSE_WORDS } = require('./cursesList');
 
+const RESERVED_COMMANDS = new Set(['איפוס', 'reset', 'חזור', 'back', 'יציאה', 'exit']);
+
 /**
  * Process a DM message as part of the setup/command flow
  * Returns the response message string, or null if not handled
