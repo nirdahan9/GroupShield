@@ -55,6 +55,11 @@ async function processMessage(client, msg, spamMap, rateLimiter) {
  */
 async function handleDM(client, msg, senderJid, content) {
     logger.info(`DM from ${extractNumber(senderJid)}: "${(content || '').slice(0, 80)}"`);
+
+    // Ignore empty/whitespace messages — WhatsApp fires a phantom event with no body
+    // when a new DM conversation is opened (e.g. right after sending the welcome DM).
+    if (!content || !content.trim()) return;
+
     const user = await database.getUser(senderJid);
     const lang = user ? user.language || 'he' : 'he';
 
