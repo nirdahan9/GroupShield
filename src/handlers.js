@@ -99,8 +99,13 @@ async function handleDM(client, msg, senderJid, content) {
 
     if (hasPending || hasRejoin) {
         if (!isAgree && !isDisagree) {
-            // User has a pending welcome but sent something other than 1 or 2
-            await client.sendMessage(msg.from, t('welcome_invalid_response', lang), { linkPreview: false });
+            // Only complain if we already sent the welcome DM (notified=1).
+            // WhatsApp sometimes emits a system-notification DM right when a user joins,
+            // which would fire this before the welcome DM is even delivered — guard against that.
+            const wasNotified = (pendingRows || []).some(r => r.notified === 1) || hasRejoin;
+            if (wasNotified) {
+                await client.sendMessage(msg.from, t('welcome_invalid_response', lang), { linkPreview: false });
+            }
             return;
         }
 
