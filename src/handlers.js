@@ -92,13 +92,19 @@ async function handleDM(client, msg, senderJid, content) {
     const isAgree = lowerContent === '1' || lowerContent.includes('מסכים') || lowerContent === 'agree';
     const isDisagree = lowerContent === '2' || lowerContent.includes('לא מסכים') || lowerContent === 'disagree';
 
-    if (isAgree || isDisagree) {
-        const pendingRows = await database.getPendingMember(senderJid);
-        const rejoinRows = await database.getPendingRejoinByUser(senderJid);
-        const hasPending = pendingRows && pendingRows.length > 0;
-        const hasRejoin = rejoinRows && rejoinRows.length > 0;
+    const pendingRows = await database.getPendingMember(senderJid);
+    const rejoinRows = await database.getPendingRejoinByUser(senderJid);
+    const hasPending = pendingRows && pendingRows.length > 0;
+    const hasRejoin = rejoinRows && rejoinRows.length > 0;
 
-        if (hasPending || hasRejoin) {
+    if (hasPending || hasRejoin) {
+        if (!isAgree && !isDisagree) {
+            // User has a pending welcome but sent something other than 1 or 2
+            await client.sendMessage(msg.from, t('welcome_invalid_response', lang), { linkPreview: false });
+            return;
+        }
+
+        if (isAgree || isDisagree) {
             // Handle normal pending (first-time agreement)
             for (const row of (pendingRows || [])) {
                 const groupConfig = await database.getGroup(row.groupId);

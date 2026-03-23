@@ -380,6 +380,14 @@ const strings = {
         he: '✅ אישרת את החוקים, אך לא הצלחנו להוסיף אותך מחדש לקבוצה *{{groupName}}* באופן אוטומטי. פנה למנהל הקבוצה.',
         en: '✅ You agreed to the rules, but we couldn\'t add you back to *{{groupName}}* automatically. Please contact the group admin.'
     },
+    'welcome_invalid_response': {
+        he: '⚠️ תשובה לא תקינה.\nאנא השב *1* לאישור התקנון או *2* לדחייה.',
+        en: '⚠️ Invalid response.\nPlease reply *1* to agree or *2* to decline.'
+    },
+    'welcome_reminder': {
+        he: '⏰ *תזכורת — אישור תקנון קבוצה {{groupName}}*\n\nעדיין לא אישרת את תקנון הקבוצה.\nאם לא תאשר תוך שעה — תוסר מהקבוצה אוטומטית.\n\n1️⃣ אני מאשר ✅\n2️⃣ לא מעוניין ❌',
+        en: '⏰ *Reminder — Group rules approval for {{groupName}}*\n\nYou haven\'t approved the group rules yet.\nIf you don\'t approve within 1 hour, you will be removed automatically.\n\n1️⃣ I agree ✅\n2️⃣ Not interested ❌'
+    },
     'rules_summary_no_media': { he: 'אין לשלוח שום קובץ מדיה (רק הודעות טקסט)', en: 'No media allowed (text messages only)' },
     'rules_summary_blocked_media': { he: 'אין לשלוח קבצי: {{types}}', en: 'Do not send: {{types}}' },
     'rules_summary_allowed_only': { he: 'מותר לשלוח רק הודעות טקסט שהוגדרו מראש (אחרות יימחקו)', en: 'Only specific allowed text messages can be sent' },

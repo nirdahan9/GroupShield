@@ -11,6 +11,7 @@ const logger = require('./src/logger');
 const database = require('./src/database');
 const { setRestartReason, getRestartReason, formatRestartMessage } = require('./src/restartTracker');
 const { RateLimiter } = require('./src/utils');
+const { t } = require('./src/i18n');
 const handlers = require('./src/handlers');
 const { buildFullGroupsStatus } = require('./src/commands');
 const health = require('./src/health');
@@ -269,6 +270,28 @@ function schedulePendingMembersCleanup(client) {
     const schedule = getValidCronOrDefault('scheduling.pendingMembersCleanup', '0 * * * *'); // Run every hour
     return cron.schedule(schedule, async () => {
         try {
+            // Step 1: Send 5-hour reminder to members who haven't approved yet
+            const reminderMembers = await database.getPendingMembersForReminder(5, 6);
+            for (const member of (reminderMembers || [])) {
+                try {
+                    const groupConfig = await database.getGroup(member.groupId);
+                    if (groupConfig) {
+                        const ownerUser = await database.getUser(groupConfig.ownerJid);
+                        const lang = ownerUser ? ownerUser.language || 'he' : 'he';
+                        await client.sendMessage(
+                            member.userJid,
+                            t('welcome_reminder', lang, { groupName: groupConfig.groupName }),
+                            { linkPreview: false }
+                        );
+                        logger.info(`Sent 5h approval reminder to ${member.userJid} for ${groupConfig.groupName}`);
+                    }
+                } catch (e) {
+                    logger.warn(`Failed to send 5h reminder to ${member.userJid}`, e.message);
+                }
+                await database.markPendingMemberReminderSent(member.groupId, member.userJid);
+            }
+
+            // Step 2: Remove members who still haven't approved after 6 hours
             const expiredMembers = await database.getExpiredPendingMembers(6);
             if (!expiredMembers || expiredMembers.length === 0) return;
 

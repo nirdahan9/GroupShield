@@ -139,6 +139,7 @@ class Database {
                 userJid TEXT NOT NULL,
                 joinedAt TEXT NOT NULL,
                 notified INTEGER DEFAULT 0,
+                reminderSentAt TEXT,
                 PRIMARY KEY (groupId, userJid)
             )`);
 
@@ -205,6 +206,17 @@ class Database {
                             this.db.run(`ALTER TABLE pending_group_actions_new RENAME TO pending_group_actions`);
                             logger.info('Migrated schema: pending_group_actions.duration to TEXT');
                         });
+                    }
+                }
+            });
+
+            // Migrate pending_group_members: add reminderSentAt column if missing
+            this.db.all("PRAGMA table_info(pending_group_members)", (err, rows) => {
+                if (!err && rows) {
+                    const hasReminderCol = rows.some(r => r.name === 'reminderSentAt');
+                    if (!hasReminderCol) {
+                        this.db.run("ALTER TABLE pending_group_members ADD COLUMN reminderSentAt TEXT");
+                        logger.info("Migrated schema: Added reminderSentAt to pending_group_members");
                     }
                 }
             });
@@ -830,11 +842,29 @@ class Database {
         );
     }
 
-    async getExpiredPendingMembers(hours = 24) {
+    async getExpiredPendingMembers(hours = 6) {
         const threshold = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
         return this._all(
             'SELECT * FROM pending_group_members WHERE joinedAt < ?',
             [threshold]
+        );
+    }
+
+    // Returns members who have been pending for reminderHours+ but NOT yet for evictHours,
+    // and have not yet received a reminder.
+    async getPendingMembersForReminder(reminderHours = 5, evictHours = 6) {
+        const reminderThreshold = new Date(Date.now() - reminderHours * 60 * 60 * 1000).toISOString();
+        const evictThreshold    = new Date(Date.now() - evictHours   * 60 * 60 * 1000).toISOString();
+        return this._all(
+            'SELECT * FROM pending_group_members WHERE joinedAt < ? AND joinedAt >= ? AND reminderSentAt IS NULL',
+            [reminderThreshold, evictThreshold]
+        );
+    }
+
+    async markPendingMemberReminderSent(groupId, userJid) {
+        await this._run(
+            'UPDATE pending_group_members SET reminderSentAt = ? WHERE groupId = ? AND userJid = ?',
+            [new Date().toISOString(), groupId, userJid]
         );
     }
 
