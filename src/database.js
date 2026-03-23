@@ -451,6 +451,8 @@ class Database {
             'UPDATE groups SET warningCount = ? WHERE groupId = ?',
             [count, groupId]
         );
+        // Reset all warning counters when the threshold changes
+        await this._run('DELETE FROM warnings WHERE groupId = ?', [groupId]);
     }
 
     async updateGroupWelcomeMessage(groupId, enabled) {

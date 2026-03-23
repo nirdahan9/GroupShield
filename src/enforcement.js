@@ -74,7 +74,9 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
     });
 
     // Check if we should warn or enforce
-    if (maxWarnings > 0 && enforcementConfig.warnPrivateDm) {
+    // Warning phase: counts violations up to maxWarnings regardless of warnPrivateDm.
+    // warnPrivateDm only controls whether a DM is sent for each warning.
+    if (maxWarnings > 0) {
         const currentCount = await database.getWarningCount(groupId, senderJid);
         if (currentCount < maxWarnings) {
             // Still in warning phase
@@ -89,22 +91,27 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
                 await database.updateEnforcementActionStep(actionId, 'deleteStatus', 'skipped');
             }
 
-            // Send warning to user
-            try {
-                const warnText = t('violation_warning', lang, {
-                    current: newCount.toString(),
-                    max: maxWarnings.toString(),
-                    groupName: groupConfig.groupName,
-                    reason: reason,
-                    remaining: remaining.toString(),
-                    content: formatContent(content, msgType, lang)
-                });
-                await client.sendMessage(targetJid, warnText);
-                logger.info(`Warning ${newCount}/${maxWarnings} sent to ${number}`);
-                await database.updateEnforcementActionStep(actionId, 'warningStatus', 'success');
-            } catch (e) {
-                logger.error(`Failed to send warning to ${number}`, e);
-                await database.updateEnforcementActionStep(actionId, 'warningStatus', 'failed', e.message);
+            // Send warning DM only if warnPrivateDm is enabled
+            if (enforcementConfig.warnPrivateDm) {
+                try {
+                    const warnText = t('violation_warning', lang, {
+                        current: newCount.toString(),
+                        max: maxWarnings.toString(),
+                        groupName: groupConfig.groupName,
+                        reason: reason,
+                        remaining: remaining.toString(),
+                        content: formatContent(content, msgType, lang)
+                    });
+                    await client.sendMessage(targetJid, warnText);
+                    logger.info(`Warning ${newCount}/${maxWarnings} sent to ${number}`);
+                    await database.updateEnforcementActionStep(actionId, 'warningStatus', 'success');
+                } catch (e) {
+                    logger.error(`Failed to send warning to ${number}`, e);
+                    await database.updateEnforcementActionStep(actionId, 'warningStatus', 'failed', e.message);
+                }
+            } else {
+                logger.info(`Warning ${newCount}/${maxWarnings} (silent, no DM) for ${number}`);
+                await database.updateEnforcementActionStep(actionId, 'warningStatus', 'skipped');
             }
 
             // Report warning if reporting is enabled
