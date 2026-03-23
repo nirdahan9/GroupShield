@@ -142,6 +142,13 @@ class Database {
                 PRIMARY KEY (groupId, userJid)
             )`);
 
+            this.db.run(`CREATE TABLE IF NOT EXISTS pending_rejoin (
+                groupId TEXT NOT NULL,
+                userJid TEXT NOT NULL,
+                removedAt INTEGER DEFAULT (strftime('%s', 'now')),
+                PRIMARY KEY (groupId, userJid)
+            )`);
+
             // Pending group actions (for multi-group target selection via numbering)
             this.db.run(`CREATE TABLE IF NOT EXISTS pending_group_actions (
                 userJid TEXT PRIMARY KEY,
@@ -791,6 +798,34 @@ class Database {
     async removePendingMember(groupId, userJid) {
         await this._run(
             'DELETE FROM pending_group_members WHERE groupId = ? AND userJid = ?',
+            [groupId, userJid]
+        );
+    }
+
+    async addPendingRejoin(groupId, userJid) {
+        await this._run(
+            'INSERT OR REPLACE INTO pending_rejoin (groupId, userJid) VALUES (?, ?)',
+            [groupId, userJid]
+        );
+    }
+
+    async getPendingRejoin(groupId, userJid) {
+        return this._get(
+            'SELECT * FROM pending_rejoin WHERE groupId = ? AND userJid = ?',
+            [groupId, userJid]
+        );
+    }
+
+    async getPendingRejoinByUser(userJid) {
+        return this._all(
+            'SELECT * FROM pending_rejoin WHERE userJid = ?',
+            [userJid]
+        );
+    }
+
+    async removePendingRejoin(groupId, userJid) {
+        await this._run(
+            'DELETE FROM pending_rejoin WHERE groupId = ? AND userJid = ?',
             [groupId, userJid]
         );
     }

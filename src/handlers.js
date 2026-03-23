@@ -94,8 +94,13 @@ async function handleDM(client, msg, senderJid, content) {
 
     if (isAgree || isDisagree) {
         const pendingRows = await database.getPendingMember(senderJid);
-        if (pendingRows && pendingRows.length > 0) {
-            for (const row of pendingRows) {
+        const rejoinRows = await database.getPendingRejoinByUser(senderJid);
+        const hasPending = pendingRows && pendingRows.length > 0;
+        const hasRejoin = rejoinRows && rejoinRows.length > 0;
+
+        if (hasPending || hasRejoin) {
+            // Handle normal pending (first-time agreement)
+            for (const row of (pendingRows || [])) {
                 const groupConfig = await database.getGroup(row.groupId);
                 if (!groupConfig) continue;
 
@@ -113,6 +118,32 @@ async function handleDM(client, msg, senderJid, content) {
                     }
                     await database.removePendingMember(row.groupId, senderJid);
                     logger.info(`User ${extractNumber(senderJid)} disagreed to rules and was removed from ${groupConfig.groupName}`);
+                }
+            }
+
+            // Handle rejoin flow (user was removed for messaging before agreeing)
+            for (const row of (rejoinRows || [])) {
+                const groupConfig = await database.getGroup(row.groupId);
+                if (!groupConfig) {
+                    await database.removePendingRejoin(row.groupId, senderJid);
+                    continue;
+                }
+
+                if (isAgree) {
+                    await database.removePendingRejoin(row.groupId, senderJid);
+                    try {
+                        const chat = await client.getChatById(row.groupId);
+                        await chat.addParticipants([senderJid]);
+                        await client.sendMessage(msg.from, t('welcome_readded', lang, { groupName: groupConfig.groupName }), { linkPreview: false });
+                        logger.info(`Re-added user ${extractNumber(senderJid)} to ${groupConfig.groupName} after late rule approval`);
+                    } catch (e) {
+                        logger.error(`Failed to re-add user ${senderJid} to ${groupConfig.groupName}`, e);
+                        await client.sendMessage(msg.from, t('welcome_readded_failed', lang, { groupName: groupConfig.groupName }), { linkPreview: false });
+                    }
+                } else if (isDisagree) {
+                    await database.removePendingRejoin(row.groupId, senderJid);
+                    await client.sendMessage(msg.from, t('welcome_disagreed', lang), { linkPreview: false });
+                    logger.info(`User ${extractNumber(senderJid)} declined to rejoin ${groupConfig.groupName}`);
                 }
             }
             return;
@@ -442,16 +473,13 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
 
     // ── Welcome Message Strict Enforcement ──────────────────────────
 
-    // If user is pending agreement, reject their message and remove them
+    // If user is pending agreement, delete their message, remove them, and track for rejoin
     const isPending = await database.isPendingMember(groupJid, senderJid);
     if (isPending) {
+        // 1. Delete the message
         try { await msg.delete(true); } catch (e) { logger.warn(`Could not delete message from unapproved pending member: ${senderJid}`, e.message); }
 
-        // Notify DM
-        const dmMsg = t('welcome_unapproved_message', lang);
-        try { await client.sendMessage(senderJid, dmMsg, { linkPreview: false }); } catch (e) { logger.warn(`Could not send DM to unapproved member: ${senderJid}`, e.message); }
-
-        // Remove from group
+        // 2. Remove from group immediately
         try {
             const chat = await client.getChatById(groupJid);
             await chat.removeParticipants([senderJid]);
@@ -459,9 +487,17 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
             logger.error(`Failed to remove unapproved user ${senderJid}`, e);
         }
 
-        // Cleanup DB and log action
+        // 3. Mark as pending rejoin (so they can be re-added after agreeing)
+        await database.addPendingRejoin(groupJid, senderJid);
         await database.removePendingMember(groupJid, senderJid);
 
+        // 4. Send DM explaining removal and how to rejoin
+        const dmMsg = t('welcome_removed_must_approve', lang, { groupName: groupConfig.groupName });
+        try { await client.sendMessage(senderJid, dmMsg, { linkPreview: false }); } catch (e) {
+            logger.warn(`Could not send removal DM to unapproved member: ${senderJid}`, e.message);
+        }
+
+        // 5. Log enforcement action
         const actionId = `ACT-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
         await database.createEnforcementAction({
             actionId,
@@ -472,12 +508,11 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
             msgType,
             status: 'completed'
         });
-
         await database.updateEnforcementActionStep(actionId, 'deleteStatus', 'success');
         await database.updateEnforcementActionStep(actionId, 'warningStatus', 'skipped');
         await database.updateEnforcementActionStep(actionId, 'removeStatus', 'success');
 
-        logger.info(`Removed user ${extractNumber(senderJid)} from ${groupConfig.groupName} for sending message before rule approval`);
+        logger.info(`Removed user ${extractNumber(senderJid)} from ${groupConfig.groupName} for sending message before rule approval (pending rejoin)`);
         return;
     }
 
@@ -894,34 +929,6 @@ async function buildStatusMessage(client) {
  * Periodically verify group names and request confirmation on detected changes
  */
 async function refreshManagedGroupNames(client) {
-    // ── 1. Handle expired name-change approval requests (12-hour timeout) ───────────
-    try {
-        const expired = await database.getExpiredNameChangeRequests(12);
-        for (const req of expired) {
-            try {
-                const groupConfig = await database.getGroup(req.groupId);
-                if (!groupConfig) {
-                    await database.resolveGroupNameChangeRequest(req.requestId, 'timeout_missing_group', 'system');
-                    continue;
-                }
-                const ownerUser = await database.getUser(groupConfig.ownerJid);
-                const lang = ownerUser ? ownerUser.language || 'he' : 'he';
-
-                // Notify before stopping
-                const timeoutMsg = t('name_change_timeout', lang, { groupName: groupConfig.groupName });
-                await sendNoticeToReporter(client, groupConfig, timeoutMsg);
-
-                // Stop enforcement (marks request as rejected internally)
-                await commands.stopEnforcementOnNameRejection(client, null, req.requestId, lang, true);
-                logger.info(`Auto-stopped enforcement for ${groupConfig.groupName} due to name change timeout (req: ${req.requestId})`);
-            } catch (e) {
-                logger.error(`Failed to handle expired name change request ${req.requestId}`, e);
-            }
-        }
-    } catch (e) {
-        logger.error('Failed to scan for expired name change requests', e);
-    }
-
     // ── 2. Check for new group name changes ────────────────────────────────────
     const groups = await database.getAllManagedGroupsForNameRefresh();
 
@@ -933,31 +940,27 @@ async function refreshManagedGroupNames(client) {
 
             if (!detectedName || detectedName === storedName) continue;
 
-            const alreadyPending = await database.hasPendingGroupNameRequest(g.groupId, detectedName);
-            if (alreadyPending) continue;
-
-            const requestId = `GN-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
-            await database.createGroupNameChangeRequest(requestId, g.groupId, storedName, detectedName, g.reportTarget || 'dm');
+            // Auto-update name in DB without requiring confirmation
+            await database.updateGroupName(g.groupId, detectedName);
 
             const ownerUser = await database.getUser(g.ownerJid);
             const lang = ownerUser ? ownerUser.language || 'he' : 'he';
 
-            const prompt = t('group_name_change_detected', lang, {
+            const notification = t('group_name_auto_updated', lang, {
                 oldName: storedName || (lang === 'he' ? 'לא ידוע' : 'Unknown'),
-                newName: detectedName,
-                requestId
+                newName: detectedName
             });
 
             if (g.reportTarget === 'mgmt_group' && g.mgmtGroupId) {
-                await client.sendMessage(g.mgmtGroupId, prompt, { linkPreview: false });
+                await client.sendMessage(g.mgmtGroupId, notification, { linkPreview: false });
             } else if (g.reportTarget && g.reportTarget.startsWith('phone:')) {
                 const phone = g.reportTarget.split(':')[1];
-                await client.sendMessage(phone + '@s.whatsapp.net', prompt, { linkPreview: false });
+                await client.sendMessage(phone + '@s.whatsapp.net', notification, { linkPreview: false });
             } else {
-                await client.sendMessage(g.ownerJid, prompt, { linkPreview: false });
+                await client.sendMessage(g.ownerJid, notification, { linkPreview: false });
             }
 
-            logger.info(`Detected group name change for ${storedName} -> ${detectedName} (request ${requestId})`);
+            logger.info(`Auto-updated group name: ${storedName} -> ${detectedName} for ${g.groupId}`);
         } catch (e) {
             logger.error(`Group name refresh failed for ${g.groupId}`, e);
         }

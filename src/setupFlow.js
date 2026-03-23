@@ -47,15 +47,17 @@ async function processSetupMessage(client, senderJid, content) {
         return t('setup_exit', lang);
     }
 
-    // "חזור" / "back" during setup → go back one step
-    if ((trimmed === 'חזור' || trimmed === 'back') && state.prevStep) {
-        const prev = state.prevStep;
+    // "חזור" / "back" during setup → go back one step (supports multi-level)
+    if (trimmed === 'חזור' || trimmed === 'back') {
+        const history = state.stepHistory || [];
+        if (history.length === 0) {
+            return t('setup_no_prev_step', lang);
+        }
+        const newHistory = [...history];
+        const prev = newHistory.pop();
         const prompt = getStepPrompt(prev, lang, state);
-        await saveState(senderJid, { ...state, step: prev, prevStep: null });
+        await saveState(senderJid, { ...state, step: prev, stepHistory: newHistory, prevStep: null });
         return t('setup_back_done', lang) + (prompt ? '\n\n' + prompt : '');
-    }
-    if ((trimmed === 'חזור' || trimmed === 'back') && !state.prevStep) {
-        return t('setup_no_prev_step', lang);
     }
 
     // Handle each step
@@ -182,7 +184,8 @@ async function saveState(jid, state) {
 }
 
 async function advance(jid, state, updates) {
-    await saveState(jid, { ...state, ...updates, prevStep: state.step });
+    const stepHistory = [...(state.stepHistory || []), state.step];
+    await saveState(jid, { ...state, ...updates, stepHistory, prevStep: state.step });
 }
 
 async function updateLang(jid, lang) {

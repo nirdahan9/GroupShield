@@ -19,7 +19,7 @@ const strings = {
         en: '🔗 Joining group via invite link...'
     },
     'invite_link_joined_not_admin': {
-        he: '✅ הצטרפתי לקבוצה *{{name}}* ({{count}} משתתפים)!\n\nעכשיו אנא מנה אותי כ*מנהל* בקבוצה ושלח *"בדוק"* כשמוכן.',
+        he: '✅ הצטרפתי לקבוצה *{{name}}* ({{count}} משתתפים)!\n\nעכשיו אנא מנה אותי *כמנהל* בקבוצה ושלח *"בדוק"* כשמוכן.',
         en: '✅ Joined *{{name}}* ({{count}} participants)!\n\nNow please make me an *admin* in the group and send *"check"* when ready.'
     },
     'invite_link_joined_admin': {
@@ -368,6 +368,18 @@ const strings = {
         he: '⛔ אינך יכול לשלוח הודעות בקבוצה לפני שתאשר את התקנון (הודעתך בקבוצה הוסרה, ותוסר מהקבוצה בשל כך).\nאם לא ראית את התקנון, חפש אותו בהודעות קודמות בשיחה זו.',
         en: '⛔ You cannot send messages before agreeing to the rules (your message was deleted, and you will be removed).\nIf you missed the rules, check the previous messages in this chat.'
     },
+    'welcome_removed_must_approve': {
+        he: '⛔ *הוסרת מהקבוצה {{groupName}}*\n\nהוסרת כי שלחת הודעה לפני שאישרת את חוקי הקבוצה.\n\nאם תרצה לחזור לקבוצה, אשר את החוקים ואנחנו נוסיף אותך מחדש אוטומטית:\n\n1️⃣ אני מאשר ✅\n2️⃣ לא מעוניין ❌',
+        en: '⛔ *You were removed from {{groupName}}*\n\nYou were removed because you sent a message before agreeing to the group rules.\n\nIf you want to rejoin, agree to the rules and we\'ll add you back automatically:\n\n1️⃣ I agree ✅\n2️⃣ Not interested ❌'
+    },
+    'welcome_readded': {
+        he: '✅ *הוספת מחדש לקבוצה {{groupName}}!*\n\nאישרת את חוקי הקבוצה והוספת בחזרה. ברוך הבא!',
+        en: '✅ *You\'ve been re-added to {{groupName}}!*\n\nYou agreed to the group rules and have been added back. Welcome!'
+    },
+    'welcome_readded_failed': {
+        he: '✅ אישרת את החוקים, אך לא הצלחנו להוסיף אותך מחדש לקבוצה *{{groupName}}* באופן אוטומטי. פנה למנהל הקבוצה.',
+        en: '✅ You agreed to the rules, but we couldn\'t add you back to *{{groupName}}* automatically. Please contact the group admin.'
+    },
     'rules_summary_no_media': { he: 'אין לשלוח שום קובץ מדיה (רק הודעות טקסט)', en: 'No media allowed (text messages only)' },
     'rules_summary_blocked_media': { he: 'אין לשלוח קבצי: {{types}}', en: 'Do not send: {{types}}' },
     'rules_summary_allowed_only': { he: 'מותר לשלוח רק הודעות טקסט שהוגדרו מראש (אחרות יימחקו)', en: 'Only specific allowed text messages can be sent' },
@@ -572,6 +584,10 @@ const strings = {
     'group_name_change_detected': {
         he: '🔄 *שינוי שם קבוצה זוהה*\n\nשם קודם: *{{oldName}}*\nשם חדש: *{{newName}}*\n\nכדי לאשר: השב *אימות שם {{requestId}}*\nכדי לדחות: השב *לא אימות שם {{requestId}}*\n\n⚠️ ביצוע דחייה או אי אישור בתוך 12 שעות יגרום להפסקת אכיפה ויציאת הבוט מהקבוצה.',
         en: '🔄 *Group name change detected*\n\nOld name: *{{oldName}}*\nNew name: *{{newName}}*\n\nTo approve: reply *verify name {{requestId}}*\nTo reject: reply *verify_not name {{requestId}}*\n\n⚠️ Rejecting or not responding within 12 hours will stop enforcement and the bot will leave the group.'
+    },
+    'group_name_auto_updated': {
+        he: '🔄 *שינוי שם קבוצה*\n\nשם קודם: *{{oldName}}*\nשם חדש: *{{newName}}*\n\nהשם עודכן אוטומטית ברישומים.',
+        en: '🔄 *Group name changed*\n\nOld name: *{{oldName}}*\nNew name: *{{newName}}*\n\nThe name has been automatically updated in records.'
     },
     'name_change_request_not_found': {
         he: '❌ בקשת עדכון שם לא נמצאה או שכבר טופלה ({{requestId}}).',
