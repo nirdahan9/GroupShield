@@ -269,7 +269,7 @@ function schedulePendingMembersCleanup(client) {
     const schedule = getValidCronOrDefault('scheduling.pendingMembersCleanup', '0 * * * *'); // Run every hour
     return cron.schedule(schedule, async () => {
         try {
-            const expiredMembers = await database.getExpiredPendingMembers(24);
+            const expiredMembers = await database.getExpiredPendingMembers(6);
             if (!expiredMembers || expiredMembers.length === 0) return;
 
             logger.info(`Found ${expiredMembers.length} expired pending members to remove`);

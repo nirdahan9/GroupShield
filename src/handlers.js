@@ -676,7 +676,9 @@ async function handleGroupNotification(client, notification) {
         const lang = ownerUser ? ownerUser.language || 'he' : 'he';
 
         for (const pId of participants) {
-            const addedJid = getNormalizedJid(pId);
+            // Resolve LID → phone JID so it matches senderJid used during message enforcement
+            let addedJid = getNormalizedJid(pId);
+            try { addedJid = await resolveContactToPhone(client, addedJid) || addedJid; } catch { /* keep raw JID on error */ }
             const addedNum = extractNumber(addedJid);
             logger.info(`JOIN: ${addedNum} joined ${groupConfig.groupName}`);
 
@@ -706,7 +708,7 @@ async function handleGroupNotification(client, notification) {
                     } catch (e) {
                         logger.error(`Failed to send welcome message to ${addedNum}`, e);
                         // If we can't DM them, we might be blocked by privacy settings.
-                        // We leave them in pending_group_members so the 24h cron evicts them if they never agree.
+                        // We leave them in pending_group_members so the 6h cron evicts them if they never agree.
                     }
                 }
             }
