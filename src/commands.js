@@ -472,9 +472,8 @@ async function buildFullGroupsStatus(lang) {
         return sysBlock + '\n\n' + (lang === 'he' ? '📋 אין קבוצות מוגדרות במערכת.' : '📋 No groups configured in the system.');
     }
 
-    // Fetch all errors and pending names once
+    // Fetch all errors once
     const { failedMap, staleMap } = await database.getAllGroupErrors();
-    const pendingNameMap = await database.getAllPendingNameChanges();
 
     const lines = [];
     lines.push(lang === 'he'
@@ -518,7 +517,6 @@ async function buildFullGroupsStatus(lang) {
         // ── Operational Errors (from cached maps) ────────────────────
         const failedRecent = failedMap[g.groupId] || 0;
         const staleStuck = staleMap[g.groupId] || 0;
-        const pendingName = pendingNameMap[g.groupId] ? { requestId: pendingNameMap[g.groupId] } : null;
 
         const entry = [
             `\n📌 *${g.groupName}*`,
@@ -537,11 +535,6 @@ async function buildFullGroupsStatus(lang) {
         }
         if (failedRecent === 0 && staleStuck === 0 && g.active) {
             entry.push(lang === 'he' ? '✅ ללא תקלות' : '✅ No errors');
-        }
-        if (pendingName) {
-            entry.push(lang === 'he'
-                ? `🔔 ממתין לאישור שינוי שם (${pendingName.requestId})`
-                : `🔔 Pending name-change approval (${pendingName.requestId})`);
         }
         lines.push(entry.join('\n'));
     }

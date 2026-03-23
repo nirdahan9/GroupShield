@@ -425,6 +425,14 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
             const requestId = content.trim().replace(/^(לא אימות שם |verify_not name )/i, '').trim();
             const response = await commands.stopEnforcementOnNameRejection(client, senderJid, requestId, lang, false);
             if (response) await msg.reply(response);
+        } else {
+            // If the message doesn't match any known command, check if the sender
+            // is mid-way through a setup/quick-update flow started in this group.
+            const inSetup = await setupFlow.isInSetup(senderJid);
+            if (inSetup) {
+                const response = await setupFlow.processSetupMessage(client, senderJid, content);
+                if (response) await msg.reply(response);
+            }
         }
 
         return; // Don't enforce rules in management group
