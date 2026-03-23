@@ -88,6 +88,16 @@ async function handleDM(client, msg, senderJid, content) {
         return;
     }
 
+    // If user is actively in a setup flow, route there immediately.
+    // This must come BEFORE the pending-welcome check so that setup responses
+    // (e.g. typing "10" for warning count) are not silently swallowed.
+    const inSetupEarly = await setupFlow.isInSetup(senderJid);
+    if (inSetupEarly) {
+        const response = await setupFlow.processSetupMessage(client, senderJid, content);
+        if (response) await sendBotReply(client, msg.from, response);
+        return;
+    }
+
     // Check if user is responding to a Welcome Message DM
     const lowerContent = content.trim().toLowerCase();
     const isAgree = lowerContent === '1' || lowerContent.includes('מסכים') || lowerContent === 'agree';
@@ -162,15 +172,7 @@ async function handleDM(client, msg, senderJid, content) {
         }
     }
 
-    // Check if user is in setup flow
-    const inSetup = await setupFlow.isInSetup(senderJid);
-    if (inSetup) {
-        const response = await setupFlow.processSetupMessage(client, senderJid, content);
-        if (response) {
-            await sendBotReply(client, msg.from, response);
-        }
-        return;
-    }
+    // (setup flow is handled early, before the pending-welcome check above)
 
     // User has not started setup yet (and hasn't explicitly stopped enforcement)
     let setupState = {};
