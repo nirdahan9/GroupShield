@@ -75,7 +75,7 @@ const CURSE_WORDS = [
     'כושי', 'כושית', 'כושים', 'חבשי',
     'ערס', 'ערסים', 'ערסית', 'ערסיות',
     'פרחה', 'פרחות', 'שיגץ', 'שיקסה',
-    'הומו', 'לסבית', 'פייגלה',
+    'קוקסינל', 'אוחצ\'ה', 'קחבה', 'צ\'ולה', 'פוסטמה', 'צ\'חצ\'ח', 'אבוטבול',
     'ח׳ביל', 'חביל', 'פאחד',
     'ח׳ול', 'חול', 'זפת',
     'בהיים',
@@ -123,9 +123,9 @@ const CURSE_WORDS = [
     'wanker', 'wank', 'twat', 'prick', 'bollocks', 'tosser', 'git',
     'douchebag', 'douche', 'douchebags', 'douchey',
     // ── English — racial / ethnic slurs ───────────────────────────────────────
-    'nigger', 'nigga', 'nigg', 'niger',
-    'faggot', 'fag', 'fags', 'dyke',
-    'retard', 'retarded', 'spastic',
+    'nigger', 'nigga', 'nigg', 'niger', 'nibba', 'chimp',
+    'faggot', 'fag', 'fags', 'dyke', 'tranny', 'fagbag', 'shemale', 'twink',
+    'retard', 'retarded', 'spastic', 'mongoloid',
     'kike', 'chink', 'gook', 'spic', 'wetback', 'beaner',
     'towelhead', 'raghead', 'sand nigger', 'camel jockey',
     'coon', 'jap', 'nip', 'white trash',
@@ -144,6 +144,8 @@ const CURSE_WORDS = [
     'swine', 'vermin',
     'worthless', 'worthless piece of shit', 'worthless piece of garbage',
     'you suck', 'suck my', 'suck it', 'eat shit', 'eat my',
+    'cuck', 'cuckold', 'soyboy', 'libtard', 'magat', 'incel', 'thot', 'simp',
+    'shitstain', 'fucknugget', 'twot', 'wankstain', 'cockwomble', 
     // ── English — death wishes / aggression ───────────────────────────────────
     'go to hell', 'go to hell and die', 'rot in hell', 'burn in hell',
     'drop dead', 'kill yourself', 'kys', 'go die', 'please die',
@@ -171,6 +173,9 @@ const CURSE_WORDS = [
     'לך תשתוק', 'לא מעניין אותי',
     'תחרב לך הבית', 'תחרב הבית שלך',
     'יהיה לך חושך',
+    'סעמק', 'כוסעמק', 'אחושרמוטה', 'שרלילה', 'שלירלולה', 'חתיכת אפס', 'אתה אפס', 'יא מסכן',
+    'טפי', 'טפי עליך', 'יא פח', 'קוף', 'בבון', 'יא חתיכת', 'בן אלף', 'בן מתרומם',
+    'אוכל בתחת', 'מזדיין בתחת', 'לקקן', 'לקקנית', 'חולה מין',
 ];
 
 // ─── Context-dependent list ───────────────────────────────────────────────────
@@ -189,8 +194,17 @@ const CONTEXT_WORDS = [
     'בהמה', 'בהמות',       // animal/beast (literal) → insult
     'נחש',                 // snake (reptile) → also backstabber
     'חזיר', 'חזירה', 'חזירים', 'חזירון',  // pig (food/farm) → insult
+    // Hebrew — identity/history that can be used as curses
+    'הומו', 'לסבית', 'גיא', 'גיי', 'פייגלה', // sexual orientation vs slur
+    'נאצי', 'נאצית', 'נאצים', 'שואה', // history education vs curse
+    'אוטיסט', 'אוטיסטים', 'אוטיסטית', 'פיגור', 'מפגר', // medical vs curse
+    'מוגבל', 'נכה', 'נכות', 'תסמונת דאון', // disabilities vs curses
+    'שמן', 'שמנה', 'דובה', 'מכוער', 'מכוערת', 'קירח', // appearance describing vs body shaming
+    'מחבל', 'ערבי', 'שמאלני', 'ימני', 'פשיסט', 'דיקטטור', // news/politics vs insults
+    'סרטן', 'מחלה', // medical vs "you are cancer"
     // Hebrew — adjectives used innocently in everyday speech
     'דפוק', 'דפוקה', 'דפוקים',       // broken/messed-up → also crude insult
+    'קורע', 'קריעה',                 // funny vs ripping
     // English — words with clear innocent meanings
     'cock',       // rooster → vulgar
     'bitch',      // female dog → insult
@@ -204,6 +218,22 @@ const CONTEXT_WORDS = [
     'pig',        // farm animal → insult
     'rat',        // rodent → informer insult
     'snake',      // reptile → backstabber insult
+    'nazi',       // history → insult
+    'gay',        // orientation / happy → insult
+    'queer',      // orientation → insult
+    'autism',     // medical → slur
+    'autistic',   // medical → slur
+    'holocaust',  // history → insult
+    'cancer',     // medical vs "you're cancer"
+    'tumor',      // medical vs insult
+    'terrorist',  // news vs insult
+    'communist',  // politics vs insult
+    'fascist',    // politics vs insult
+    'groomer',    // pet care/crime vs political insult
+    'pedophile',  // crime vs internet insult
+    'jew',        // identity vs slur
+    'black',      // color/identity vs slur
+    'white'       // color/identity vs slur
 ];
 
 module.exports = { CURSE_WORDS, CONTEXT_WORDS };
