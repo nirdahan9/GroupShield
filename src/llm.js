@@ -143,6 +143,12 @@ function isSuspicious(text) {
     const words = lower.replace(/[^a-z\s]/g, ' ').split(/\s+/).filter(w => w.length >= 4);
     if (words.some(w => NEAR_MISS_TARGETS.some(c => w !== c && editDist1(w, c)))) return true;
 
+    // 7. Hebrew "יא" vocative before a word — common insult prefix in Hebrew/Arabic slang
+    // e.g., "יא ג'חש", "יא טרוף", "יא מה שאתה"
+    // (messages like "יא [known curse]" are already caught by the rule engine via substring;
+    //  this catches unknown words that aren't in either list)
+    if (/^יא\s+\S{2,}/.test(text.trim())) return true;
+
     return false;
 }
 
