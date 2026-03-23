@@ -8,6 +8,7 @@ const path = require('path');
 const config = require('./config');
 const logger = require('./logger');
 const { CONTEXT_WORDS } = require('./cursesList');
+const messageLog = require('./messageLog');
 
 const MODEL = 'llama-3.1-8b-instant';
 const TIMEOUT_MS = 4000;
@@ -232,7 +233,7 @@ async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfi
             await executeEnforcement(
                 client, msg, senderJid,
                 [t('reason_llm_violation', lang)],
-                content, msgType, groupConfig, enforcementConfig, rateLimiter, lang
+                content, msgType, groupConfig, enforcementConfig, rateLimiter, lang, 'injection'
             );
         } catch (e) {
             logger.warn('Enforcement after injection detection failed', e.message);
@@ -249,14 +250,18 @@ async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfi
     recordCall();
     try {
         const isViolation = await callGroq(content);
-        if (isViolation !== true) return;
+        if (isViolation !== true) {
+            // LLM said clean — log that the message was evaluated but passed
+            messageLog.logEnforcement(groupConfig.groupId, groupConfig.groupName, senderJid, content, 'LLM: passed', 'llm_pass');
+            return;
+        }
 
         logger.info(`LLM flagged message in ${groupConfig.groupName} from ${senderJid}: "${content.slice(0, 60)}"`);
 
         await executeEnforcement(
             client, msg, senderJid,
             [t('reason_llm_violation', lang)],
-            content, msgType, groupConfig, enforcementConfig, rateLimiter, lang
+            content, msgType, groupConfig, enforcementConfig, rateLimiter, lang, 'llm'
         );
     } catch (e) {
         logger.warn('LLM moderation check failed', e.message);

@@ -5,6 +5,7 @@ const { t } = require('./i18n');
 const { extractNumber, withRetry } = require('./utils');
 const path = require('path');
 const config = require('./config');
+const messageLog = require('./messageLog');
 
 const REMOVALS_LOG_FILE = path.join(__dirname, '../removals_log.txt');
 
@@ -39,12 +40,15 @@ function formatContent(content, msgType, lang) {
  * @param {object} rateLimiter - Rate limiter instance
  * @param {string} lang - User language
  */
-async function executeEnforcement(client, msg, senderJid, violations, content, msgType, groupConfig, enforcementConfig, rateLimiter, lang) {
+async function executeEnforcement(client, msg, senderJid, violations, content, msgType, groupConfig, enforcementConfig, rateLimiter, lang, source = 'rule_engine') {
     const number = extractNumber(senderJid);
     const reason = violations.join(lang === 'he' ? ' וגם ' : ' and ');
     const targetJid = number + '@s.whatsapp.net';
     const formattedTime = new Date().toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' });
     const groupId = groupConfig.groupId;
+
+    // Log enforcement to the group's message log
+    messageLog.logEnforcement(groupId, groupConfig.groupName, senderJid, content, reason, source);
     const maxWarnings = groupConfig.warningCount || 0;
     const actionId = `ENF-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 

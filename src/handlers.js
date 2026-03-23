@@ -7,6 +7,7 @@ const { t } = require('./i18n');
 const { evaluateMessage, checkAntiSpam } = require('./ruleEngine');
 const { executeEnforcement, handleUndo, isPendingRemoval } = require('./enforcement');
 const { checkWithLLM } = require('./llm');
+const messageLog = require('./messageLog');
 const setupFlow = require('./setupFlow');
 const commands = require('./commands');
 const ADMIN_CACHE_TTL_MS = config.get('performance.adminCacheTtlMs', 60000);
@@ -482,6 +483,9 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
         }
     }
 
+    // ── Log every non-immune message (before enforcement decision) ───
+    messageLog.logMessage(groupJid, groupConfig.groupName, senderJid, content, msgType);
+
     // ── Welcome Message Strict Enforcement ──────────────────────────
 
     // If user is pending agreement, delete their message, remove them, and track for rejoin
@@ -523,6 +527,7 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
         await database.updateEnforcementActionStep(actionId, 'warningStatus', 'skipped');
         await database.updateEnforcementActionStep(actionId, 'removeStatus', 'success');
 
+        messageLog.logEnforcement(groupJid, groupConfig.groupName, senderJid, content, t('reason_unapproved_welcome', lang), 'pending_welcome');
         logger.info(`Removed user ${extractNumber(senderJid)} from ${groupConfig.groupName} for sending message before rule approval (pending rejoin)`);
         return;
     }
