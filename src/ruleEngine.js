@@ -1,6 +1,7 @@
 // src/ruleEngine.js - Generic rule evaluation engine
 const logger = require('./logger');
 const { t } = require('./i18n');
+const { CURSE_WORDS } = require('./cursesList');
 
 const JERUSALEM_PARTS_FORMATTER = new Intl.DateTimeFormat('en-US', {
     timeZone: 'Asia/Jerusalem',
@@ -129,7 +130,9 @@ function checkForbiddenMessages(ruleData, content, lang) {
         }
     }
 
-    const forbiddenList = ruleData.messages || [];
+    // Curses preset: always use the live CURSE_WORDS list so updates to cursesList.js
+    // take effect immediately for all groups — no DB migration needed.
+    const forbiddenList = ruleData.isCursesPreset ? CURSE_WORDS : (ruleData.messages || []);
     const matchMode = ruleData.matchMode || 'contains';
     const normalizedContent = content.trim().toLowerCase();
 
@@ -486,7 +489,9 @@ const HEBREW_SUFFIXES = ['ים', 'ות', 'תי', 'נו', 'כם', 'כן', 'הם',
  */
 function getHebrewVariants(word) {
     const variants = new Set([word]);
-    const MIN_STEM = 2; // don't strip if remaining stem is too short
+    // MIN_STEM = 4: prevents 2-3 char stems (e.g. "הי", "ושי", "יט") that are
+    // too common in Hebrew and cause rampant false positives.
+    const MIN_STEM = 4;
 
     // Strip prefix
     for (const prefix of HEBREW_PREFIXES) {
@@ -535,7 +540,9 @@ function editDistance(a, b) {
  * Only applied to words and targets of length >= 5 to avoid false positives.
  */
 function fuzzyMatchesAnyWord(normMessage, normTarget) {
-    if (normTarget.length < 4) return false;
+    // Minimum 6 chars: prevents 4-5 char near-miss matches on short substrings
+    // of unrelated words (e.g. "יביס" in "ביביסט" matching "יבאס" at dist 1).
+    if (normTarget.length < 6) return false;
     // Split original (pre-normalized) is not available here, so split on
     // boundaries: find all substrings of similar length
     const targetLen = normTarget.length;
@@ -557,11 +564,12 @@ function smartMatchesForbidden(normMessage, normForbidden) {
     if (normMessage.includes(normForbidden)) return true;
 
     // 2. Hebrew morphological variants (prefix/suffix stripping)
+    // MIN_STEM=4 is enforced in getHebrewVariants; guard here too.
     for (const variant of getHebrewVariants(normForbidden)) {
-        if (variant.length >= 2 && normMessage.includes(variant)) return true;
+        if (variant.length >= 4 && normMessage.includes(variant)) return true;
     }
 
-    // 3. Fuzzy match (typos) — single-character edit distance, words ≥ 4 chars
+    // 3. Fuzzy match (typos) — single-character edit distance, words ≥ 6 chars
     if (fuzzyMatchesAnyWord(normMessage, normForbidden)) return true;
 
     // 4. Reversed word — e.g. הללק instead of קללה (≥ 4 chars to avoid false positives)
@@ -571,13 +579,15 @@ function smartMatchesForbidden(normMessage, normForbidden) {
     }
 
     // 5. Phonetic substitutions — ק↔כ, ס↔ש, ת↔ט, ב↔ו, א↔ע, ח↔כ
+    // Minimum 4: prevents 3-char words (e.g. "חול"→"הול") matching common syllables.
     for (const variant of getSubstitutionVariants(normForbidden, PHONETIC_MAP)) {
-        if (variant.length >= 2 && normMessage.includes(variant)) return true;
+        if (variant.length >= 4 && normMessage.includes(variant)) return true;
     }
 
     // 6. Visual confusables — ד↔ר, ה↔ח, ו↔ז, כ↔ב
+    // Minimum 4: same reason as phonetic above.
     for (const variant of getSubstitutionVariants(normForbidden, HEBREW_VISUAL_CONFUSABLES)) {
-        if (variant.length >= 2 && normMessage.includes(variant)) return true;
+        if (variant.length >= 4 && normMessage.includes(variant)) return true;
     }
 
     return false;
