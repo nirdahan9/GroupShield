@@ -474,6 +474,46 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
     // Global immunity: users who started setup flow are never enforced
     if (await database.isGlobalProtected(senderJid)) return;
 
+    // ── Bot-mention report (manual LLM trigger) ──────────────────────────────
+    // Any user (including admins/owners/exempt) can @mention the bot while replying
+    // to a message to manually trigger an LLM check on that quoted message.
+    // Must run BEFORE immunity checks so admins can also use this feature.
+    if (msg.hasQuotedMsg && (msg.mentionedIds || []).length > 0) {
+        const botJidRaw = client.info && client.info.wid ? client.info.wid._serialized : null;
+        if (botJidRaw) {
+            // Strip device suffix: "972XXX:0@s.whatsapp.net" → "972XXX@s.whatsapp.net"
+            const botJid = getNormalizedJid(botJidRaw).replace(/:\d+@/, '@');
+            const mentionedNorm = (msg.mentionedIds || []).map(id => {
+                const s = typeof id === 'string' ? id : (id && id._serialized ? id._serialized : null);
+                return s ? getNormalizedJid(s).replace(/:\d+@/, '@') : null;
+            }).filter(Boolean);
+
+            if (mentionedNorm.includes(botJid)) {
+                const rulesForReport = await database.getRules(groupJid);
+                const hasCursesPreset = rulesForReport.some(
+                    r => r.ruleType === 'forbidden_messages' && r.ruleData?.isCursesPreset
+                );
+                if (hasCursesPreset) {
+                    try {
+                        const quotedMsg = await msg.getQuotedMessage();
+                        if (quotedMsg && quotedMsg.body) {
+                            const enforcementCfg = await database.getEnforcement(groupJid);
+                            const quotedSenderJid = getNormalizedJid(quotedMsg.author || quotedMsg.from);
+                            logger.info(`Manual LLM report by ${extractNumber(senderJid)} in ${groupConfig.groupName} for msg from ${extractNumber(quotedSenderJid)}`);
+                            checkWithLLM(
+                                client, quotedMsg, quotedSenderJid, quotedMsg.body, quotedMsg.type,
+                                groupConfig, enforcementCfg, rateLimiter, lang, true
+                            ).catch(e => logger.warn('Manual LLM check error', e.message));
+                        }
+                    } catch (e) {
+                        logger.warn('Failed to get quoted message for manual LLM report', e.message);
+                    }
+                }
+                return; // Don't apply normal enforcement to the reporting message itself
+            }
+        }
+    }
+
     // ── Immunity Checks ─────────────────────────────────────────────
 
     // Check if sender is group admin
@@ -597,29 +637,6 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
         const hasCursesPreset = contentRules.some(
             r => r.ruleType === 'forbidden_messages' && r.ruleData?.isCursesPreset
         );
-
-        if (hasCursesPreset && msg.hasQuotedMsg) {
-            const botJidRaw = client.info && client.info.wid ? client.info.wid._serialized : null;
-            const botJid = botJidRaw ? getNormalizedJid(botJidRaw) : null;
-            const mentionedIds = (msg.mentionedIds || []).map(id => getNormalizedJid(id));
-            
-            if (botJid && mentionedIds.includes(botJid)) {
-                try {
-                    const quotedMsg = await msg.getQuotedMessage();
-                    if (quotedMsg && quotedMsg.body) {
-                        const quotedSenderJid = getNormalizedJid(quotedMsg.author || quotedMsg.from);
-                        logger.info(`Manual LLM report triggered by ${senderJid} for message from ${quotedSenderJid} in ${groupJid}`);
-                        // Enforce check on the quoted message
-                        checkWithLLM(
-                            client, quotedMsg, quotedSenderJid, quotedMsg.body, quotedMsg.type, 
-                            groupConfig, enforcementConfig, rateLimiter, lang, true
-                        ).catch(e => logger.warn('Manual LLM check error', e.message));
-                    }
-                } catch (e) {
-                    logger.warn('Failed to fetch quoted message for manual report', e.message);
-                }
-            }
-        }
 
         if (hasCursesPreset) {
             checkWithLLM(client, msg, senderJid, content, msgType, groupConfig, enforcementConfig, rateLimiter, lang)
