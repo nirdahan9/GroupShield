@@ -994,11 +994,20 @@ async function buildStatusMessage(client) {
  * Periodically verify group names and request confirmation on detected changes
  */
 async function refreshManagedGroupNames(client) {
+    if (!client || !client.pupPage) return; // Prevent run if client isn't ready
+
     // ── 2. Check for new group name changes ────────────────────────────────────
     const groups = await database.getAllManagedGroupsForNameRefresh();
 
     for (const g of groups) {
         try {
+            // Check if page is loaded and WWebJS is injected to prevent undefined getChat error
+            const isReady = await client.pupPage.evaluate(() => typeof window.WWebJS !== 'undefined').catch(() => false);
+            if (!isReady) {
+                logger.warn(`Skipping group name refresh for ${g.groupId} - WhatsApp page not fully ready yet`);
+                continue;
+            }
+
             const chat = await withRetry(() => client.getChatById(g.groupId), 3, 800);
             const detectedName = (chat && chat.name ? chat.name.trim() : '');
             const storedName = (g.groupName || '').trim();
