@@ -222,7 +222,7 @@ function callGroq(text) {
  * If the LLM decides it's a violation → executes enforcement.
  * On any error or timeout → silently allows (no false positives from infra failures).
  */
-async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfig, enforcementConfig, rateLimiter, lang) {
+async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfig, enforcementConfig, rateLimiter, lang, forceCheck = false) {
     const { executeEnforcement } = require('./enforcement');
     const { t } = require('./i18n');
 
@@ -242,7 +242,7 @@ async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfi
     }
 
     // Layer 2: route to LLM if message is suspicious OR contains a context-dependent word
-    if (!isSuspicious(content) && !containsContextWord(content)) return;
+    if (!forceCheck && !isSuspicious(content) && !containsContextWord(content)) return;
 
     const apiKey = config.get('groq.apiKey');
     if (!apiKey) return;

@@ -170,6 +170,16 @@ async function startBot() {
         process.exit(1);
     });
 
+    // ── Call Handler (Auto-Reject) ───────────────────────────────────
+    client.on('call', async (call) => {
+        logger.info(`דחיית שיחה נכנסת מאת: ${call.from}`);
+        try {
+            await call.reject();
+        } catch (e) {
+            logger.error(`שגיאה בדחיית שיחה מאת ${call.from}: ${e.message}`);
+        }
+    });
+
     // ── Message Handler ──────────────────────────────────────────────
     client.on('message', async (msg) => {
         try {

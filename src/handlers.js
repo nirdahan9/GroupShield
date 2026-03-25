@@ -597,6 +597,30 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
         const hasCursesPreset = contentRules.some(
             r => r.ruleType === 'forbidden_messages' && r.ruleData?.isCursesPreset
         );
+
+        if (hasCursesPreset && msg.hasQuotedMsg) {
+            const botJidRaw = client.info && client.info.wid ? client.info.wid._serialized : null;
+            const botJid = botJidRaw ? getNormalizedJid(botJidRaw) : null;
+            const mentionedIds = (msg.mentionedIds || []).map(id => getNormalizedJid(id));
+            
+            if (botJid && mentionedIds.includes(botJid)) {
+                try {
+                    const quotedMsg = await msg.getQuotedMessage();
+                    if (quotedMsg && quotedMsg.body) {
+                        const quotedSenderJid = getNormalizedJid(quotedMsg.author || quotedMsg.from);
+                        logger.info(`Manual LLM report triggered by ${senderJid} for message from ${quotedSenderJid} in ${groupJid}`);
+                        // Enforce check on the quoted message
+                        checkWithLLM(
+                            client, quotedMsg, quotedSenderJid, quotedMsg.body, quotedMsg.type, 
+                            groupConfig, enforcementConfig, rateLimiter, lang, true
+                        ).catch(e => logger.warn('Manual LLM check error', e.message));
+                    }
+                } catch (e) {
+                    logger.warn('Failed to fetch quoted message for manual report', e.message);
+                }
+            }
+        }
+
         if (hasCursesPreset) {
             checkWithLLM(client, msg, senderJid, content, msgType, groupConfig, enforcementConfig, rateLimiter, lang)
                 .catch(e => logger.warn('LLM check error', e.message));
