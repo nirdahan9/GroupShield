@@ -74,6 +74,10 @@ async function processSetupMessage(client, senderJid, content) {
             return await handleAdminCheck(client, senderJid, content, state, lang);
         case 'rules_type':
             return await handleRulesType(client, senderJid, content, state, lang);
+        case 'shabbat_notify':
+            return await handleShabbatNotify(client, senderJid, content, state, lang);
+        case 'shabbat_notify_minutes':
+            return await handleShabbatNotifyMinutes(client, senderJid, content, state, lang);
         case 'rules_custom_type':
             return await handleRulesCustomType(client, senderJid, content, state, lang);
         case 'rules_content':
@@ -146,6 +150,8 @@ function getStepPrompt(step, lang, state) {
             : t('ask_group_name', lang);
         case 'admin_check':     return t('group_not_admin', lang);
         case 'rules_type':      return t('ask_rules_type', lang);
+        case 'shabbat_notify':  return t('ask_shabbat_notify', lang);
+        case 'shabbat_notify_minutes': return t('ask_shabbat_notify_minutes', lang);
         case 'rules_custom_type': return t('ask_rules_custom_type', lang);
         case 'rules_content':   return state.rulesType === 'allowed'
             ? t('ask_allowed_messages', lang)
@@ -453,13 +459,56 @@ async function handleRulesType(client, jid, content, state, lang) {
         });
         return t('curses_preset_selected', lang) + '\n\n' + t('ask_non_text_rule', lang);
     } else if (choice === '2') {
+        // Shabbat mode — set defaults and go to Shabbat-specific setup
+        await advance(jid, state, {
+            step: 'shabbat_notify',
+            rulesType: 'shabbat',
+            blockNonText: false,
+            blockedNonTextTypes: [],
+            timeWindows: [],
+            antiSpam: null,
+            warningCount: 0,
+            enforcementConfig: {
+                deleteMessage: false,
+                privateWarning: false,
+                removeFromGroup: false,
+                blockUser: false,
+                sendReport: false,
+                warnPrivateDm: false
+            },
+            exemptNumbers: [],
+            reportTarget: 'dm'
+        });
+        return t('shabbat_preset_selected', lang) + '\n\n' + t('ask_shabbat_notify', lang);
+    } else if (choice === '3') {
         await advance(jid, state, { step: 'non_text_rule', rulesType: 'none' });
         return t('ask_non_text_rule', lang);
-    } else if (choice === '3') {
+    } else if (choice === '4') {
         await advance(jid, state, { step: 'rules_custom_type' });
         return t('ask_rules_custom_type', lang);
     }
     return t('ask_rules_type', lang);
+}
+
+async function handleShabbatNotify(client, jid, content, state, lang) {
+    const choice = content.trim();
+    if (choice === '1' || choice.includes('כן') || choice.toLowerCase() === 'yes') {
+        await advance(jid, state, { step: 'shabbat_notify_minutes', shabbatNotify: true });
+        return t('ask_shabbat_notify_minutes', lang);
+    } else if (choice === '2' || choice.includes('לא') || choice.toLowerCase() === 'no') {
+        await advance(jid, state, { step: 'welcome_msg', shabbatNotify: false, shabbatNotifyMinutes: 0 });
+        return t('shabbat_notify_saved', lang, { status: lang === 'he' ? 'ללא התראה' : 'No notification' }) + '\n\n' + t('ask_welcome_msg', lang);
+    }
+    return t('ask_shabbat_notify', lang);
+}
+
+async function handleShabbatNotifyMinutes(client, jid, content, state, lang) {
+    const num = parseInt(content.trim(), 10);
+    if (isNaN(num) || num < 1 || num > 120) {
+        return t('ask_shabbat_notify_minutes', lang);
+    }
+    await advance(jid, state, { step: 'welcome_msg', shabbatNotifyMinutes: num });
+    return t('shabbat_notify_saved', lang, { status: `${num} ${lang === 'he' ? 'דקות לפני' : 'minutes before'}` }) + '\n\n' + t('ask_welcome_msg', lang);
 }
 
 async function handleRulesCustomType(client, jid, content, state, lang) {
@@ -918,10 +967,11 @@ async function handleWelcomeMsg(client, jid, content, state, lang) {
 
 async function buildSummary(state, reportTarget, mgmtGroupId, lang) {
     const rulesTypeMap = {
-        'allowed': lang === 'he' ? 'הודעות מותרות בלבד' : 'Allowed messages only',
+        'allowed':  lang === 'he' ? 'הודעות מותרות בלבד' : 'Allowed messages only',
         'forbidden': lang === 'he' ? 'הודעות אסורות' : 'Forbidden messages',
-        'none': lang === 'he' ? 'ללא חוקי תוכן' : 'No content rules',
-        'curses': lang === 'he' ? 'חסימת קללות (רשימה מוכנה)' : 'Curse blocking (preset list)'
+        'none':     lang === 'he' ? 'ללא חוקי תוכן' : 'No content rules',
+        'curses':   lang === 'he' ? 'חסימת קללות (רשימה מוכנה)' : 'Curse blocking (preset list)',
+        'shabbat':  lang === 'he' ? 'שמירת שבת 🕯️' : 'Shabbat mode 🕯️'
     };
 
     const rulesModeValue = state.rulesType === 'allowed'
@@ -1040,6 +1090,11 @@ async function handleSummary(client, jid, content, state, lang) {
                     messages: CURSE_WORDS,
                     matchMode: 'smart',
                     isCursesPreset: true
+                });
+            } else if (state.rulesType === 'shabbat') {
+                await database.updateGroupShabbatConfig(groupId, {
+                    enabled: true,
+                    notifyMinutes: state.shabbatNotify ? (state.shabbatNotifyMinutes || 0) : 0
                 });
             }
             if (state.timeWindows && state.timeWindows.length > 0) {

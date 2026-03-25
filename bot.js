@@ -16,6 +16,7 @@ const handlers = require('./src/handlers');
 const { buildFullGroupsStatus } = require('./src/commands');
 const health = require('./src/health');
 const backup = require('./src/backup');
+const shabbat = require('./src/shabbat');
 
 const AUTH_DIR = path.join(__dirname, '.wwebjs_auth');
 const VERSION = config.get('bot.version', '1.0.0');
@@ -112,6 +113,15 @@ async function startBot() {
         runtime.cronTasks.push(scheduleWarningsCleanup());
         runtime.cronTasks.push(scheduleUnknownGroupExit(client));
         runtime.cronTasks.push(schedulePendingMembersCleanup(client));
+        runtime.cronTasks.push(scheduleShabbatFetch());
+
+        // Check every minute whether any Shabbat group needs to be locked/unlocked/notified
+        const shabbatCheckHandle = setInterval(async () => {
+            try { await shabbat.checkShabbatGroups(client); } catch (e) {
+                logger.warn('Shabbat check failed', e.message);
+            }
+        }, 60 * 1000);
+        runtime.intervals.push(shabbatCheckHandle);
 
         // Mark stale enforcement actions after restart and start group-name refresh loop
         await database.markStaleEnforcementActionsFailed(15);
@@ -204,6 +214,16 @@ function scheduleStatusMessages(client) {
     const schedule = getValidCronOrDefault('scheduling.statusMessages', '0 8,12,16,20 * * *');
     return cron.schedule(schedule, async () => {
         await sendStatusToDeveloper(client);
+    });
+}
+
+function scheduleShabbatFetch() {
+    // Every Thursday at 10:00 UTC (12:00–13:00 Israel time depending on DST)
+    const schedule = getValidCronOrDefault('scheduling.shabbatFetch', '0 10 * * 4');
+    return cron.schedule(schedule, async () => {
+        try { await shabbat.fetchAndSaveShabbatTimes(); } catch (e) {
+            logger.error('Shabbat time fetch failed', e);
+        }
     });
 }
 

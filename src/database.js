@@ -221,6 +221,22 @@ class Database {
                 }
             });
 
+            // Migrate groups: add shabbatConfig and shabbatLocked columns if missing
+            this.db.all("PRAGMA table_info(groups)", (err2, rows2) => {
+                if (!err2 && rows2) {
+                    const hasShabbatConfig = rows2.some(r => r.name === 'shabbatConfig');
+                    if (!hasShabbatConfig) {
+                        this.db.run("ALTER TABLE groups ADD COLUMN shabbatConfig TEXT DEFAULT NULL");
+                        logger.info("Migrated schema: Added shabbatConfig to groups");
+                    }
+                    const hasShabbatLocked = rows2.some(r => r.name === 'shabbatLocked');
+                    if (!hasShabbatLocked) {
+                        this.db.run("ALTER TABLE groups ADD COLUMN shabbatLocked INTEGER DEFAULT 0");
+                        logger.info("Migrated schema: Added shabbatLocked to groups");
+                    }
+                }
+            });
+
             // Helpful indexes
             this.db.run('CREATE INDEX IF NOT EXISTS idx_rules_group ON rules(groupId)');
             this.db.run('CREATE INDEX IF NOT EXISTS idx_rules_group_type ON rules(groupId, ruleType)');
@@ -907,6 +923,21 @@ class Database {
             [threshold]
         );
         return result.changes || 0;
+    }
+
+    // ── Shabbat Operations ───────────────────────────────────────────────
+
+    async updateGroupShabbatConfig(groupId, config) {
+        const json = config ? JSON.stringify(config) : null;
+        await this._run('UPDATE groups SET shabbatConfig = ? WHERE groupId = ?', [json, groupId]);
+    }
+
+    async getShabbatGroups() {
+        return this._all("SELECT * FROM groups WHERE shabbatConfig IS NOT NULL AND active = 1");
+    }
+
+    async setShabbatLocked(groupId, locked) {
+        await this._run('UPDATE groups SET shabbatLocked = ? WHERE groupId = ?', [locked ? 1 : 0, groupId]);
     }
 
     // ── Settings Operations ──────────────────────────────────────────────

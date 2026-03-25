@@ -73,8 +73,8 @@ const strings = {
 
     // ── Rules Setup ──────────────────────────────────────────────────────
     'ask_rules_type': {
-        he: '📏 *שלב 2: הגדרת חוקים*\n\nאיזה סוג חוקי תוכן תרצה?\n\n1️⃣ *חסימת קללות* — חסום קללות נפוצות בעברית ובאנגלית אוטומטית\n2️⃣ *ללא חוקי תוכן* — ללא הגבלת תוכן\n3️⃣ *חוקים בהתאמה אישית* — הגדרת הודעות מותרות/אסורות',
-        en: '📏 *Step 2: Set Rules*\n\nWhat type of content rules do you want?\n\n1️⃣ *Block curses* — automatically block common Hebrew and English profanity\n2️⃣ *No content rules* — no content restrictions\n3️⃣ *Custom rules* — define allowed or forbidden messages'
+        he: '📏 *שלב 2: הגדרת חוקים*\n\nאיזה סוג חוקי תוכן תרצה?\n\n1️⃣ *חסימת קללות* — חסום קללות נפוצות בעברית ובאנגלית אוטומטית\n2️⃣ *שמירת שבת* 🕯️ — סגור הקבוצה אוטומטית לפני כניסת שבת ופתח אחרי יציאתה\n3️⃣ *ללא חוקי תוכן* — ללא הגבלת תוכן\n4️⃣ *חוקים בהתאמה אישית* — הגדרת הודעות מותרות/אסורות',
+        en: '📏 *Step 2: Set Rules*\n\nWhat type of content rules do you want?\n\n1️⃣ *Block curses* — automatically block common Hebrew and English profanity\n2️⃣ *Shabbat mode* 🕯️ — automatically lock the group before Shabbat and unlock after it ends\n3️⃣ *No content rules* — no content restrictions\n4️⃣ *Custom rules* — define allowed or forbidden messages'
     },
     'ask_rules_custom_type': {
         he: '⚙️ *חוקים בהתאמה אישית*\n\nבחר סוג:\n\n1️⃣ *הודעות מותרות בלבד* — רק הודעות ספציפיות מותרות\n2️⃣ *הודעות אסורות* — הודעות ספציפיות אסורות, השאר מותר',
@@ -83,6 +83,22 @@ const strings = {
     'curses_preset_selected': {
         he: '✅ חסימת קללות הופעלה.\nהבוט יחסום קללות נפוצות בעברית ובאנגלית עם זיהוי חכם של עקיפות.',
         en: '✅ Curse blocking enabled.\nThe bot will block common Hebrew and English profanity using smart bypass detection.'
+    },
+    'shabbat_preset_selected': {
+        he: '🕯️ *שמירת שבת הופעלה!*\nהבוט יסגור את הקבוצה 5 דקות לפני כניסת השבת ויפתח אותה 5 דקות לאחר יציאתה.\nהשעות נשלפות כל יום חמישי מהבינה המלאכותית (כניסה לפי ירושלים, יציאה לפי נתניה).',
+        en: '🕯️ *Shabbat mode enabled!*\nThe bot will lock the group 5 minutes before Shabbat begins and unlock it 5 minutes after it ends.\nTimes are fetched every Thursday via AI (Jerusalem entry, Netanya exit).'
+    },
+    'ask_shabbat_notify': {
+        he: '🔔 *התראה לפני סגירה*\n\nהאם לשלוח הודעה לקבוצה לפני שהיא נסגרת?\n\n1️⃣ כן\n2️⃣ לא',
+        en: '🔔 *Pre-closure notification*\n\nShould the bot send a message to the group before it closes?\n\n1️⃣ Yes\n2️⃣ No'
+    },
+    'ask_shabbat_notify_minutes': {
+        he: '⏱️ כמה דקות לפני הסגירה לשלוח את ההתראה?\n(בין 1 ל-120)\n\n✳️ לדוגמה: 15',
+        en: '⏱️ How many minutes before closing should the notification be sent?\n(between 1 and 120)\n\n✳️ Example: 15'
+    },
+    'shabbat_notify_saved': {
+        he: '✅ הגדרת התראה נשמרה: {{status}}',
+        en: '✅ Notification setting saved: {{status}}'
     },
     'ask_non_text_rule': {
         he: '🖼️ *חוק סוג הודעה*\n\nהאם לחסום הודעות שהן לא טקסט? (תמונה/וידאו/מסמך וכו׳)\n\n1️⃣ כן, לחסום\n2️⃣ לא, לאפשר (ברירת מחדל)',
