@@ -85,8 +85,8 @@ const strings = {
         en: '✅ Curse blocking enabled.\nThe bot will block common Hebrew and English profanity using smart bypass detection.'
     },
     'shabbat_preset_selected': {
-        he: '🕯️ *שמירת שבת הופעלה!*\nהבוט יסגור את הקבוצה 5 דקות לפני כניסת השבת ויפתח אותה 5 דקות לאחר יציאתה.\nהשעות הן לפי שעון ישראל.',
-        en: '🕯️ *Shabbat mode enabled!*\nThe bot will lock the group 5 minutes before Shabbat begins and unlock it 5 minutes after it ends.\nTimes are based on Israel time.'
+        he: '🕯️ *שמירת שבת הופעלה!*\nהבוט יסגור את הקבוצה 5 דקות לפני כניסת השבת ויפתח אותה 5 דקות לאחר יציאתה.\nהשעות הן לפי שעון ישראל.\n\n⚠️ *שים לב:* גם כשהקבוצה נעולה, *למנהלים תמיד יש אפשרות לשלוח הודעות* בקבוצה. אם אתה רוצה למנוע זאת, תצטרך להסיר הרשאות מנהל בזמן השבת ידנית.',
+        en: '🕯️ *Shabbat mode enabled!*\nThe bot will lock the group 5 minutes before Shabbat begins and unlock it 5 minutes after it ends.\nTimes are based on Israel time.\n\n⚠️ *Note:* Even when the group is locked, *group admins can still send messages*. If you want to prevent that, you will need to remove admin permissions manually during Shabbat.'
     },
     'ask_shabbat_notify': {
         he: '🔔 *התראה לפני סגירה*\n\nהאם לשלוח הודעה לקבוצה לפני שהיא נסגרת?\n\n1️⃣ כן\n2️⃣ לא',
