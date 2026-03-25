@@ -140,18 +140,30 @@ async function fetchShabbatTimes() {
 }
 
 /**
+ * Format a UTC timestamp as Israel local time string (HH:MM, DD/MM).
+ */
+function formatIsraelTime(ms) {
+    const d = new Date(ms);
+    const time = d.toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem', hour: '2-digit', minute: '2-digit', hour12: false });
+    const date = d.toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem', day: '2-digit', month: '2-digit' });
+    return `${time} (${date})`;
+}
+
+/**
  * Fetch Shabbat times from LLM and persist to settings table.
  * Called every Thursday by the scheduler.
+ * Returns the saved times object on success, or null on failure.
  */
 async function fetchAndSaveShabbatTimes() {
     logger.info('Fetching Shabbat times from LLM...');
     const times = await fetchShabbatTimes();
     if (!times) {
         logger.warn('Shabbat time fetch returned null — keeping previous times');
-        return;
+        return null;
     }
     await database.setSetting(SETTINGS_KEY, JSON.stringify(times));
     logger.info(`Shabbat times saved: entry=${new Date(times.entryMs).toISOString()}, exit=${new Date(times.exitMs).toISOString()}`);
+    return times;
 }
 
 // ── Lock / Unlock / Notify ────────────────────────────────────────────────────
@@ -289,4 +301,4 @@ async function checkShabbatGroups(client) {
     }
 }
 
-module.exports = { fetchAndSaveShabbatTimes, checkShabbatGroups };
+module.exports = { fetchAndSaveShabbatTimes, checkShabbatGroups, formatIsraelTime };

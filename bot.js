@@ -113,7 +113,7 @@ async function startBot() {
         runtime.cronTasks.push(scheduleWarningsCleanup());
         runtime.cronTasks.push(scheduleUnknownGroupExit(client));
         runtime.cronTasks.push(schedulePendingMembersCleanup(client));
-        runtime.cronTasks.push(scheduleShabbatFetch());
+        runtime.cronTasks.push(scheduleShabbatFetch(client));
 
         // Check every minute whether any Shabbat group needs to be locked/unlocked/notified
         const shabbatCheckHandle = setInterval(async () => {
@@ -217,12 +217,34 @@ function scheduleStatusMessages(client) {
     });
 }
 
-function scheduleShabbatFetch() {
-    // Every Thursday at 10:00 UTC (12:00–13:00 Israel time depending on DST)
-    const schedule = getValidCronOrDefault('scheduling.shabbatFetch', '0 10 * * 4');
+function scheduleShabbatFetch(client) {
+    // Every Thursday at 11:00 UTC = 13:00 Israel winter (UTC+2) / 14:00 Israel summer (UTC+3)
+    // Avoids conflicts with status messages (8/12/16/20 IL) and daily restart (04:00 IL)
+    const schedule = getValidCronOrDefault('scheduling.shabbatFetch', '0 11 * * 4');
     return cron.schedule(schedule, async () => {
-        try { await shabbat.fetchAndSaveShabbatTimes(); } catch (e) {
+        let times = null;
+        try {
+            times = await shabbat.fetchAndSaveShabbatTimes();
+        } catch (e) {
             logger.error('Shabbat time fetch failed', e);
+        }
+
+        if (!DEVELOPER_JID) return;
+        try {
+            let msg;
+            if (times) {
+                const { formatIsraelTime } = shabbat;
+                msg =
+                    `🕯️ *GroupShield — שעות שבת נשמרו*\n\n` +
+                    `⬇️ כניסת שבת: *${formatIsraelTime(times.entryMs)}*\n` +
+                    `⬆️ יציאת שבת: *${formatIsraelTime(times.exitMs)}*\n\n` +
+                    `(שעון ישראל)`;
+            } else {
+                msg = `⚠️ *GroupShield — שגיאה בשליפת שעות שבת*\nהבוט לא הצליח לשלוף את שעות השבת השבוע.\nהשעות הקודמות נשארות בתוקף.`;
+            }
+            await client.sendMessage(DEVELOPER_JID, msg);
+        } catch (e) {
+            logger.warn('Failed to send Shabbat times notification to developer', e.message);
         }
     });
 }
