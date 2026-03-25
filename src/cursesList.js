@@ -184,6 +184,9 @@ const CURSE_WORDS = [
     'מוות לערבים', 'מוות ליהודים', 'מוות למוסלמים', 'מוות לנוצרים',
     'מוות לדרוזים', 'מוות לחרדים', 'מוות לערבי',
     'ערבים לים', 'ערבים החוצה', 'כל הערבים', 'גרשו את הערבים',
+    // ── גידופי מיניות / דת / אתניות — נאכפים ישיר (ללא LLM) ─────────────────
+    'נאצי', 'נאצית', 'נאצים',          // always an insult in this context
+    'פייגלה',                            // homophobic slur
 ];
 
 // ─── Context-dependent list ───────────────────────────────────────────────────
@@ -203,8 +206,8 @@ const CONTEXT_WORDS = [
     'נחש',                 // snake (reptile) → also backstabber
     'חזיר', 'חזירה', 'חזירים', 'חזירון',  // pig (food/farm) → insult
     // Hebrew — identity/history that can be used as curses
-    'הומו', 'לסבית', 'גיא', 'גיי', 'פייגלה', // sexual orientation vs slur
-    'נאצי', 'נאצית', 'נאצים', 'שואה', // history education vs curse
+    'הומו', 'לסבית', 'גיא', 'גיי', // sexual orientation vs slur
+    'שואה', // history education vs curse
     'אוטיסט', 'אוטיסטים', 'אוטיסטית', 'פיגור', 'מפגר', // medical vs curse
     'מוגבל', 'נכה', 'נכות', 'תסמונת דאון', // disabilities vs curses
     'שמן', 'שמנה', 'דובה', 'מכוער', 'מכוערת', 'קירח', // appearance describing vs body shaming
