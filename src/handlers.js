@@ -10,6 +10,7 @@ const { checkWithLLM } = require('./llm');
 const messageLog = require('./messageLog');
 const setupFlow = require('./setupFlow');
 const commands = require('./commands');
+const shabbat = require('./shabbat');
 const ADMIN_CACHE_TTL_MS = config.get('performance.adminCacheTtlMs', 60000);
 const groupAdminCache = new Map();
 
@@ -79,6 +80,12 @@ async function handleDM(client, msg, senderJid, content) {
             const response = await setupFlow.processSetupMessage(client, senderJid, content);
             if (response) await sendBotReply(client, msg.from, response);
         } else {
+            // Intercept if Shabbat recovery flow is in progress
+            const recoveryReply = await shabbat.handleShabbatRecovery(client, senderJid, content);
+            if (recoveryReply !== null) {
+                if (recoveryReply) await sendBotReply(client, msg.from, recoveryReply);
+                return;
+            }
             const response = await commands.executeCommand(client, senderJid, content, lang);
             if (response) {
                 await sendBotReply(client, msg.from, response);

@@ -230,21 +230,20 @@ function scheduleShabbatFetch(client) {
         }
 
         if (!DEVELOPER_JID) return;
-        try {
-            let msg;
-            if (times) {
-                const { formatIsraelTime } = shabbat;
-                msg =
+        if (times) {
+            try {
+                const msg =
                     `🕯️ *GroupShield — שעות שבת נשמרו*\n\n` +
-                    `⬇️ כניסת שבת: *${formatIsraelTime(times.entryMs)}*\n` +
-                    `⬆️ יציאת שבת: *${formatIsraelTime(times.exitMs)}*\n\n` +
+                    `⬇️ כניסת שבת: *${shabbat.formatIsraelTime(times.entryMs)}*\n` +
+                    `⬆️ יציאת שבת: *${shabbat.formatIsraelTime(times.exitMs)}*\n\n` +
                     `(שעון ישראל)`;
-            } else {
-                msg = `⚠️ *GroupShield — שגיאה בשליפת שעות שבת*\nהבוט לא הצליח לשלוף את שעות השבת השבוע.\nהשעות הקודמות נשארות בתוקף.`;
+                await client.sendMessage(DEVELOPER_JID, msg);
+            } catch (e) {
+                logger.warn('Failed to send Shabbat times notification to developer', e.message);
             }
-            await client.sendMessage(DEVELOPER_JID, msg);
-        } catch (e) {
-            logger.warn('Failed to send Shabbat times notification to developer', e.message);
+        } else {
+            // Fetch failed — start interactive recovery flow with developer
+            await shabbat.initiateRecovery(client, DEVELOPER_JID);
         }
     });
 }

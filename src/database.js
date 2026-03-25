@@ -954,6 +954,10 @@ class Database {
         );
     }
 
+    async deleteSetting(key) {
+        await this._run('DELETE FROM settings WHERE key = ?', [key]);
+    }
+
     // ── Lifecycle ────────────────────────────────────────────────────────
 
     close() {

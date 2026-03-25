@@ -5,7 +5,8 @@ const database = require('./database');
 const logger = require('./logger');
 const config = require('./config');
 
-const SETTINGS_KEY = 'shabbat_times';
+const SETTINGS_KEY  = 'shabbat_times';
+const RECOVERY_KEY  = 'shabbat_recovery';
 const MODEL = 'llama-3.1-8b-instant';
 const LOCK_OFFSET_MS   = 5 * 60 * 1000;   // lock 5 min before entry
 const UNLOCK_OFFSET_MS = 5 * 60 * 1000;   // unlock 5 min after exit
@@ -301,4 +302,171 @@ async function checkShabbatGroups(client) {
     }
 }
 
-module.exports = { fetchAndSaveShabbatTimes, checkShabbatGroups, formatIsraelTime };
+// ── Manual recovery state machine ────────────────────────────────────────────
+
+/**
+ * Parse a user-supplied time string — accepts "HHMM" or "HH:MM" / "H:MM".
+ * Returns a normalised "HH:MM" string, or null on invalid input.
+ */
+function parseTimeInput(str) {
+    const cleaned = (str || '').trim();
+
+    // 4 bare digits: 1805 → 18:05
+    if (/^\d{4}$/.test(cleaned)) {
+        const h = parseInt(cleaned.slice(0, 2), 10);
+        const m = parseInt(cleaned.slice(2, 4), 10);
+        if (h <= 23 && m <= 59) return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    }
+
+    // HH:MM or H:MM
+    const match = cleaned.match(/^(\d{1,2}):(\d{2})$/);
+    if (match) {
+        const h = parseInt(match[1], 10);
+        const m = parseInt(match[2], 10);
+        if (h <= 23 && m <= 59) return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    }
+
+    return null;
+}
+
+/** Returns the next Friday as a YYYY-MM-DD string (always ≥ 1 day away). */
+function getNextFridayStr() {
+    const today = new Date();
+    const dow = today.getDay(); // 0=Sun … 6=Sat
+    const daysUntil = dow === 5 ? 7 : (5 - dow + 7) % 7;
+    const fri = new Date(today);
+    fri.setDate(today.getDate() + daysUntil);
+    return fri.toISOString().slice(0, 10);
+}
+
+/** Returns the Saturday after a given YYYY-MM-DD Friday string. */
+function getSaturdayStr(fridayStr) {
+    const [y, mo, d] = fridayStr.split('-').map(Number);
+    const fri = new Date(Date.UTC(y, mo - 1, d));
+    fri.setUTCDate(fri.getUTCDate() + 1);
+    return fri.toISOString().slice(0, 10);
+}
+
+const RECOVERY_MENU =
+    `1️⃣ ניסיון שליפה נוסף\n` +
+    `2️⃣ הזנת שעות ידנית\n` +
+    `3️⃣ דלג על שמירת שבת השבוע`;
+
+/**
+ * Save recovery state and send the choice prompt to the developer.
+ * Called from bot.js immediately after a failed fetch.
+ */
+async function initiateRecovery(client, developerJid) {
+    await database.setSetting(RECOVERY_KEY, JSON.stringify({ step: 'awaiting_choice' }));
+    try {
+        await client.sendMessage(developerJid,
+            `⚠️ *GroupShield — שגיאה בשליפת שעות שבת*\n` +
+            `הבוט לא הצליח לשלוף את שעות השבת השבוע.\n\n` +
+            `מה תרצה לעשות?\n\n` + RECOVERY_MENU
+        );
+    } catch (e) {
+        logger.warn('Failed to send Shabbat recovery prompt', e.message);
+    }
+}
+
+/**
+ * Handle a developer DM while a recovery flow is in progress.
+ * Returns a reply string if the message was consumed, or null to pass through.
+ */
+async function handleShabbatRecovery(client, developerJid, content) {
+    const raw = await database.getSetting(RECOVERY_KEY);
+    if (!raw) return null;
+
+    let state;
+    try { state = JSON.parse(raw); } catch { return null; }
+
+    if (!state || !state.step || state.step === 'done') {
+        await database.deleteSetting(RECOVERY_KEY);
+        return null;
+    }
+
+    const trimmed = (content || '').trim();
+
+    // ── awaiting_choice ──────────────────────────────────────────────────
+    if (state.step === 'awaiting_choice') {
+        if (trimmed === '1') {
+            const times = await fetchAndSaveShabbatTimes();
+            if (times) {
+                await database.deleteSetting(RECOVERY_KEY);
+                return (
+                    `✅ הניסיון החוזר הצליח!\n\n` +
+                    `⬇️ כניסת שבת: *${formatIsraelTime(times.entryMs)}*\n` +
+                    `⬆️ יציאת שבת: *${formatIsraelTime(times.exitMs)}*\n\n` +
+                    `(שעון ישראל)`
+                );
+            }
+            // Still failed — stay in awaiting_choice
+            return `❌ הניסיון החוזר גם כן נכשל.\n\nמה תרצה לעשות?\n\n` + RECOVERY_MENU;
+        }
+
+        if (trimmed === '2') {
+            await database.setSetting(RECOVERY_KEY, JSON.stringify({ step: 'awaiting_entry' }));
+            return (
+                `🕯️ *הזנת שעות ידנית*\n\n` +
+                `מה שעת *כניסת השבת*?\n` +
+                `שלח 4 ספרות ברצף או עם ״:״ באמצע\n\n` +
+                `✳️ לדוגמה: 1805 או 18:05`
+            );
+        }
+
+        if (trimmed === '3') {
+            await database.deleteSetting(RECOVERY_KEY);
+            return `✅ שמירת שבת לא תבוצע השבוע.`;
+        }
+
+        return `בחר אפשרות:\n\n` + RECOVERY_MENU;
+    }
+
+    // ── awaiting_entry ───────────────────────────────────────────────────
+    if (state.step === 'awaiting_entry') {
+        const parsed = parseTimeInput(trimmed);
+        if (!parsed) {
+            return (
+                `❌ פורמט שגוי.\n` +
+                `שלח 4 ספרות ברצף (לדוגמה: *1805*) או עם ״:״ באמצע (לדוגמה: *18:05*).`
+            );
+        }
+        const fridayStr = getNextFridayStr();
+        const entryMs = israelTimeToUtcMs(fridayStr, parsed);
+        await database.setSetting(RECOVERY_KEY, JSON.stringify({ step: 'awaiting_exit', entryMs, friday: fridayStr }));
+        return (
+            `✅ כניסת שבת: *${formatIsraelTime(entryMs)}*\n\n` +
+            `מה שעת *יציאת השבת*?\n` +
+            `שלח 4 ספרות ברצף או עם ״:״ באמצע\n\n` +
+            `✳️ לדוגמה: 1922 או 19:22`
+        );
+    }
+
+    // ── awaiting_exit ────────────────────────────────────────────────────
+    if (state.step === 'awaiting_exit') {
+        const parsed = parseTimeInput(trimmed);
+        if (!parsed) {
+            return (
+                `❌ פורמט שגוי.\n` +
+                `שלח 4 ספרות ברצף (לדוגמה: *1922*) או עם ״:״ באמצע (לדוגמה: *19:22*).`
+            );
+        }
+        const saturdayStr = getSaturdayStr(state.friday);
+        const exitMs = israelTimeToUtcMs(saturdayStr, parsed);
+        const times = { entryMs: state.entryMs, exitMs, friday: state.friday, notifiedGroups: {} };
+        await database.setSetting(SETTINGS_KEY, JSON.stringify(times));
+        await database.deleteSetting(RECOVERY_KEY);
+        return (
+            `✅ *שעות שבת נשמרו ידנית!*\n\n` +
+            `⬇️ כניסת שבת: *${formatIsraelTime(state.entryMs)}*\n` +
+            `⬆️ יציאת שבת: *${formatIsraelTime(exitMs)}*\n\n` +
+            `(שעון ישראל)`
+        );
+    }
+
+    // Unknown step — clear and pass through
+    await database.deleteSetting(RECOVERY_KEY);
+    return null;
+}
+
+module.exports = { fetchAndSaveShabbatTimes, checkShabbatGroups, formatIsraelTime, initiateRecovery, handleShabbatRecovery };
