@@ -3,34 +3,26 @@
 const https = require('https');
 const database = require('./database');
 const logger = require('./logger');
-const config = require('./config');
 
 const SETTINGS_KEY  = 'shabbat_times';
 const RECOVERY_KEY  = 'shabbat_recovery';
-const MODEL = 'llama-3.1-8b-instant';
 const LOCK_OFFSET_MS   = 5 * 60 * 1000;   // lock 5 min before entry
 const UNLOCK_OFFSET_MS = 5 * 60 * 1000;   // unlock 5 min after exit
 
-// ── Timezone helper ──────────────────────────────────────────────────────────
+// ── Timezone helper (used for manual entry in recovery flow) ─────────────────
 
 /**
  * Convert an Israel local time string (HH:MM) on a given YYYY-MM-DD date to UTC ms.
  * Israel is UTC+2 (winter, IST) or UTC+3 (summer, IDT).
- * We try UTC+2 first, then verify via Intl; fall back to UTC+3 if needed.
  */
 function israelTimeToUtcMs(dateStr, timeStr) {
     const [year, month, day] = dateStr.split('-').map(Number);
     const [h, m] = timeStr.split(':').map(Number);
 
-    // Try UTC+2 first
     for (const offsetHours of [2, 3]) {
-        const utcH = h - offsetHours;
-        const candidateMs = Date.UTC(year, month - 1, day, utcH, m, 0);
-        const candidateDate = new Date(candidateMs);
-
-        // Verify: get the Israel local hour for this UTC timestamp
+        const candidateMs = Date.UTC(year, month - 1, day, h - offsetHours, m, 0);
         const israelHour = parseInt(
-            candidateDate.toLocaleString('en-US', {
+            new Date(candidateMs).toLocaleString('en-US', {
                 timeZone: 'Asia/Jerusalem',
                 hour: 'numeric',
                 hour12: false
@@ -39,105 +31,75 @@ function israelTimeToUtcMs(dateStr, timeStr) {
         );
         if (israelHour === h) return candidateMs;
     }
-
-    // Fallback: assume UTC+2
-    return Date.UTC(year, month - 1, day, h - 2, m, 0);
+    return Date.UTC(year, month - 1, day, h - 2, m, 0); // fallback UTC+2
 }
 
-// ── LLM fetch ────────────────────────────────────────────────────────────────
+// ── HebCal fetch ─────────────────────────────────────────────────────────────
 
 /**
- * Query Groq for Shabbat entry (Jerusalem) and exit (Netanya) times for the
- * coming Shabbat.  Returns { entryMs, exitMs, friday } or null on failure.
+ * Fetch Shabbat items for a given city from the free HebCal API.
+ * Returns array of items, or null on failure.
  */
-async function fetchShabbatTimes() {
-    const apiKey = config.get('groq.apiKey');
-    if (!apiKey) {
-        logger.warn('Shabbat time fetch skipped: no Groq API key');
-        return null;
-    }
-
-    // Find the next Friday from today
-    const today = new Date();
-    const dayOfWeek = today.getDay(); // 0=Sun … 6=Sat
-    const daysUntilFriday = dayOfWeek === 5 ? 7 : (5 - dayOfWeek + 7) % 7;
-    const friday = new Date(today);
-    friday.setDate(today.getDate() + daysUntilFriday);
-    const fridayStr = friday.toISOString().slice(0, 10); // YYYY-MM-DD
-
-    const saturday = new Date(friday);
-    saturday.setDate(friday.getDate() + 1);
-    const saturdayStr = saturday.toISOString().slice(0, 10);
-
-    const body = JSON.stringify({
-        model: MODEL,
-        messages: [
-            {
-                role: 'system',
-                content:
-                    'You are a Jewish calendar assistant.\n' +
-                    'Given a date, calculate:\n' +
-                    '1. Shabbat candle-lighting time in Jerusalem (18 minutes before sunset).\n' +
-                    '2. Shabbat exit time in Netanya (when 3 stars are visible, ~42 min after sunset).\n' +
-                    'Reply with EXACTLY this format and nothing else:\n' +
-                    'ENTRY: HH:MM\n' +
-                    'EXIT: HH:MM'
-            },
-            {
-                role: 'user',
-                content: `Shabbat entry time in Jerusalem for Friday ${fridayStr} and exit time in Netanya for Saturday ${saturdayStr}.`
-            }
-        ],
-        max_tokens: 20,
-        temperature: 0
-    });
-
+function hebcalFetch(city) {
     return new Promise((resolve) => {
-        const req = https.request(
-            {
-                hostname: 'api.groq.com',
-                path: '/openai/v1/chat/completions',
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json',
-                    'Content-Length': Buffer.byteLength(body)
-                }
-            },
+        const req = https.get(
+            `https://www.hebcal.com/shabbat?cfg=json&city=${encodeURIComponent(city)}&M=on`,
             (res) => {
                 let data = '';
                 res.on('data', chunk => { data += chunk; });
                 res.on('end', () => {
                     try {
-                        const parsed = JSON.parse(data);
-                        const answer = (parsed.choices?.[0]?.message?.content || '').trim();
-                        const entryMatch = answer.match(/ENTRY:\s*(\d{1,2}:\d{2})/);
-                        const exitMatch  = answer.match(/EXIT:\s*(\d{1,2}:\d{2})/);
-
-                        if (!entryMatch || !exitMatch) {
-                            logger.warn(`Shabbat LLM: unexpected format: "${answer.slice(0, 80)}"`);
-                            resolve(null);
-                            return;
-                        }
-
-                        const entryMs = israelTimeToUtcMs(fridayStr,   entryMatch[1]);
-                        const exitMs  = israelTimeToUtcMs(saturdayStr, exitMatch[1]);
-
-                        logger.info(`Shabbat times fetched: entry=${entryMatch[1]} (${fridayStr}), exit=${exitMatch[1]} (${saturdayStr})`);
-                        resolve({ entryMs, exitMs, friday: fridayStr, notifiedGroups: {} });
+                        resolve(JSON.parse(data).items || []);
                     } catch (e) {
-                        logger.warn('Shabbat LLM parse error', e.message);
+                        logger.warn(`HebCal parse error for ${city}`, e.message);
                         resolve(null);
                     }
                 });
             }
         );
-
-        req.setTimeout(10000, () => { req.destroy(); resolve(null); });
-        req.on('error', () => resolve(null));
-        req.write(body);
-        req.end();
+        req.setTimeout(8000, () => { req.destroy(); resolve(null); });
+        req.on('error', e => { logger.warn(`HebCal fetch error for ${city}`, e.message); resolve(null); });
     });
+}
+
+/**
+ * Fetch Shabbat times from HebCal:
+ *   entry = candle lighting in Jerusalem
+ *   exit  = Havdalah in Netanya
+ * Returns { entryMs, exitMs, friday } or null on failure.
+ */
+async function fetchShabbatTimes() {
+    const [jerusalemItems, netanyaItems] = await Promise.all([
+        hebcalFetch('Jerusalem'),
+        hebcalFetch('Netanya')
+    ]);
+
+    if (!jerusalemItems || !netanyaItems) {
+        logger.warn('HebCal fetch failed for one or both cities');
+        return null;
+    }
+
+    const candlesItem  = jerusalemItems.find(i => i.category === 'candles');
+    const havdalahItem = netanyaItems.find(i => i.category === 'havdalah');
+
+    if (!candlesItem || !havdalahItem) {
+        logger.warn('HebCal: missing candles or havdalah item in response');
+        return null;
+    }
+
+    // HebCal dates include timezone offset (e.g. "2026-03-27T18:15:00+03:00")
+    // — JavaScript Date parses them correctly to UTC ms.
+    const entryMs = new Date(candlesItem.date).getTime();
+    const exitMs  = new Date(havdalahItem.date).getTime();
+    const friday  = candlesItem.date.slice(0, 10);
+
+    if (isNaN(entryMs) || isNaN(exitMs)) {
+        logger.warn('HebCal: invalid date format', candlesItem.date, havdalahItem.date);
+        return null;
+    }
+
+    logger.info(`HebCal times: candles(Jerusalem)=${candlesItem.date}, havdalah(Netanya)=${havdalahItem.date}`);
+    return { entryMs, exitMs, friday, notifiedGroups: {} };
 }
 
 /**
