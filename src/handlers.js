@@ -214,6 +214,7 @@ async function handleDM(client, msg, senderJid, content) {
  * Handle group messages — check if it's a managed group and enforce rules
  */
 async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, content, spamMap, rateLimiter) {
+
     // Ignore system/protocol messages
     const ignoredTypes = ['call_log', 'e2e_notification', 'notification_template', 'revoked'];
     if (ignoredTypes.includes(msgType)) return;
@@ -450,6 +451,38 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
         return; // Don't enforce rules in management group
     }
 
+    // ── Bot-mention report (manual LLM trigger) ──────────────────────────────
+    // Must run BEFORE all immunity/status checks so any user (admin/owner/exempt/protected)
+    // can @mention the bot while replying to flag a message for LLM review.
+    if (msg.hasQuotedMsg && (msg.mentionedIds || []).length > 0) {
+        try {
+            const mentions = await msg.getMentions();
+            const isBotMentioned = mentions.some(c => c.isMe);
+            if (isBotMentioned) {
+                const rulesForReport = await database.getRules(groupJid);
+                const hasCursesPreset = rulesForReport.some(
+                    r => r.ruleType === 'forbidden_messages' && r.ruleData?.isCursesPreset
+                );
+                if (hasCursesPreset) {
+                    const quotedMsg = await msg.getQuotedMessage();
+                    if (quotedMsg && quotedMsg.body) {
+                        const enforcementCfg = await database.getEnforcement(groupJid);
+                        const quotedSenderJid = await resolveContactToPhone(client, getNormalizedJid(quotedMsg.author || quotedMsg.from));
+                        logger.info(`Manual LLM report by ${extractNumber(senderJid)} in ${groupConfig.groupName} for msg from ${extractNumber(quotedSenderJid)}`);
+                        try { await msg.react('🔍'); } catch (e) { /* ignore */ }
+                        checkWithLLM(
+                            client, quotedMsg, quotedSenderJid, quotedMsg.body, quotedMsg.type,
+                            groupConfig, enforcementCfg, rateLimiter, lang, true
+                        ).catch(e => logger.warn('Manual LLM check error', e.message));
+                    }
+                }
+                return; // Don't apply normal enforcement to the reporting message itself
+            }
+        } catch (e) {
+            logger.warn('Failed to process bot-mention report', e.message);
+        }
+    }
+
     // ── Pre-Check for PAUSED / PENDING status ───────────────────────
     if (!isMgmtGroup && groupConfig) {
         if (isPendingAdminAction(groupConfig.status) || groupConfig.status === 'PENDING_ADMIN_RESUME' || groupConfig.status === 'STOPPED_NO_ADMIN') {
@@ -473,38 +506,6 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
 
     // Global immunity: users who started setup flow are never enforced
     if (await database.isGlobalProtected(senderJid)) return;
-
-    // ── Bot-mention report (manual LLM trigger) ──────────────────────────────
-    // Any user (including admins/owners/exempt) can @mention the bot while replying
-    // to a message to manually trigger an LLM check on that quoted message.
-    // Must run BEFORE immunity checks so admins can also use this feature.
-    if (msg.hasQuotedMsg && (msg.mentionedIds || []).length > 0) {
-        try {
-            const mentions = await msg.getMentions();
-            const isBotMentioned = mentions.some(c => c.isMe);
-            if (isBotMentioned) {
-                const rulesForReport = await database.getRules(groupJid);
-                const hasCursesPreset = rulesForReport.some(
-                    r => r.ruleType === 'forbidden_messages' && r.ruleData?.isCursesPreset
-                );
-                if (hasCursesPreset) {
-                    const quotedMsg = await msg.getQuotedMessage();
-                    if (quotedMsg && quotedMsg.body) {
-                        const enforcementCfg = await database.getEnforcement(groupJid);
-                        const quotedSenderJid = getNormalizedJid(quotedMsg.author || quotedMsg.from);
-                        logger.info(`Manual LLM report by ${extractNumber(senderJid)} in ${groupConfig.groupName} for msg from ${extractNumber(quotedSenderJid)}`);
-                        checkWithLLM(
-                            client, quotedMsg, quotedSenderJid, quotedMsg.body, quotedMsg.type,
-                            groupConfig, enforcementCfg, rateLimiter, lang, true
-                        ).catch(e => logger.warn('Manual LLM check error', e.message));
-                    }
-                }
-                return; // Don't apply normal enforcement to the reporting message itself
-            }
-        } catch (e) {
-            logger.warn('Failed to process bot-mention report', e.message);
-        }
-    }
 
     // ── Immunity Checks ─────────────────────────────────────────────
 
