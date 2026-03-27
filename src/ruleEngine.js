@@ -742,6 +742,3 @@ module.exports = {
     evaluateMessage,
     checkAntiSpam
 };
-
-module.exports.smartMatchesForbidden = smartMatchesForbidden;
-module.exports.normalizeForSmartMatch = normalizeForSmartMatch;
