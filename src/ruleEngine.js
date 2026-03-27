@@ -155,19 +155,34 @@ function checkForbiddenMessages(ruleData, content, lang) {
                 const normMsg = normalizeForSmartMatch(content);
                 if (smartMatchesForbidden(normMsg, normTarget)) return true;
 
+                if (normTarget === 'בן זונה' || normTarget === 'כוס') {
+                     // console.log('Checking target:', normTarget, 'against msg:', content, 'which normalized to:', normMsg);
+                }
+
+                // Pass 1.5: Multi-word phrase spaceless bypass (e.g., "בן זונה" -> "בןזונה")
+                if (normTarget.includes(' ')) {
+                    const noSpaceTarget = normTarget.replace(/\s+/g, '');
+                    const noSpaceMsg = normMsg.replace(/\s+/g, '');
+                    if (smartMatchesForbidden(noSpaceMsg, noSpaceTarget)) {
+                        console.log('Match Pass 1.5:', noSpaceTarget, 'in', noSpaceMsg);
+                        return true;
+                    }
+                }
+
                 // Pass 2: Homoglyph normalization — digit/Latin/Cyrillic/Arabic substitutions
                 const homoMsg = normalizeForSmartMatch(applyHomoglyphs(content.toLowerCase()));
                 if (homoMsg !== normMsg && smartMatchesForbidden(homoMsg, normTarget)) return true;
 
                 // Pass 3: Hebrew-only — strips inserted foreign letters (קaללה → קללה)
-                const hebrewMsg = normMsg.replace(/[^\u05D0-\u05EA\u05F0-\u05F4]/g, '');
+                const hebrewMsg = normMsg.replace(/[^\u05D0-\u05EA\u05F0-\u05F4\s]/g, '');
                 if (hebrewMsg !== normMsg && smartMatchesForbidden(hebrewMsg, normTarget)) return true;
 
                 // Pass 4: Latin transliteration — only for messages with NO Hebrew (full Latin bypass)
                 // e.g. "kalla" for קללה, "kus" for כוס
                 if (normTarget.length >= 2 && !/[\u05D0-\u05EA]/.test(content)) {
-                    const transPattern = buildTransliterationPattern(normTarget);
-                    if (transPattern && transPattern.test(content.toLowerCase())) return true;
+                    const transPattern = buildTransliterationPattern(normTarget.replace(/\s+/g, ''));
+                    // Use space-collapsed text for transliteration to handle phrases correctly
+                    if (transPattern && transPattern.test(content.toLowerCase().replace(/\s+/g, ''))) return true;
                 }
             } else {
                 // ── Latin/English word: Unicode word-boundary matching ─────────
@@ -339,26 +354,42 @@ function escapeRegex(string) {
 // ─── Smart match helpers ───────────────────────────────────────────────────
 
 /**
+ * Normalizes spaced letters bypass (e.g. "ז ו נ ה" -> "זונה")
+ * Only collapses if there are 3 or more single letters separated by spaces.
+ */
+function collapseSpacedLetters(text) {
+    if (!text) return text;
+    return text.replace(/(?:^|\s)((?:[\p{L}\p{N}]\s+){2,}[\p{L}\p{N}])(?=\s|$)/gu, (match, p1) => {
+        return match.replace(p1, p1.replace(/\s+/g, ''));
+    });
+}
+
+/**
  * Normalize text for smart matching:
  * 1. Strip zero-width / invisible / bidirectional control chars
  * 2. Strip Unicode combining marks (Hebrew nikud, cantillation, etc.)
- * 3. Remove everything that is not a letter or digit (emoji, punctuation, spaces…)
- * 4. Collapse 3+ identical consecutive characters to 2 (מיייל → מייל)
+ * 3. Remove punctuation, emoji, RTL marks etc. but KEEP LETTERS, DIGITS, AND SPACES.
+ * 4. Collapse multiple spaces into one.
+ * 5. Collapse 3+ identical consecutive characters to 2 (מיייל → מייל)
  */
 function normalizeForSmartMatch(text) {
-    return text
-        // NFKD decomposes Unicode presentation forms (e.g. Hebrew FB1D–FB4E שׁ→ש+dot)
-        // into base characters + combining marks, which are then stripped below
+    if (!text) return '';
+    let normalized = text
         .normalize('NFKD')
         .toLowerCase()
         // Invisible / zero-width / bidirectional control characters
         .replace(/[\u0000-\u001F\u007F-\u009F\u00AD\u200B-\u200F\u202A-\u202F\u2060-\u206F\uFEFF]/gu, '')
         // Unicode combining marks — strips Hebrew niqqud, cantillation, diacritics
         .replace(/\p{M}/gu, '')
-        // Keep only letters and digits; removes spaces, emoji, punctuation, RTL marks, etc.
-        .replace(/[^\p{L}\p{N}]/gu, '')
+        // Keep letters, digits, and spaces. Remove punctuation, emoji, etc.
+        .replace(/[^\p{L}\p{N}\s]/gu, '')
+        // Collapse multiple spaces
+        .replace(/\s+/g, ' ')
         // Collapse 3+ repeated chars (מיייל → מייל)
-        .replace(/(.)\1{2,}/g, '$1$1');
+        .replace(/(.)\1{2,}/g, '$1$1')
+        .trim();
+        
+    return collapseSpacedLetters(normalized);
 }
 
 /**
@@ -711,3 +742,6 @@ module.exports = {
     evaluateMessage,
     checkAntiSpam
 };
+
+module.exports.smartMatchesForbidden = smartMatchesForbidden;
+module.exports.normalizeForSmartMatch = normalizeForSmartMatch;
