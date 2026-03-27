@@ -116,5 +116,55 @@ test('spam above threshold', () => {
     assert.strictEqual(result.isSpam, true);
 });
 
+// --- forbidden_messages (smart) — Hebrew obfuscation ---
+console.log('forbidden_messages (smart — Hebrew obfuscation):');
+test('blocks direct Hebrew curse', () => {
+    const rules = [{ ruleType: 'forbidden_messages', ruleData: { messages: ['כוס'], matchMode: 'smart' } }];
+    assert.strictEqual(evaluateMessage(rules, { content: 'כוס', msgType: 'chat' }).allowed, false);
+});
+test('blocks Hebrew curse with spaces between letters (כ ו ס)', () => {
+    const rules = [{ ruleType: 'forbidden_messages', ruleData: { messages: ['כוס'], matchMode: 'smart' } }];
+    assert.strictEqual(evaluateMessage(rules, { content: 'כ ו ס', msgType: 'chat' }).allowed, false);
+});
+test('blocks Hebrew curse with phonetic substitution (א→ע)', () => {
+    const rules = [{ ruleType: 'forbidden_messages', ruleData: { messages: ['אידיוט'], matchMode: 'smart' } }];
+    assert.strictEqual(evaluateMessage(rules, { content: 'עידיוט', msgType: 'chat' }).allowed, false);
+});
+test('blocks Hebrew curse with digit homoglyph (1→ו)', () => {
+    const rules = [{ ruleType: 'forbidden_messages', ruleData: { messages: ['כוס'], matchMode: 'smart' } }];
+    assert.strictEqual(evaluateMessage(rules, { content: 'כ1ס', msgType: 'chat' }).allowed, false);
+});
+test('blocks Hebrew curse embedded in sentence', () => {
+    const rules = [{ ruleType: 'forbidden_messages', ruleData: { messages: ['כוס'], matchMode: 'smart' } }];
+    assert.strictEqual(evaluateMessage(rules, { content: 'אתה כוס גדול', msgType: 'chat' }).allowed, false);
+});
+test('allows innocent Hebrew message (smart mode)', () => {
+    const rules = [{ ruleType: 'forbidden_messages', ruleData: { messages: ['כוס', 'זין', 'זונה'], matchMode: 'smart' } }];
+    assert.strictEqual(evaluateMessage(rules, { content: 'שלום חברים, מה נשמע?', msgType: 'chat' }).allowed, true);
+});
+
+// --- forbidden_messages (smart) — English obfuscation ---
+console.log('forbidden_messages (smart — English obfuscation):');
+test('blocks English curse with leet substitution (fvck)', () => {
+    const rules = [{ ruleType: 'forbidden_messages', ruleData: { messages: ['fuck'], matchMode: 'smart' } }];
+    assert.strictEqual(evaluateMessage(rules, { content: 'fvck this', msgType: 'chat' }).allowed, false);
+});
+test('blocks English curse with special char substitution (sh!t)', () => {
+    const rules = [{ ruleType: 'forbidden_messages', ruleData: { messages: ['shit'], matchMode: 'smart' } }];
+    assert.strictEqual(evaluateMessage(rules, { content: 'sh!t', msgType: 'chat' }).allowed, false);
+});
+test('blocks English curse with spaced letters (f u c k)', () => {
+    const rules = [{ ruleType: 'forbidden_messages', ruleData: { messages: ['fuck'], matchMode: 'smart' } }];
+    assert.strictEqual(evaluateMessage(rules, { content: 'f u c k', msgType: 'chat' }).allowed, false);
+});
+test('blocks English curse with repeated letters (fuuuuck)', () => {
+    const rules = [{ ruleType: 'forbidden_messages', ruleData: { messages: ['fuck'], matchMode: 'smart' } }];
+    assert.strictEqual(evaluateMessage(rules, { content: 'fuuuuck', msgType: 'chat' }).allowed, false);
+});
+test('allows innocent English message (smart mode)', () => {
+    const rules = [{ ruleType: 'forbidden_messages', ruleData: { messages: ['fuck', 'shit', 'bitch'], matchMode: 'smart' } }];
+    assert.strictEqual(evaluateMessage(rules, { content: 'Good morning everyone!', msgType: 'chat' }).allowed, true);
+});
+
 console.log(`\nResults: ${passed} passed, ${failed} failed\n`);
 if (failed > 0) process.exit(1);

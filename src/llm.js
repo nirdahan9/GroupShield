@@ -88,7 +88,12 @@ function containsContextWord(text) {
     const lower = text.toLowerCase();
     return CONTEXT_WORDS.some(w => {
         const isHebrew = /[\u05D0-\u05EA]/.test(w);
-        if (isHebrew) return lower.includes(w);
+        if (isHebrew) {
+            // Use Hebrew word boundaries (not preceded/followed by a Hebrew letter)
+            // to avoid false positives like 'נחש' matching inside 'נחשב' (= "was considered")
+            const escaped = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            return new RegExp('(?<![\\u05D0-\\u05EA])' + escaped + '(?![\\u05D0-\\u05EA])').test(lower);
+        }
         return new RegExp(`\\b${w}\\b`, 'i').test(lower);
     });
 }
@@ -145,10 +150,10 @@ function isSuspicious(text) {
     if (words.some(w => NEAR_MISS_TARGETS.some(c => w !== c && editDist1(w, c)))) return true;
 
     // 7. Hebrew "יא" vocative before a word — common insult prefix in Hebrew/Arabic slang
-    // e.g., "יא ג'חש", "יא טרוף", "יא מה שאתה"
+    // e.g., "יא ג'חש", "יא טרוף", "אחי יא חמור" (mid-sentence)
     // (messages like "יא [known curse]" are already caught by the rule engine via substring;
     //  this catches unknown words that aren't in either list)
-    if (/^יא\s+\S{2,}/.test(text.trim())) return true;
+    if (/(^|\s)יא\s+\S{2,}/u.test(text.trim())) return true;
 
     return false;
 }
