@@ -136,7 +136,7 @@ function checkForbiddenMessages(ruleData, content, lang) {
     const matchMode = ruleData.matchMode || 'contains';
     const normalizedContent = content.trim().toLowerCase();
 
-    const isForbidden = forbiddenList.some(forbidden => {
+    const matchedForbidden = forbiddenList.find(forbidden => {
         const target = forbidden.trim().toLowerCase();
         if (!target) return false;
 
@@ -233,7 +233,8 @@ function checkForbiddenMessages(ruleData, content, lang) {
         return normalizedContent.includes(target);
     });
 
-    if (isForbidden) {
+    if (matchedForbidden) {
+        logger.debug(`Rule engine blocked: matched "${matchedForbidden}" in "${content.slice(0, 80)}"`);
         violations.push(t('reason_forbidden_content', lang));
     }
 
