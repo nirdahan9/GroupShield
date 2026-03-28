@@ -231,6 +231,73 @@ function callGroq(text) {
     });
 }
 
+// ── Phrase extraction for learning ───────────────────────────────────────────
+// Called after a mention-triggered violation is confirmed.
+// Asks the LLM to extract the problematic phrase(s) and classify them.
+
+async function learnFromViolation(content) {
+    const apiKey = config.get('groq.apiKey');
+    if (!apiKey) return;
+
+    const systemContent =
+        'You are a content-filter learning assistant. A WhatsApp message has just been confirmed as a policy violation.\n' +
+        'Task: extract the specific problematic word(s) or SHORT phrase(s) from the message and classify each.\n\n' +
+        'Classification:\n' +
+        '- "forbidden": the phrase is unambiguously offensive regardless of context (explicit slurs, sexual terms, direct threats). Block immediately in the future.\n' +
+        '- "context": dual-meaning word/phrase — can be innocent or offensive depending on context. Route to LLM for future review.\n\n' +
+        'Rules:\n' +
+        '- Extract the SHORTEST phrase that captures the violation (not the full sentence).\n' +
+        '- Skip phrases that are already obvious/common Hebrew or English slurs (they are already in the filter).\n' +
+        '- Only return something novel — a regional slang, unusual combo, or a phrase not typically on filter lists.\n' +
+        '- If nothing novel, return {"phrases":[]}.\n' +
+        '- Reply ONLY with valid JSON, no explanation.\n\n' +
+        'Format: {"phrases":[{"text":"...","type":"forbidden"},{"text":"...","type":"context"}]}';
+
+    const body = JSON.stringify({
+        model: MODEL,
+        messages: [
+            { role: 'system', content: systemContent },
+            { role: 'user',   content: '<violation>\n' + content + '\n</violation>' }
+        ],
+        max_tokens: 200,
+        temperature: 0
+    });
+
+    return new Promise((resolve) => {
+        const req = https.request(
+            'https://api.groq.com',
+            {
+                hostname: 'api.groq.com',
+                path: '/openai/v1/chat/completions',
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json',
+                    'Content-Length': Buffer.byteLength(body)
+                }
+            },
+            (res) => {
+                let data = '';
+                res.on('data', chunk => { data += chunk; });
+                res.on('end', () => {
+                    try {
+                        const parsed = JSON.parse(data);
+                        const raw = (parsed.choices?.[0]?.message?.content || '').trim();
+                        const result = JSON.parse(raw);
+                        resolve(Array.isArray(result.phrases) ? result.phrases : []);
+                    } catch {
+                        resolve([]);
+                    }
+                });
+            }
+        );
+        req.setTimeout(TIMEOUT_MS, () => { req.destroy(); resolve([]); });
+        req.on('error', () => resolve([]));
+        req.write(body);
+        req.end();
+    });
+}
+
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /**
@@ -297,6 +364,23 @@ async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfi
             [t('reason_llm_violation', lang)],
             content, msgType, groupConfig, enforcementConfig, rateLimiter, lang, 'llm'
         );
+
+        // ── Learn from mention-triggered violations ───────────────────
+        // Only when a human explicitly flagged the message (forceCheck = mention-triggered).
+        // Fire-and-forget: does not block enforcement path.
+        if (forceCheck) {
+            const { addToLiveList } = require('./cursesList');
+            learnFromViolation(content).then(phrases => {
+                for (const { text, type } of phrases) {
+                    if (text && text.length >= 2 && (type === 'forbidden' || type === 'context')) {
+                        const added = addToLiveList(text, type, true);
+                        if (added) {
+                            logger.info(`LLM learned new ${type} phrase: "${text}" (source: mention report)`);
+                        }
+                    }
+                }
+            }).catch(e => logger.warn('learnFromViolation failed', e.message));
+        }
     } catch (e) {
         logger.warn('LLM moderation check failed', e.message);
     }

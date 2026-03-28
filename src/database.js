@@ -159,6 +159,15 @@ class Database {
                 createdAt TEXT NOT NULL
             )`);
 
+            // Learned phrases — added by LLM after mention-triggered violation reviews
+            this.db.run(`CREATE TABLE IF NOT EXISTS learned_phrases (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                phrase TEXT UNIQUE NOT NULL,
+                list_type TEXT NOT NULL CHECK(list_type IN ('forbidden','context')),
+                source_message TEXT,
+                created_at TEXT DEFAULT (datetime('now'))
+            )`);
+
             // Check if welcomeMessageEnabled column exists, if not, add it (schema migration)
             // Migrate enforcement table: add warnPrivateDm column
             this.db.all("PRAGMA table_info(enforcement)", (err, rows) => {
@@ -956,6 +965,19 @@ class Database {
 
     async deleteSetting(key) {
         await this._run('DELETE FROM settings WHERE key = ?', [key]);
+    }
+
+    // ── Learned phrases ──────────────────────────────────────────────────
+
+    async addLearnedPhrase(phrase, listType, sourceMessage = null) {
+        await this._run(
+            'INSERT OR IGNORE INTO learned_phrases (phrase, list_type, source_message) VALUES (?, ?, ?)',
+            [phrase, listType, sourceMessage]
+        );
+    }
+
+    async getLearnedPhrases() {
+        return this._all('SELECT phrase, list_type FROM learned_phrases ORDER BY id ASC');
     }
 
     // ── Lifecycle ────────────────────────────────────────────────────────

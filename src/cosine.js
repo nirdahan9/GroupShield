@@ -115,4 +115,8 @@ function checkCosineSimilarity(text) {
     return { score: bestScore, matchedWord: bestWord, isHardBlock, isSuspicious };
 }
 
-module.exports = { checkCosineSimilarity };
+function resetReferenceVectors() {
+    _referenceVectors = null;
+}
+
+module.exports = { checkCosineSimilarity, resetReferenceVectors };

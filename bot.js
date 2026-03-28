@@ -107,6 +107,9 @@ async function startBot() {
         health.initialize(client);
         backup.initialize();
 
+        // Load previously learned phrases from DB into the live curse/context lists
+        require('./src/cursesList').initLearnedPhrases();
+
         // Schedule restarts and status messages
         runtime.cronTasks.push(scheduleRestarts());
         runtime.cronTasks.push(scheduleStatusMessages(client));

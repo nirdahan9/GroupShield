@@ -257,4 +257,53 @@ const CONTEXT_WORDS = [
     'white'       // color/identity vs slur
 ];
 
-module.exports = { CURSE_WORDS, CONTEXT_WORDS };
+// ── Runtime learning ──────────────────────────────────────────────────────────
+
+/**
+ * Add a phrase to the live CURSE_WORDS or CONTEXT_WORDS array at runtime.
+ * Persists to DB if persist=true (default). Invalidates the cosine vector cache.
+ * Returns true if the phrase was new, false if it already existed.
+ */
+function addToLiveList(phrase, type, persist = true) {
+    const normalized = phrase.trim();
+    if (!normalized || normalized.length < 2) return false;
+
+    const target = type === 'context' ? CONTEXT_WORDS : CURSE_WORDS;
+    if (target.includes(normalized)) return false; // already in static or learned list
+
+    target.push(normalized);
+
+    // Invalidate cosine reference vectors so the new phrase is included next check
+    try { require('./cosine').resetReferenceVectors(); } catch (e) { /* ignore */ }
+
+    if (persist) {
+        try {
+            require('./database').addLearnedPhrase(normalized, type, null).catch(() => {});
+        } catch (e) { /* ignore */ }
+    }
+
+    return true;
+}
+
+/**
+ * Called once on bot startup — loads all previously learned phrases from DB
+ * and pushes them into the live arrays (without re-persisting).
+ */
+async function initLearnedPhrases() {
+    try {
+        const database = require('./database');
+        const rows = await database.getLearnedPhrases();
+        let loaded = 0;
+        for (const { phrase, list_type } of rows) {
+            if (addToLiveList(phrase, list_type, false)) loaded++;
+        }
+        if (loaded > 0) {
+            const logger = require('./logger');
+            logger.info(`Learned phrases: loaded ${loaded} phrase(s) from DB into live filter`);
+        }
+    } catch (e) {
+        /* non-fatal — bot works fine with static lists only */
+    }
+}
+
+module.exports = { CURSE_WORDS, CONTEXT_WORDS, addToLiveList, initLearnedPhrases };
