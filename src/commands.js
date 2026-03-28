@@ -227,12 +227,31 @@ async function buildUserStatus(client, senderJid, groupConfig, lang) {
     const activeWarnings = await database.getActiveWarningsCount(groupConfig.groupId);
     const time = new Date().toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' });
 
-    return t('status_message', lang, {
+    let msg = t('status_message', lang, {
         groupName: groupConfig.groupName,
         memberCount: memberCount.toString(),
         activeWarnings: activeWarnings.toString(),
         time
     });
+
+    const pendingPhrases = await database.getAllPendingLearnedPhrases();
+    if (pendingPhrases && pendingPhrases.length > 0) {
+        const header = lang === 'he'
+            ? `\n\n🔍 *ממתינות לאישור (${pendingPhrases.length})*`
+            : `\n\n🔍 *Pending approval (${pendingPhrases.length})*`;
+        const lines = pendingPhrases.map(p => {
+            const listLabel = lang === 'he'
+                ? (p.list_type === 'forbidden' ? 'חסימה' : 'הקשר')
+                : (p.list_type === 'forbidden' ? 'block' : 'context');
+            return `  [${p.id}] "${p.phrase}" (${listLabel})`;
+        });
+        const footer = lang === 'he'
+            ? `השב: *אשר N* / *דחה N*`
+            : `Reply: *אשר N* / *דחה N*`;
+        msg += header + '\n' + lines.join('\n') + '\n' + footer;
+    }
+
+    return msg;
 }
 
 /**
@@ -483,8 +502,8 @@ async function buildFullGroupsStatus(lang) {
 
     const lines = [];
     lines.push(lang === 'he'
-        ? `${sysBlock}\n\n📋 *קבוצות (${allGroups.length})*\n${'─'.repeat(30)}`
-        : `${sysBlock}\n\n📋 *Groups (${allGroups.length})*\n${'─'.repeat(30)}`);
+        ? `${sysBlock}\n\n📋 *קבוצות (${allGroups.length})*\n${'─'.repeat(15)}`
+        : `${sysBlock}\n\n📋 *Groups (${allGroups.length})*\n${'─'.repeat(15)}`);
 
     for (const g of allGroups) {
         // ── Status ────────────────────────────────────────────────────
@@ -545,7 +564,7 @@ async function buildFullGroupsStatus(lang) {
         lines.push(entry.join('\n'));
     }
 
-    return lines.join(`\n${'─'.repeat(30)}`);
+    return lines.join(`\n${'─'.repeat(15)}`);
 }
 
 async function stopEnforcement(client, senderJid, groupConfig, lang) {

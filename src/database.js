@@ -1010,6 +1010,10 @@ class Database {
         return this._get('SELECT * FROM pending_learned_phrases WHERE id = ?', [id]);
     }
 
+    async getAllPendingLearnedPhrases() {
+        return this._all('SELECT * FROM pending_learned_phrases ORDER BY id ASC');
+    }
+
     async deletePendingLearnedPhrase(id) {
         await this._run('DELETE FROM pending_learned_phrases WHERE id = ?', [id]);
     }
