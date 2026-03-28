@@ -217,37 +217,14 @@ async function checkShabbatGroups(client) {
                         await chat.setMessagesAdminsOnly(true);
                         await database.setShabbatLocked(group.groupId, true);
                         logger.info(`Shabbat locked: ${group.groupName}`);
-                        // Stamp lastReLock so the re-lock cooldown starts from now,
-                        // preventing an immediate spurious re-lock if chat.announce is stale.
-                        times.lastReLock = times.lastReLock || {};
-                        times.lastReLock[group.groupId] = now;
-                        timesModified = true;
                     } catch (e) {
                         logger.warn(`Shabbat lock failed for ${group.groupName}`, e.message);
                         await alertOwner(client, group.ownerJid,
                             `⚠️ *GroupShield — שמירת שבת*\nהבוט לא הצליח לסגור את הקבוצה "${group.groupName}" לקראת שבת.\nשגיאה: ${e.message}`);
                     }
                 }
-            } else if (!isActuallyLocked) {
-                // ── Re-lock: shabbatLocked=1 but group is open — someone unlocked it manually ──
-                // 60-minute cooldown: chat.announce can be unreliable; this prevents spam
-                // while still catching intentional unlocks during Shabbat.
-                const lastReLock = (times.lastReLock && times.lastReLock[group.groupId]) || 0;
-                if (now - lastReLock > 60 * 60 * 1000) {
-                    try {
-                        await chat.setMessagesAdminsOnly(true);
-                        logger.info(`Shabbat re-locked (opened during Shabbat): ${group.groupName}`);
-                        times.lastReLock = times.lastReLock || {};
-                        times.lastReLock[group.groupId] = now;
-                        timesModified = true;
-                    } catch (e) {
-                        logger.warn(`Shabbat re-lock failed for ${group.groupName}`, e.message);
-                        await alertOwner(client, group.ownerJid,
-                            `⚠️ *GroupShield — שמירת שבת*\nמישהו פתח את הקבוצה "${group.groupName}" בזמן השבת.\nהבוט ניסה לסגור אותה שוב אך נכשל.\nשגיאה: ${e.message}`);
-                    }
-                }
             }
-            // else: shabbatLocked=1 and isActuallyLocked=true → correct state ✓
+            // shabbatLocked=1 → already locked this Shabbat, nothing more to do
 
         } else {
             // ── Unlock ───────────────────────────────────────────────
