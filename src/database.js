@@ -168,6 +168,22 @@ class Database {
                 created_at TEXT DEFAULT (datetime('now'))
             )`);
 
+            // Pending learned phrases — awaiting owner/developer approval before going live
+            this.db.run(`CREATE TABLE IF NOT EXISTS pending_learned_phrases (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                phrase TEXT NOT NULL,
+                list_type TEXT NOT NULL CHECK(list_type IN ('forbidden','context')),
+                source_message TEXT,
+                created_at TEXT DEFAULT (datetime('now'))
+            )`);
+
+            // Enforcement stats — counts by detection source (rule_engine, cosine, llm, injection)
+            this.db.run(`CREATE TABLE IF NOT EXISTS enforcement_stats (
+                source TEXT PRIMARY KEY,
+                count INTEGER DEFAULT 0,
+                last_updated TEXT DEFAULT (datetime('now'))
+            )`);
+
             // Check if welcomeMessageEnabled column exists, if not, add it (schema migration)
             // Migrate enforcement table: add warnPrivateDm column
             this.db.all("PRAGMA table_info(enforcement)", (err, rows) => {
@@ -978,6 +994,58 @@ class Database {
 
     async getLearnedPhrases() {
         return this._all('SELECT phrase, list_type FROM learned_phrases ORDER BY id ASC');
+    }
+
+    // ── Pending learned phrases (awaiting approval) ───────────────────────
+
+    async addPendingLearnedPhrase(phrase, listType, sourceMessage = null) {
+        const result = await this._run(
+            'INSERT INTO pending_learned_phrases (phrase, list_type, source_message) VALUES (?, ?, ?)',
+            [phrase, listType, sourceMessage]
+        );
+        return result.lastID;
+    }
+
+    async getPendingLearnedPhrase(id) {
+        return this._get('SELECT * FROM pending_learned_phrases WHERE id = ?', [id]);
+    }
+
+    async deletePendingLearnedPhrase(id) {
+        await this._run('DELETE FROM pending_learned_phrases WHERE id = ?', [id]);
+    }
+
+    async isGroupOwner(jid) {
+        const row = await this._get(
+            'SELECT 1 FROM groups WHERE ownerJid = ? AND active = 1', [jid]
+        );
+        return !!row;
+    }
+
+    // ── Enforcement stats ─────────────────────────────────────────────────
+
+    async incrementEnforcementStat(source) {
+        await this._run(
+            `INSERT INTO enforcement_stats (source, count, last_updated)
+             VALUES (?, 1, datetime('now'))
+             ON CONFLICT(source) DO UPDATE SET
+                count = count + 1,
+                last_updated = datetime('now')`,
+            [source]
+        );
+    }
+
+    async getEnforcementStats() {
+        return this._all('SELECT source, count, last_updated FROM enforcement_stats ORDER BY count DESC');
+    }
+
+    async getLearnedPhrasesCount() {
+        const row = await this._get('SELECT COUNT(*) as cnt FROM learned_phrases');
+        return row ? row.cnt : 0;
+    }
+
+    async getPendingLearnedPhrasesCount() {
+        const row = await this._get('SELECT COUNT(*) as cnt FROM pending_learned_phrases');
+        return row ? row.cnt : 0;
     }
 
     // ── Lifecycle ────────────────────────────────────────────────────────

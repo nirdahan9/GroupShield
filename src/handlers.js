@@ -52,6 +52,47 @@ async function processMessage(client, msg, spamMap, rateLimiter) {
 }
 
 /**
+ * Handle "אשר N" / "דחה N" responses for pending learned phrases.
+ * Accessible to the group owner or developer.
+ * Returns true if the message was handled, false otherwise.
+ */
+async function handleLearningApproval(client, replyTo, senderJid, action, id, lang) {
+    try {
+        const database = require('./database');
+        const pending = await database.getPendingLearnedPhrase(id);
+        if (!pending) return false; // not a pending phrase — let other handlers run
+
+        // Authorization: must be developer or owner of at least one group
+        const isAuthorized = config.isDeveloper(senderJid) || await database.isGroupOwner(senderJid);
+        if (!isAuthorized) {
+            await client.sendMessage(replyTo, 'אין הרשאה לבצע פעולה זו.', { linkPreview: false });
+            return true;
+        }
+
+        if (action === 'אשר') {
+            const { addToLiveList } = require('./cursesList');
+            addToLiveList(pending.phrase, pending.list_type, true);
+            await database.deletePendingLearnedPhrase(id);
+            const listName = pending.list_type === 'forbidden' ? 'חסימה מיידית' : 'בדיקת הקשר';
+            await client.sendMessage(replyTo,
+                `✅ ביטוי אושר ונוסף לרשימת ה${listName}: 「${pending.phrase}」`,
+                { linkPreview: false });
+            logger.info(`Learning approved (id=${id}): "${pending.phrase}" [${pending.list_type}] by ${senderJid}`);
+        } else {
+            await database.deletePendingLearnedPhrase(id);
+            await client.sendMessage(replyTo,
+                `❌ ביטוי נדחה ולא יתווסף לפילטר: 「${pending.phrase}」`,
+                { linkPreview: false });
+            logger.info(`Learning rejected (id=${id}): "${pending.phrase}" by ${senderJid}`);
+        }
+        return true;
+    } catch (e) {
+        logger.warn('handleLearningApproval failed', e.message);
+        return false;
+    }
+}
+
+/**
  * Handle DM (private) messages
  */
 async function handleDM(client, msg, senderJid, content) {
@@ -99,6 +140,13 @@ async function handleDM(client, msg, senderJid, content) {
     // Check for pending admin action responses (demotion/removal)
     if (await handleAdminActionResponse(client, msg, senderJid, content, lang)) {
         return;
+    }
+
+    // Check for learning phrase approval/rejection ("אשר N" / "דחה N")
+    const learnMatch = content.trim().match(/^(אשר|דחה)\s+(\d+)$/);
+    if (learnMatch) {
+        const handled = await handleLearningApproval(client, msg.from, senderJid, learnMatch[1], parseInt(learnMatch[2], 10), lang);
+        if (handled) return;
     }
 
     // If user is actively in a setup flow, route there immediately.
@@ -632,7 +680,10 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
         );
 
         if (hasCursesPreset) {
-            checkWithLLM(client, msg, senderJid, content, msgType, groupConfig, enforcementConfig, rateLimiter, lang)
+            // Repeat offenders (≥2 warnings) get force-checked by LLM even for non-suspicious messages
+            const warnCount = await database.getWarningCount(groupJid, senderJid).catch(() => 0);
+            const forceCheck = warnCount >= 2;
+            checkWithLLM(client, msg, senderJid, content, msgType, groupConfig, enforcementConfig, rateLimiter, lang, forceCheck)
                 .catch(e => logger.warn('LLM check error', e.message));
         }
     }

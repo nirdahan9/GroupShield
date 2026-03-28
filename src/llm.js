@@ -5,6 +5,7 @@
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const config = require('./config');
 const logger = require('./logger');
 const { CONTEXT_WORDS } = require('./cursesList');
@@ -13,6 +14,57 @@ const { checkCosineSimilarity } = require('./cosine');
 
 const MODEL = 'llama-3.1-8b-instant';
 const TIMEOUT_MS = 4000;
+
+// ── LLM result cache ──────────────────────────────────────────────────────────
+// Avoids repeated Groq API calls for the same (or identical) message content.
+// Key: sha256 of normalised text. Value: { result: bool, ts: number }.
+
+const LLM_CACHE = new Map();
+const CACHE_TTL_MS  = 60 * 60 * 1000; // 1 hour
+const CACHE_MAX     = 1000;
+
+function _cacheKey(text) {
+    return crypto.createHash('sha256').update(text.trim().toLowerCase()).digest('hex');
+}
+
+function _getCache(key) {
+    const entry = LLM_CACHE.get(key);
+    if (!entry) return undefined;
+    if (Date.now() - entry.ts > CACHE_TTL_MS) { LLM_CACHE.delete(key); return undefined; }
+    return entry.result;
+}
+
+function _setCache(key, result) {
+    if (LLM_CACHE.size >= CACHE_MAX) {
+        LLM_CACHE.delete(LLM_CACHE.keys().next().value); // evict oldest
+    }
+    LLM_CACHE.set(key, { result, ts: Date.now() });
+}
+
+// ── Near-miss streak tracker ──────────────────────────────────────────────────
+// Tracks messages that reached the LLM but were NOT flagged (near-misses).
+// If a user accumulates 3+ near-misses in 60 seconds, the next message is
+// force-checked regardless of suspicion score.
+
+const NEAR_MISS_MAP    = new Map(); // key: "groupId:senderJid" → [timestamps]
+const STREAK_WINDOW_MS = 60 * 1000;
+const STREAK_THRESHOLD = 3;
+
+function _recordNearMiss(groupId, senderJid) {
+    const key  = `${groupId}:${senderJid}`;
+    const now  = Date.now();
+    const times = (NEAR_MISS_MAP.get(key) || []).filter(t => now - t < STREAK_WINDOW_MS);
+    times.push(now);
+    NEAR_MISS_MAP.set(key, times);
+}
+
+function _isStreakUser(groupId, senderJid) {
+    const key  = `${groupId}:${senderJid}`;
+    const now  = Date.now();
+    const times = (NEAR_MISS_MAP.get(key) || []).filter(t => now - t < STREAK_WINDOW_MS);
+    NEAR_MISS_MAP.set(key, times); // prune stale
+    return times.length >= STREAK_THRESHOLD;
+}
 
 // ── Monthly usage tracking (persisted across restarts) ────────────────────────
 
@@ -171,6 +223,14 @@ function callGroq(text) {
     const apiKey = config.get('groq.apiKey');
     if (!apiKey) return Promise.resolve(null);
 
+    // Check cache before hitting the API
+    const cacheKey = _cacheKey(text);
+    const cached = _getCache(cacheKey);
+    if (cached !== undefined) {
+        logger.debug(`LLM cache hit for message (${cacheKey.slice(0, 8)}…)`);
+        return Promise.resolve(cached);
+    }
+
     const systemContent =
         'You are a strict, zero-tolerance content moderation classifier for a WhatsApp group.\n' +
         'Rule: NO swearing, NO offensive language, NO insults, NO death wishes, and NO derogatory slang.\n' +
@@ -216,7 +276,9 @@ function callGroq(text) {
                     try {
                         const parsed = JSON.parse(data);
                         const answer = (parsed.choices?.[0]?.message?.content || '').trim().toUpperCase();
-                        resolve(answer.startsWith('YES'));
+                        const result = answer.startsWith('YES');
+                        _setCache(cacheKey, result);
+                        resolve(result);
                     } catch {
                         resolve(null);
                     }
@@ -298,6 +360,29 @@ async function learnFromViolation(content) {
     });
 }
 
+// ── Admin validation queue ────────────────────────────────────────────────────
+// Instead of adding learned phrases directly, send them to the group owner for
+// approval. They reply "אשר N" or "דחה N" (handled in handlers.js).
+
+async function enqueueLearningForReview(client, ownerJid, phrase, type, sourceMessage) {
+    try {
+        const database = require('./database');
+        const id = await database.addPendingLearnedPhrase(phrase, type, sourceMessage);
+        const listName = type === 'forbidden' ? 'חסימה מיידית (rule engine)' : 'בדיקת הקשר (LLM)';
+        const msgText =
+            `📚 *GroupShield — ביטוי חדש נגלה*\n\n` +
+            `ביטוי: 「${phrase}」\n` +
+            `סוג: ${listName}\n` +
+            `מקור: "${(sourceMessage || '').slice(0, 60)}"\n\n` +
+            `לאישור: *אשר ${id}*\n` +
+            `לדחייה: *דחה ${id}*`;
+        await client.sendMessage(ownerJid, msgText, { linkPreview: false });
+        logger.info(`Queued phrase for review (id=${id}): "${phrase}" [${type}] → ${ownerJid}`);
+    } catch (e) {
+        logger.warn('enqueueLearningForReview failed', e.message);
+    }
+}
+
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /**
@@ -342,8 +427,11 @@ async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfi
         return;
     }
 
-    // Layer 2: route to LLM if suspicious / context-word / OR cosine medium-similarity
-    if (!forceCheck && !isSuspicious(content) && !containsContextWord(content) && !cosineResult.isSuspicious) return;
+    // Streak detection — user sent 3+ near-misses in 60s → force LLM check
+    const streakForce = _isStreakUser(groupConfig.groupId, senderJid);
+
+    // Layer 2: route to LLM if suspicious / context-word / cosine medium / or streak
+    if (!forceCheck && !streakForce && !isSuspicious(content) && !containsContextWord(content) && !cosineResult.isSuspicious) return;
 
     const apiKey = config.get('groq.apiKey');
     if (!apiKey) return;
@@ -352,7 +440,8 @@ async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfi
     try {
         const isViolation = await callGroq(content);
         if (isViolation !== true) {
-            // LLM said clean — log that the message was evaluated but passed
+            // LLM said clean — record near-miss for streak detection, log
+            _recordNearMiss(groupConfig.groupId, senderJid);
             messageLog.logEnforcement(groupConfig.groupId, groupConfig.groupName, senderJid, content, 'LLM: passed', 'llm_pass');
             return;
         }
@@ -366,17 +455,14 @@ async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfi
         );
 
         // ── Learn from mention-triggered violations ───────────────────
-        // Only when a human explicitly flagged the message (forceCheck = mention-triggered).
+        // Only when a human explicitly flagged (forceCheck = mention-triggered).
+        // Phrases are QUEUED for owner approval instead of going live immediately.
         // Fire-and-forget: does not block enforcement path.
-        if (forceCheck) {
-            const { addToLiveList } = require('./cursesList');
+        if (forceCheck && groupConfig.ownerJid) {
             learnFromViolation(content).then(phrases => {
                 for (const { text, type } of phrases) {
                     if (text && text.length >= 2 && (type === 'forbidden' || type === 'context')) {
-                        const added = addToLiveList(text, type, true);
-                        if (added) {
-                            logger.info(`LLM learned new ${type} phrase: "${text}" (source: mention report)`);
-                        }
+                        enqueueLearningForReview(client, groupConfig.ownerJid, text, type, content);
                     }
                 }
             }).catch(e => logger.warn('learnFromViolation failed', e.message));

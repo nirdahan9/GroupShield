@@ -375,7 +375,7 @@ function collapseSpacedLetters(text) {
  */
 function normalizeForSmartMatch(text) {
     if (!text) return '';
-    let normalized = text
+    let normalized = normalizeMathUnicode(text)
         .normalize('NFKD')
         .toLowerCase()
         // Invisible / zero-width / bidirectional control characters
@@ -627,17 +627,100 @@ function smartMatchesForbidden(normMessage, normForbidden) {
 
 // ─── English normalization helpers ────────────────────────────────────────
 
+// ─── Mathematical Unicode normalization ───────────────────────────────────────
+// Maps mathematical/styled Unicode letters (bold, italic, script, fraktur,
+// double-struck, sans-serif, monospace, circled) to their ASCII equivalents.
+// NFKC normalises fullwidth (ｆ→f) but NOT math symbols (𝕗 stays 𝕗).
+// Without this, "𝕗𝕦𝕔𝕜", "𝒻𝓊𝒸𝓀", "ⓕⓤⓒⓚ" bypass all word-level checks.
+
+function mathCodePointToAscii(cp) {
+    // Fullwidth A-Z / a-z / 0-9 (redundant after NFKC, but just in case)
+    if (cp >= 0xFF21 && cp <= 0xFF3A) return cp - 0xFF21 + 65;  // A-Z
+    if (cp >= 0xFF41 && cp <= 0xFF5A) return cp - 0xFF41 + 97;  // a-z
+    if (cp >= 0xFF10 && cp <= 0xFF19) return cp - 0xFF10 + 48;  // 0-9
+
+    // Mathematical Alphanumeric Symbols (U+1D400–U+1D7FF)
+    // Bold A-Z / a-z
+    if (cp >= 0x1D400 && cp <= 0x1D419) return cp - 0x1D400 + 65;
+    if (cp >= 0x1D41A && cp <= 0x1D433) return cp - 0x1D41A + 97;
+    // Italic A-Z / a-z
+    if (cp >= 0x1D434 && cp <= 0x1D44D) return cp - 0x1D434 + 65;
+    if (cp >= 0x1D44E && cp <= 0x1D467) return cp - 0x1D44E + 97;
+    // Bold Italic A-Z / a-z
+    if (cp >= 0x1D468 && cp <= 0x1D481) return cp - 0x1D468 + 65;
+    if (cp >= 0x1D482 && cp <= 0x1D49B) return cp - 0x1D482 + 97;
+    // Script A-Z / a-z
+    if (cp >= 0x1D49C && cp <= 0x1D4B5) return cp - 0x1D49C + 65;
+    if (cp >= 0x1D4B6 && cp <= 0x1D4CF) return cp - 0x1D4B6 + 97;
+    // Bold Script A-Z / a-z
+    if (cp >= 0x1D4D0 && cp <= 0x1D4E9) return cp - 0x1D4D0 + 65;
+    if (cp >= 0x1D4EA && cp <= 0x1D503) return cp - 0x1D4EA + 97;
+    // Fraktur A-Z / a-z
+    if (cp >= 0x1D504 && cp <= 0x1D51D) return cp - 0x1D504 + 65;
+    if (cp >= 0x1D51E && cp <= 0x1D537) return cp - 0x1D51E + 97;
+    // Double-struck A-Z / a-z
+    if (cp >= 0x1D538 && cp <= 0x1D551) return cp - 0x1D538 + 65;
+    if (cp >= 0x1D552 && cp <= 0x1D56B) return cp - 0x1D552 + 97;
+    // Bold Fraktur A-Z / a-z
+    if (cp >= 0x1D56C && cp <= 0x1D585) return cp - 0x1D56C + 65;
+    if (cp >= 0x1D586 && cp <= 0x1D59F) return cp - 0x1D586 + 97;
+    // Sans-serif A-Z / a-z
+    if (cp >= 0x1D5A0 && cp <= 0x1D5B9) return cp - 0x1D5A0 + 65;
+    if (cp >= 0x1D5BA && cp <= 0x1D5D3) return cp - 0x1D5BA + 97;
+    // Sans-serif Bold A-Z / a-z
+    if (cp >= 0x1D5D4 && cp <= 0x1D5ED) return cp - 0x1D5D4 + 65;
+    if (cp >= 0x1D5EE && cp <= 0x1D607) return cp - 0x1D5EE + 97;
+    // Sans-serif Italic A-Z / a-z
+    if (cp >= 0x1D608 && cp <= 0x1D621) return cp - 0x1D608 + 65;
+    if (cp >= 0x1D622 && cp <= 0x1D63B) return cp - 0x1D622 + 97;
+    // Sans-serif Bold Italic A-Z / a-z
+    if (cp >= 0x1D63C && cp <= 0x1D655) return cp - 0x1D63C + 65;
+    if (cp >= 0x1D656 && cp <= 0x1D66F) return cp - 0x1D656 + 97;
+    // Monospace A-Z / a-z
+    if (cp >= 0x1D670 && cp <= 0x1D689) return cp - 0x1D670 + 65;
+    if (cp >= 0x1D68A && cp <= 0x1D6A3) return cp - 0x1D68A + 97;
+    // Mathematical digits (bold, double-struck, sans-serif, sans-serif bold, monospace)
+    if (cp >= 0x1D7CE && cp <= 0x1D7D7) return cp - 0x1D7CE + 48;
+    if (cp >= 0x1D7D8 && cp <= 0x1D7E1) return cp - 0x1D7D8 + 48;
+    if (cp >= 0x1D7E2 && cp <= 0x1D7EB) return cp - 0x1D7E2 + 48;
+    if (cp >= 0x1D7EC && cp <= 0x1D7F5) return cp - 0x1D7EC + 48;
+    if (cp >= 0x1D7F6 && cp <= 0x1D7FF) return cp - 0x1D7F6 + 48;
+    // Circled Latin A-Z / a-z (Ⓐ-Ⓩ, ⓐ-ⓩ)
+    if (cp >= 0x24B6 && cp <= 0x24CF) return cp - 0x24B6 + 65;
+    if (cp >= 0x24D0 && cp <= 0x24E9) return cp - 0x24D0 + 97;
+    // Negative circled / squared Latin (🅐-🅩)
+    if (cp >= 0x1F150 && cp <= 0x1F169) return cp - 0x1F150 + 65;
+    if (cp >= 0x1F170 && cp <= 0x1F189) return cp - 0x1F170 + 65;
+
+    return -1; // not a math/styled char
+}
+
+function normalizeMathUnicode(text) {
+    let result = '';
+    for (let i = 0; i < text.length; ) {
+        const cp = text.codePointAt(i);
+        const charLen = cp > 0xFFFF ? 2 : 1;
+        const ascii = mathCodePointToAscii(cp);
+        result += ascii >= 0 ? String.fromCharCode(ascii) : text.slice(i, i + charLen);
+        i += charLen;
+    }
+    return result;
+}
+
 /**
  * Strip invisible / zero-width / bidirectional control characters and combining
  * diacritics from English content before word-boundary checks.
  * Mirrors what normalizeForSmartMatch does for Hebrew.
  */
 function stripInvisibleChars(text) {
-    return text
-        .normalize('NFKC')  // fullwidth Latin: Ｆｕｃｋ → Fuck; also decomposes ligatures
-        .normalize('NFKD')  // then decompose remaining combining marks
+    return normalizeMathUnicode(
+        text
+            .normalize('NFKC')  // fullwidth Latin: Ｆｕｃｋ → Fuck; also decomposes ligatures
+            .normalize('NFKD')  // then decompose remaining combining marks
+    )
         .replace(/[\u0000-\u001F\u007F-\u009F\u00AD\u200B-\u200F\u202A-\u202F\u2060-\u206F\uFEFF]/gu, '')
-        .replace(/\p{M}/gu, '');   // strip combining diacritics: f̃ùćk → fuck
+        .replace(/\p{M}/gu, '')          // strip combining diacritics: f̃ùćk → fuck
+        .replace(/\p{Emoji_Presentation}/gu, ''); // strip emoji used as letter substitutes: f🤬ck → fck
 }
 
 /**

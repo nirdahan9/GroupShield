@@ -153,6 +153,12 @@ async function executeCommand(client, senderJid, command, lang, overrideGroupCon
             return buildFullGroupsStatus(lang);
         }
 
+        // ── Enforcement statistics (developer only) ───────────────────
+        if (cmdLower === 'סטטיסטיקות' || cmdLower === 'stats') {
+            if (!isDeveloper) return t('developer_only_command', lang);
+            return buildEnforcementStats(lang);
+        }
+
         // ── Developer: stop enforcement for any group by name ─────────
         const stopDevMatch = cmd.match(/^הפסק אכיפה (.+)$/i) || cmd.match(/^stop enforcement (.+)$/i);
         if (stopDevMatch) {
@@ -584,6 +590,33 @@ async function stopEnforcement(client, senderJid, groupConfig, lang) {
         logger.error('Failed to stop enforcement', error);
         return t('error_generic', lang, { error: error.message });
     }
+}
+
+async function buildEnforcementStats(lang) {
+    const { getGroqStats } = require('./llm');
+    const rows   = await database.getEnforcementStats();
+    const learned = await database.getLearnedPhrasesCount();
+    const pending = await database.getPendingLearnedPhrasesCount();
+    const groq   = getGroqStats();
+
+    const sourceLabel = {
+        rule_engine: '📋 Rule engine',
+        cosine:      '📐 Cosine',
+        llm:         '🤖 LLM (Groq)',
+        injection:   '🛡️ Prompt injection',
+        llm_pass:    '✅ LLM passed',
+    };
+
+    const statsLines = rows.length
+        ? rows.map(r => `  ${sourceLabel[r.source] || r.source}: ${r.count.toLocaleString()}`).join('\n')
+        : '  אין נתונים עדיין';
+
+    return (
+        `📊 *סטטיסטיקות אכיפה — GroupShield*\n\n` +
+        `*חסימות לפי שכבה:*\n${statsLines}\n\n` +
+        `*ביטויים נלמדו:* ${learned} מאושרים | ${pending} ממתינים לאישור\n` +
+        `*Groq:* ${groq.count.toLocaleString()}/${groq.cap.toLocaleString()} קריאות החודש (${groq.pct}%)`
+    );
 }
 
 async function isAuthorizedNameChangeResponder(client, senderJid, groupConfig) {

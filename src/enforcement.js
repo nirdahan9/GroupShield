@@ -47,8 +47,9 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
     const formattedTime = new Date().toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' });
     const groupId = groupConfig.groupId;
 
-    // Log enforcement to the group's message log
+    // Log enforcement to the group's message log + increment stats counter
     messageLog.logEnforcement(groupId, groupConfig.groupName, senderJid, content, reason, source);
+    database.incrementEnforcementStat(source).catch(() => {});
     const maxWarnings = groupConfig.warningCount || 0;
     const actionId = `ENF-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 
