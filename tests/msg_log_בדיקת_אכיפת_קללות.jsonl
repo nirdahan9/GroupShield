@@ -1,0 +1,524 @@
+{"event":"message","ts":"2026-03-23T09:22:41.571Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"אשכנזי","enforced":false}
+{"event":"message","ts":"2026-03-23T09:22:49.701Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"שמאלן","enforced":false}
+{"event":"message","ts":"2026-03-23T09:22:51.812Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"פולנייה","enforced":false}
+{"event":"message","ts":"2026-03-23T09:22:52.012Z","group":"בדיקת אכיפת קללות","user":"972524743700","type":"chat","content":"נאצי","enforced":false}
+{"event":"enforced","ts":"2026-03-23T09:22:52.576Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"פולנייה","reason":"שליחת הודעה ללא אישור תקנון","actionType":"pending_welcome"}
+{"event":"enforced","ts":"2026-03-23T09:22:52.629Z","group":"בדיקת אכיפת קללות","user":"972524743700","content":"נאצי","reason":"תוכן פוגעני (זוהה ע\"י AI)","actionType":"llm"}
+{"event":"message","ts":"2026-03-23T09:22:55.695Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"ביביסט","enforced":false}
+{"event":"enforced","ts":"2026-03-23T09:22:55.701Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"ביביסט","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-23T09:23:05.155Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"עץ","enforced":false}
+{"event":"message","ts":"2026-03-23T09:23:21.607Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"סלים טואמה","enforced":false}
+{"event":"message","ts":"2026-03-23T09:23:43.562Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"מתחנגל","enforced":false}
+{"event":"enforced","ts":"2026-03-23T09:23:43.565Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"מתחנגל","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-23T09:23:48.918Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"פייגלה","enforced":false}
+{"event":"enforced","ts":"2026-03-23T09:23:49.548Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"פייגלה","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-23T09:24:07.153Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"מעדיף בנים על בנות","enforced":false}
+{"event":"message","ts":"2026-03-23T09:24:48.032Z","group":"בדיקת אכיפת קללות","user":"972509120181","type":"chat","content":"כהנא צדק","enforced":false}
+{"event":"message","ts":"2026-03-23T09:24:53.691Z","group":"בדיקת אכיפת קללות","user":"972509120181","type":"chat","content":"מוות לערבים","enforced":false}
+{"event":"enforced","ts":"2026-03-23T09:24:53.698Z","group":"בדיקת אכיפת קללות","user":"972509120181","content":"מוות לערבים","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-23T09:24:58.773Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"רק בן גביר","enforced":false}
+{"event":"message","ts":"2026-03-23T09:24:59.501Z","group":"בדיקת אכיפת קללות","user":"972509120181","type":"chat","content":"רדיוס לבית״ר","enforced":false}
+{"event":"enforced","ts":"2026-03-23T09:24:59.503Z","group":"בדיקת אכיפת קללות","user":"972509120181","content":"רדיוס לבית״ר","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-23T09:25:04.149Z","group":"בדיקת אכיפת קללות","user":"972509120181","type":"chat","content":"אני מת","enforced":false}
+{"event":"message","ts":"2026-03-23T09:25:08.517Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"אהבתי","enforced":false}
+{"event":"message","ts":"2026-03-23T09:25:18.121Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"שמעון מזרחי","enforced":false}
+{"event":"enforced","ts":"2026-03-23T09:25:18.129Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"שמעון מזרחי","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-23T09:25:39.627Z","group":"בדיקת אכיפת קללות","user":"972509120181","type":"chat","content":"ניר הבוט יותר פרוגרסיבי מברק רביד","enforced":false}
+{"event":"enforced","ts":"2026-03-23T09:25:39.641Z","group":"בדיקת אכיפת קללות","user":"972509120181","content":"ניר הבוט יותר פרוגרסיבי מברק רביד","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-23T09:35:41.957Z","group":"בדיקת אכיפת קללות","user":"972545827969","type":"chat","content":"+1","enforced":false}
+{"event":"message","ts":"2026-03-23T09:36:24.271Z","group":"בדיקת אכיפת קללות","user":"972558818806","type":"chat","content":"מה עם ניר מפליץ קוטג׳?","enforced":false}
+{"event":"enforced","ts":"2026-03-23T09:36:24.592Z","group":"בדיקת אכיפת קללות","user":"972558818806","content":"מה עם ניר מפליץ קוטג׳?","reason":"שליחת הודעה ללא אישור תקנון","actionType":"pending_welcome"}
+{"event":"message","ts":"2026-03-23T12:09:28.214Z","group":"בדיקת אכיפת קללות","user":"972523646369","type":"chat","content":"כוסאימאשך","enforced":false}
+{"event":"enforced","ts":"2026-03-23T12:09:28.217Z","group":"בדיקת אכיפת קללות","user":"972523646369","content":"כוסאימאשך","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-23T12:11:06.258Z","group":"בדיקת אכיפת קללות","user":"972545303101","type":"chat","content":"יבן שרמוטה","enforced":false}
+{"event":"enforced","ts":"2026-03-23T12:11:06.585Z","group":"בדיקת אכיפת קללות","user":"972545303101","content":"יבן שרמוטה","reason":"שליחת הודעה ללא אישור תקנון","actionType":"pending_welcome"}
+{"event":"message","ts":"2026-03-23T12:14:31.090Z","group":"בדיקת אכיפת קללות","user":"972545827969","type":"chat","content":"הוא לא הולך להסיר אותי","enforced":false}
+{"event":"enforced","ts":"2026-03-23T12:14:31.112Z","group":"בדיקת אכיפת קללות","user":"972545827969","content":"הוא לא הולך להסיר אותי","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-23T12:17:18.449Z","group":"בדיקת אכיפת קללות","user":"972586566234","type":"chat","content":"שרמיט","enforced":false}
+{"event":"enforced","ts":"2026-03-23T12:17:18.453Z","group":"בדיקת אכיפת קללות","user":"972586566234","content":"שרמיט","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-23T12:20:14.732Z","group":"בדיקת אכיפת קללות","user":"972545827969","type":"sticker","content":"","enforced":false}
+{"event":"message","ts":"2026-03-23T12:20:18.898Z","group":"בדיקת אכיפת קללות","user":"972586566234","type":"chat","content":"היי","enforced":false}
+{"event":"enforced","ts":"2026-03-23T12:20:18.903Z","group":"בדיקת אכיפת קללות","user":"972586566234","content":"היי","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-23T12:28:35.247Z","group":"בדיקת אכיפת קללות","user":"972586566234","type":"chat","content":"ליאב צרפתי","enforced":false}
+{"event":"message","ts":"2026-03-23T12:29:10.534Z","group":"בדיקת אכיפת קללות","user":"972545827969","type":"chat","content":"אז מצאתי איך לנצח","enforced":false}
+{"event":"message","ts":"2026-03-23T12:29:35.606Z","group":"בדיקת אכיפת קללות","user":"972545827969","type":"chat","content":"יאללה בסדר","enforced":false}
+{"event":"message","ts":"2026-03-23T12:29:55.115Z","group":"בדיקת אכיפת קללות","user":"972545827969","type":"chat","content":"אבל אי אפשר לתת לאיזה agent שיפענח את הטקסט?","enforced":false}
+{"event":"enforced","ts":"2026-03-23T12:29:55.687Z","group":"בדיקת אכיפת קללות","user":"972545827969","content":"אבל אי אפשר לתת לאיזה agent שיפענח את הטקסט?","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-23T12:30:04.514Z","group":"בדיקת אכיפת קללות","user":"972558818806","type":"chat","content":"מושי","enforced":false}
+{"event":"enforced","ts":"2026-03-23T12:30:04.520Z","group":"בדיקת אכיפת קללות","user":"972558818806","content":"מושי","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-23T12:30:29.978Z","group":"בדיקת אכיפת קללות","user":"972545827969","type":"chat","content":"היידה","enforced":false}
+{"event":"enforced","ts":"2026-03-23T12:30:29.987Z","group":"בדיקת אכיפת קללות","user":"972545827969","content":"היידה","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-23T12:30:35.371Z","group":"בדיקת אכיפת קללות","user":"972586566234","type":"chat","content":"חרא","enforced":false}
+{"event":"enforced","ts":"2026-03-23T12:30:35.375Z","group":"בדיקת אכיפת קללות","user":"972586566234","content":"חרא","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-23T12:40:12.283Z","group":"בדיקת אכיפת קללות","user":"972525858542","type":"image","content":"אני חושב שיש באג","enforced":false}
+{"event":"enforced","ts":"2026-03-23T12:40:12.288Z","group":"בדיקת אכיפת קללות","user":"972525858542","content":"אני חושב שיש באג","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-23T12:40:47.897Z","group":"בדיקת אכיפת קללות","user":"972545827969","type":"chat","content":"The bot is going rogue","enforced":false}
+{"event":"message","ts":"2026-03-23T12:42:21.279Z","group":"בדיקת אכיפת קללות","user":"972525858542","type":"chat","content":"לא נעים אחי","enforced":false}
+{"event":"message","ts":"2026-03-25T14:04:39.102Z","group":"בדיקת אכיפת קללות","user":"972586566234","type":"chat","content":"כוסרבק","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:04:39.105Z","group":"בדיקת אכיפת קללות","user":"972586566234","content":"כוסרבק","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-25T14:04:52.256Z","group":"בדיקת אכיפת קללות","user":"972545827969","type":"chat","content":"הבוט הזבל הזה","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:04:52.789Z","group":"בדיקת אכיפת קללות","user":"972545827969","content":"הבוט הזבל הזה","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-25T14:04:53.392Z","group":"בדיקת אכיפת קללות","user":"972545827969","type":"chat","content":"חרא עליו","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:04:53.395Z","group":"בדיקת אכיפת קללות","user":"972545827969","content":"חרא עליו","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-25T14:04:54.386Z","group":"בדיקת אכיפת קללות","user":"972545827969","type":"chat","content":"כוסאמא שלו","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:04:54.388Z","group":"בדיקת אכיפת קללות","user":"972545827969","content":"כוסאמא שלו","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-25T14:05:00.861Z","group":"בדיקת אכיפת קללות","user":"972545827969","type":"chat","content":"אני מאשר","enforced":false}
+{"event":"message","ts":"2026-03-25T14:05:14.492Z","group":"בדיקת אכיפת קללות","user":"972586566234","type":"chat","content":"ניר זה קשור לרעיון לאפליקציה?","enforced":false}
+{"event":"message","ts":"2026-03-25T14:05:30.744Z","group":"בדיקת אכיפת קללות","user":"972533378346","type":"chat","content":"יטמבל","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:05:31.295Z","group":"בדיקת אכיפת קללות","user":"972533378346","content":"יטמבל","reason":"שליחת הודעה ללא אישור תקנון","actionType":"pending_welcome"}
+{"event":"message","ts":"2026-03-25T14:05:41.283Z","group":"בדיקת אכיפת קללות","user":"972586566234","type":"chat","content":"כן?","enforced":false}
+{"event":"message","ts":"2026-03-25T14:06:12.520Z","group":"בדיקת אכיפת קללות","user":"972586566234","type":"chat","content":"ז1נה","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:06:12.526Z","group":"בדיקת אכיפת קללות","user":"972586566234","content":"ז1נה","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-25T14:06:21.663Z","group":"בדיקת אכיפת קללות","user":"972545827969","type":"chat","content":"ניגר","enforced":false}
+{"event":"message","ts":"2026-03-25T14:06:22.562Z","group":"בדיקת אכיפת קללות","user":"972545827969","type":"chat","content":"כושי","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:06:22.566Z","group":"בדיקת אכיפת קללות","user":"972545827969","content":"כושי","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-25T14:06:30.097Z","group":"בדיקת אכיפת קללות","user":"972533378346","type":"chat","content":"יזונה של אוהד פריד","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:06:30.103Z","group":"בדיקת אכיפת קללות","user":"972533378346","content":"יזונה של אוהד פריד","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-25T14:06:36.582Z","group":"בדיקת אכיפת קללות","user":"972545827969","type":"chat","content":"שרמוטה","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:06:36.586Z","group":"בדיקת אכיפת קללות","user":"972545827969","content":"שרמוטה","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-25T14:06:44.251Z","group":"בדיקת אכיפת קללות","user":"972533378346","type":"chat","content":"אוהד פריד","enforced":false}
+{"event":"message","ts":"2026-03-25T14:06:51.830Z","group":"בדיקת אכיפת קללות","user":"972533378346","type":"chat","content":"תתקן דחוף","enforced":false}
+{"event":"message","ts":"2026-03-25T14:06:54.769Z","group":"בדיקת אכיפת קללות","user":"972533378346","type":"chat","content":"האפליקציה לא עובדת","enforced":false}
+{"event":"message","ts":"2026-03-25T14:08:20.675Z","group":"בדיקת אכיפת קללות","user":"972558818806","type":"chat","content":"לא מאמין לך","enforced":false}
+{"event":"message","ts":"2026-03-25T14:08:50.176Z","group":"בדיקת אכיפת קללות","user":"972558818806","type":"chat","content":"כרגע לא מתייחסים אליה","enforced":false}
+{"event":"message","ts":"2026-03-25T14:08:52.318Z","group":"בדיקת אכיפת קללות","user":"972544568533","type":"chat","content":"היטלר עדיף על הבני שרמוטות האלו","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:08:52.845Z","group":"בדיקת אכיפת קללות","user":"972544568533","content":"היטלר עדיף על הבני שרמוטות האלו","reason":"שליחת הודעה ללא אישור תקנון","actionType":"pending_welcome"}
+{"event":"message","ts":"2026-03-25T14:08:55.367Z","group":"בדיקת אכיפת קללות","user":"972558818806","type":"chat","content":"שזה הבן של בין לאדן","enforced":false}
+{"event":"message","ts":"2026-03-25T14:09:22.510Z","group":"בדיקת אכיפת קללות","user":"972558818806","type":"chat","content":"טרוריסט הבנאדם","enforced":false}
+{"event":"message","ts":"2026-03-25T14:09:42.178Z","group":"בדיקת אכיפת קללות","user":"972544568533","type":"chat","content":"אני בן אדם חדש מעכשיו","enforced":false}
+{"event":"message","ts":"2026-03-25T14:09:46.332Z","group":"בדיקת אכיפת קללות","user":"972544568533","type":"chat","content":"לא מנבל את הפה","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:09:46.337Z","group":"בדיקת אכיפת קללות","user":"972544568533","content":"לא מנבל את הפה","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-25T14:10:36.948Z","group":"בדיקת אכיפת קללות","user":"972533378346","type":"chat","content":"הפועל","enforced":false}
+{"event":"message","ts":"2026-03-25T14:10:42.449Z","group":"בדיקת אכיפת קללות","user":"972533378346","type":"chat","content":"גם לא עובד","enforced":false}
+{"event":"message","ts":"2026-03-25T14:10:43.152Z","group":"בדיקת אכיפת קללות","user":"972558818806","type":"chat","content":"טועמה מזיין כבשים?","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:10:43.154Z","group":"בדיקת אכיפת קללות","user":"972558818806","content":"טועמה מזיין כבשים?","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-25T14:10:57.892Z","group":"בדיקת אכיפת קללות","user":"972533378346","type":"chat","content":"עמה יעמיק","enforced":false}
+{"event":"message","ts":"2026-03-25T14:11:07.602Z","group":"בדיקת אכיפת קללות","user":"972533378346","type":"chat","content":"איסוף סיסוקו","enforced":false}
+{"event":"message","ts":"2026-03-25T14:11:14.466Z","group":"בדיקת אכיפת קללות","user":"972533378346","type":"chat","content":"ניר תשפר","enforced":false}
+{"event":"message","ts":"2026-03-25T14:12:00.692Z","group":"בדיקת אכיפת קללות","user":"972533378346","type":"chat","content":"בן זונה הוא וצ׳יקו","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:12:00.698Z","group":"בדיקת אכיפת קללות","user":"972533378346","content":"בן זונה הוא וצ׳יקו","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-25T14:12:04.026Z","group":"בדיקת אכיפת קללות","user":"972533378346","type":"chat","content":"צ׳יקו דיקו","enforced":false}
+{"event":"message","ts":"2026-03-25T14:12:15.219Z","group":"בדיקת אכיפת קללות","user":"972533378346","type":"chat","content":"הייתי בפאקינג כיתה ב","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:12:15.229Z","group":"בדיקת אכיפת קללות","user":"972533378346","content":"הייתי בפאקינג כיתה ב","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-25T14:12:19.469Z","group":"בדיקת אכיפת קללות","user":"972533378346","type":"chat","content":"ואמללנו אותם 12 שנה","enforced":false}
+{"event":"message","ts":"2026-03-25T14:12:45.956Z","group":"בדיקת אכיפת קללות","user":"972533378346","type":"chat","content":"שקד מה אתה חושב על דור פרץ?","enforced":false}
+{"event":"message","ts":"2026-03-25T14:13:47.855Z","group":"בדיקת אכיפת קללות","user":"972558818806","type":"chat","content":"ניר יבן יונה","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:13:47.859Z","group":"בדיקת אכיפת קללות","user":"972558818806","content":"ניר יבן יונה","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-25T14:16:05.405Z","group":"בדיקת אכיפת קללות","user":"972543038706","type":"chat","content":"מה זה","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:16:05.851Z","group":"בדיקת אכיפת קללות","user":"972543038706","content":"מה זה","reason":"שליחת הודעה ללא אישור תקנון","actionType":"pending_welcome"}
+{"event":"message","ts":"2026-03-25T14:16:34.441Z","group":"בדיקת אכיפת קללות","user":"972533378346","type":"chat","content":"אמן שהאוכל שלך יגיע קר","enforced":false}
+{"event":"message","ts":"2026-03-25T14:16:44.612Z","group":"בדיקת אכיפת קללות","user":"972533378346","type":"chat","content":"שמע הבוט מפספס מלא","enforced":false}
+{"event":"message","ts":"2026-03-25T14:16:57.822Z","group":"בדיקת אכיפת קללות","user":"972544568533","type":"chat","content":"הילה ארנון","enforced":false}
+{"event":"message","ts":"2026-03-25T14:17:14.994Z","group":"בדיקת אכיפת קללות","user":"972533378346","type":"chat","content":"אני לא מסוגל סגרתי מצלמה😂","enforced":false}
+{"event":"message","ts":"2026-03-25T14:17:25.145Z","group":"בדיקת אכיפת קללות","user":"972543038706","type":"chat","content":"ניר ההומו","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:17:25.835Z","group":"בדיקת אכיפת קללות","user":"972543038706","content":"ניר ההומו","reason":"תוכן פוגעני (זוהה ע\"י AI)","actionType":"llm"}
+{"event":"message","ts":"2026-03-25T14:17:38.475Z","group":"בדיקת אכיפת קללות","user":"972543038706","type":"chat","content":"חחחחחח","enforced":false}
+{"event":"message","ts":"2026-03-25T14:18:15.694Z","group":"בדיקת אכיפת קללות","user":"972545827969","type":"chat","content":"האיראנים מציקים","enforced":false}
+{"event":"message","ts":"2026-03-25T14:18:19.803Z","group":"בדיקת אכיפת קללות","user":"972545827969","type":"chat","content":"ירו עלינו יותר היום","enforced":false}
+{"event":"message","ts":"2026-03-25T14:19:33.948Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"טפי","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:19:34.687Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"טפי","reason":"שליחת הודעה ללא אישור תקנון","actionType":"pending_welcome"}
+{"event":"message","ts":"2026-03-25T14:20:07.500Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"איך זה העיף אותי ככ מהר","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:20:07.987Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"איך זה העיף אותי ככ מהר","reason":"שליחת הודעה ללא אישור תקנון","actionType":"pending_welcome"}
+{"event":"message","ts":"2026-03-25T14:20:16.755Z","group":"בדיקת אכיפת קללות","user":"972558818806","type":"chat","content":"אז אתה בעצם אומר לי שבגלל שהשיער שלו חלק למנש יש ענק?","enforced":false}
+{"event":"message","ts":"2026-03-25T14:20:34.148Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"היי","enforced":false}
+{"event":"message","ts":"2026-03-25T14:20:36.380Z","group":"בדיקת אכיפת קללות","user":"972544568533","type":"chat","content":"יא צעיר","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:20:37.013Z","group":"בדיקת אכיפת קללות","user":"972544568533","content":"יא צעיר","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-25T14:20:50.749Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"אישרתי איזה פעמיים","enforced":false}
+{"event":"message","ts":"2026-03-25T14:21:02.441Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"אתה יורד עליי","enforced":false}
+{"event":"message","ts":"2026-03-25T14:21:05.233Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"ונעלבתי","enforced":false}
+{"event":"message","ts":"2026-03-25T14:21:10.456Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"אני אבי נעלבי","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:21:10.460Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"אני אבי נעלבי","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-25T14:21:15.973Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"נייס","enforced":false}
+{"event":"message","ts":"2026-03-25T14:22:18.823Z","group":"בדיקת אכיפת קללות","user":"972533378346","type":"chat","content":"על קוף אתה מדבר איתי את הילד שלי אני שם על דבר כזה","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:22:19.430Z","group":"בדיקת אכיפת קללות","user":"972533378346","content":"על קוף אתה מדבר איתי את הילד שלי אני שם על דבר כזה","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-25T14:22:24.654Z","group":"בדיקת אכיפת קללות","user":"972509120181","type":"chat","content":"דרוקמן","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:22:25.228Z","group":"בדיקת אכיפת קללות","user":"972509120181","content":"דרוקמן","reason":"שליחת הודעה ללא אישור תקנון","actionType":"pending_welcome"}
+{"event":"message","ts":"2026-03-25T14:22:29.042Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"הוא חולם על שרון","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:22:29.050Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"הוא חולם על שרון","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-25T14:22:34.031Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"חולם","enforced":false}
+{"event":"enforced","ts":"2026-03-25T14:22:34.035Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"חולם","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-25T18:35:24.558Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"מה אתה בודק","enforced":false}
+{"event":"message","ts":"2026-03-25T18:35:29.904Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"דביל","enforced":false}
+{"event":"enforced","ts":"2026-03-25T18:35:29.908Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"דביל","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-25T18:35:34.486Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"טמבל","enforced":false}
+{"event":"enforced","ts":"2026-03-25T18:35:34.490Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"טמבל","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-25T18:35:35.873Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"טיפש","enforced":false}
+{"event":"enforced","ts":"2026-03-25T18:35:36.394Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"טיפש","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-25T18:35:48.914Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":".","enforced":false}
+{"event":"message","ts":"2026-03-25T18:35:58.727Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"חחחחחחח","enforced":false}
+{"event":"message","ts":"2026-03-25T18:36:02.881Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"זה המטרה של הקבוצה","enforced":false}
+{"event":"message","ts":"2026-03-25T18:36:08.265Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"תוסיף את זה","enforced":false}
+{"event":"message","ts":"2026-03-25T18:42:29.453Z","group":"בדיקת אכיפת קללות","user":"972545827969","type":"chat","content":"סתם דפוק","enforced":false}
+{"event":"enforced","ts":"2026-03-25T18:42:29.456Z","group":"בדיקת אכיפת קללות","user":"972545827969","content":"סתם דפוק","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-25T18:42:35.173Z","group":"בדיקת אכיפת קללות","user":"972545827969","type":"chat","content":"מפגר","enforced":false}
+{"event":"enforced","ts":"2026-03-25T18:42:35.177Z","group":"בדיקת אכיפת קללות","user":"972545827969","content":"מפגר","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-25T18:42:39.598Z","group":"בדיקת אכיפת קללות","user":"972545827969","type":"chat","content":"מטומטם","enforced":false}
+{"event":"message","ts":"2026-03-25T18:42:54.918Z","group":"בדיקת אכיפת קללות","user":"972545827969","type":"chat","content":"@126559902015653 לטיפולך","enforced":false}
+{"event":"message","ts":"2026-03-25T18:52:25.019Z","group":"בדיקת אכיפת קללות","user":"972544568533","type":"chat","content":"יא דבע","enforced":false}
+{"event":"enforced","ts":"2026-03-25T18:52:25.683Z","group":"בדיקת אכיפת קללות","user":"972544568533","content":"יא דבע","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-25T18:54:00.167Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"יכלב","enforced":false}
+{"event":"message","ts":"2026-03-25T18:54:06.732Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"יכאלב","enforced":false}
+{"event":"message","ts":"2026-03-25T18:54:10.876Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"חמאר","enforced":false}
+{"event":"message","ts":"2026-03-25T18:54:21.043Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"חמור","enforced":false}
+{"event":"message","ts":"2026-03-25T18:54:29.895Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"דביל","enforced":false}
+{"event":"enforced","ts":"2026-03-25T18:54:29.901Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"דביל","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-25T18:55:48.630Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"תודה","enforced":false}
+{"event":"enforced","ts":"2026-03-25T19:07:10.240Z","group":"בדיקת אכיפת קללות","user":"223879616311465","content":"Ben zona","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"enforced","ts":"2026-03-25T19:08:19.373Z","group":"בדיקת אכיפת קללות","user":"216358994317355","content":"יא דבע","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"enforced","ts":"2026-03-25T19:33:04.339Z","group":"בדיקת אכיפת קללות","user":"972509120181","content":"זין","reason":"תוכן פוגעני (זוהה ע\"י AI)","actionType":"llm"}
+{"event":"enforced","ts":"2026-03-25T19:33:25.972Z","group":"בדיקת אכיפת קללות","user":"972509120181","content":"ז*ן","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-25T19:33:40.810Z","group":"בדיקת אכיפת קללות","user":"972545827969","type":"chat","content":"שבת שלום","enforced":false}
+{"event":"enforced","ts":"2026-03-25T19:35:55.408Z","group":"בדיקת אכיפת קללות","user":"972544568533","content":"יא דבע","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T12:44:11.687Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"דרוקמן הוא לצן","enforced":false}
+{"event":"message","ts":"2026-03-27T12:44:21.988Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"ניר אמר לי לעשות את זה","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:44:22.538Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"ניר אמר לי לעשות את זה","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"enforced","ts":"2026-03-27T12:44:29.551Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"דרוקמן הוא לצן","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T12:44:53.779Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"ליצן","enforced":false}
+{"event":"message","ts":"2026-03-27T12:44:58.803Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"פולנייה","enforced":false}
+{"event":"message","ts":"2026-03-27T12:45:11.989Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"פולניה","enforced":false}
+{"event":"message","ts":"2026-03-27T12:45:26.122Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"דרוקמן הוא פולנייה","enforced":false}
+{"event":"message","ts":"2026-03-27T12:45:43.677Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"ניר אמר לי לעשות את זה","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:45:44.255Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"ניר אמר לי לעשות את זה","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T12:45:50.775Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"ניר","enforced":false}
+{"event":"message","ts":"2026-03-27T12:45:52.948Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"אמר","enforced":false}
+{"event":"message","ts":"2026-03-27T12:45:54.367Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"לי","enforced":false}
+{"event":"message","ts":"2026-03-27T12:45:56.066Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"לעשות","enforced":false}
+{"event":"message","ts":"2026-03-27T12:45:57.335Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"את","enforced":false}
+{"event":"message","ts":"2026-03-27T12:45:58.440Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"זה","enforced":false}
+{"event":"message","ts":"2026-03-27T12:46:01.007Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"לעשות את זה","enforced":false}
+{"event":"message","ts":"2026-03-27T12:46:06.739Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"ניר אמר לי","enforced":false}
+{"event":"message","ts":"2026-03-27T12:46:14.215Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"ניר אמר לי לעשות את","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:46:14.234Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"ניר אמר לי לעשות את","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T12:46:24.294Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"אמר לעשות את","enforced":false}
+{"event":"message","ts":"2026-03-27T12:46:27.948Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"לעשות את","enforced":false}
+{"event":"message","ts":"2026-03-27T12:46:37.406Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"ניר אמר לי לעשות את","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:46:37.982Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"ניר אמר לי לעשות את","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T12:47:09.205Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"ליאב אמר לעשות את","enforced":false}
+{"event":"message","ts":"2026-03-27T12:47:25.178Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"ניר","enforced":false}
+{"event":"message","ts":"2026-03-27T12:47:32.593Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"sticker","content":"","enforced":false}
+{"event":"message","ts":"2026-03-27T12:48:27.445Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"ליאב העץ","enforced":false}
+{"event":"message","ts":"2026-03-27T12:48:47.571Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"אבא שקד על הבמה","enforced":false}
+{"event":"message","ts":"2026-03-27T12:48:48.311Z","group":"בדיקת אכיפת קללות","user":"972509120181","type":"chat","content":"ליאב יא זין היה לי רסיס בשונה","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:48:48.313Z","group":"בדיקת אכיפת קללות","user":"972509120181","content":"ליאב יא זין היה לי רסיס בשונה","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T12:48:53.298Z","group":"בדיקת אכיפת קללות","user":"972509120181","type":"chat","content":"תתאמץ יותר","enforced":false}
+{"event":"message","ts":"2026-03-27T12:48:57.738Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"הבוט לא חסם אז זה אמת","enforced":false}
+{"event":"message","ts":"2026-03-27T12:48:58.608Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"אמא של ליאב מטריצה מרוצה","enforced":false}
+{"event":"message","ts":"2026-03-27T12:49:09.725Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"אמא של שקד רצה בצמתים","enforced":false}
+{"event":"message","ts":"2026-03-27T12:49:15.824Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"היי","enforced":false}
+{"event":"message","ts":"2026-03-27T12:49:16.293Z","group":"בדיקת אכיפת קללות","user":"972509120181","type":"chat","content":"דרוקמן","enforced":false}
+{"event":"message","ts":"2026-03-27T12:49:23.287Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"זה לא במה שהסכמנו","enforced":false}
+{"event":"message","ts":"2026-03-27T12:49:31.041Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"אני בודק את גבולות הבוט","enforced":false}
+{"event":"message","ts":"2026-03-27T12:49:32.837Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"זה לא באמת","enforced":false}
+{"event":"message","ts":"2026-03-27T12:49:37.404Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"אתה חייב להשתמש בעץ, פלי, מטריצה, רשימה","enforced":false}
+{"event":"message","ts":"2026-03-27T12:49:39.805Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"זה במסגרת הבוט","enforced":false}
+{"event":"message","ts":"2026-03-27T12:49:50.290Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"מקבל את החריגה","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:49:50.294Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"מקבל את החריגה","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T12:49:54.581Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"הבוט אומר שזה לא קללה והוא חקר את זה עם איי איי","enforced":false}
+{"event":"message","ts":"2026-03-27T12:50:01.073Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"רואה שאתה מגזים","enforced":false}
+{"event":"message","ts":"2026-03-27T12:50:01.974Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"מקבל","enforced":false}
+{"event":"message","ts":"2026-03-27T12:50:06.604Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"חריגה","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:50:06.607Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"חריגה","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T12:50:07.307Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"תפסיק לקלל אותי","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:50:12.781Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"אמא של ליאב מטריצה מרוצה","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T12:50:16.733Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"יאוהב בננות","enforced":false}
+{"event":"message","ts":"2026-03-27T12:50:23.524Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"איך ח ר י ג ה זה קללה","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:50:23.527Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"איך ח ר י ג ה זה קללה","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"enforced","ts":"2026-03-27T12:50:25.174Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"יאוהב בננות","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T12:50:42.819Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"שקד אתה לא יוצלח","enforced":false}
+{"event":"message","ts":"2026-03-27T12:50:46.435Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"איך הפוך של הגירח","enforced":false}
+{"event":"message","ts":"2026-03-27T12:50:51.116Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"כושל","enforced":false}
+{"event":"message","ts":"2026-03-27T12:50:58.415Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"פאקיונר","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:50:58.419Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"פאקיונר","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"enforced","ts":"2026-03-27T12:51:04.763Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"כושל","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T12:51:08.901Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"יבן בליעל","enforced":false}
+{"event":"message","ts":"2026-03-27T12:51:09.593Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"זה ענק שאתה לא מצליח לרשום","enforced":false}
+{"event":"message","ts":"2026-03-27T12:51:16.299Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"זה מחרפן אותי","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:51:17.018Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"יבן בליעל","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T12:51:29.002Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"אנטיוכוס","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:51:29.004Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"אנטיוכוס","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T12:51:31.277Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"שקט פלשתי בור עם הארץ","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:51:38.222Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"שקט פלשתי בור עם הארץ","reason":"תוכן פוגעני (זוהה ע\"י AI)","actionType":"llm"}
+{"event":"message","ts":"2026-03-27T12:51:44.173Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"יבור ללא תחתית","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:51:44.177Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"יבור ללא תחתית","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T12:51:51.153Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"כוסאמא של זה","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:51:51.154Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"כוסאמא של זה","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T12:52:01.040Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"הנרתיק של אמא של זה","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:52:07.820Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"הנרתיק של אמא של זה","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T12:52:16.871Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"אני אתחרפן מזה","enforced":false}
+{"event":"message","ts":"2026-03-27T12:52:26.920Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"קיבלת שאדו באן יכישלוני","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:52:33.099Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"קיבלת שאדו באן יכישלוני","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T12:52:58.439Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"טיפל בכל הערבית?","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:52:58.922Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"טיפל בכל הערבית?","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T12:53:06.526Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"חחחחחחחחחחחחח","enforced":false}
+{"event":"message","ts":"2026-03-27T12:53:08.670Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"פלסטיני","enforced":false}
+{"event":"message","ts":"2026-03-27T12:53:23.450Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"אני מת","enforced":false}
+{"event":"message","ts":"2026-03-27T12:53:26.452Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"אז תחזיר אותי למצב התחלה","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:53:26.460Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"אז תחזיר אותי למצב התחלה","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T12:54:20.463Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"וןאי כמה זהב פספסתי","enforced":false}
+{"event":"message","ts":"2026-03-27T12:54:22.803Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"יש לו פסלון חסינות","enforced":false}
+{"event":"message","ts":"2026-03-27T12:54:27.576Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"איזה לא נחמד לי בלב","enforced":false}
+{"event":"message","ts":"2026-03-27T12:54:37.993Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"שקד לך תתיישב על עוגה","enforced":false}
+{"event":"message","ts":"2026-03-27T12:54:44.547Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"בלי נרות","enforced":false}
+{"event":"message","ts":"2026-03-27T12:54:48.751Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"אם כן אז אתה מוזמן","enforced":false}
+{"event":"message","ts":"2026-03-27T12:54:59.373Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"מה שהעדיפה שלך נותנת לך אם אתה חצילים זה שלך","enforced":false}
+{"event":"message","ts":"2026-03-27T12:55:16.312Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"אפשר בעברית?","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:55:17.794Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"שקד לך תתיישב על עוגה","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T12:55:20.794Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"לא","enforced":false}
+{"event":"message","ts":"2026-03-27T12:55:27.693Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"אני מפחד לקבל אזהרה","enforced":false}
+{"event":"message","ts":"2026-03-27T12:55:33.560Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"לך תחפש מי תנענע אותך","enforced":false}
+{"event":"message","ts":"2026-03-27T12:55:35.431Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"אני בודק לאט גבולות","enforced":false}
+{"event":"message","ts":"2026-03-27T12:55:41.562Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"לא כמוך במועדון לילה בשירותים","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:55:41.574Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"לא כמוך במועדון לילה בשירותים","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T12:55:42.850Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"חחחחחחחחח","enforced":false}
+{"event":"message","ts":"2026-03-27T12:55:48.704Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"שיט","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:55:48.706Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"שיט","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T12:55:55.324Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"חחחחחחחחחח","enforced":false}
+{"event":"message","ts":"2026-03-27T12:55:56.339Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"מה קורה פה","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:55:56.798Z","group":"בדיקת אכיפת קללות","user":"972556662011","content":"מה קורה פה","reason":"שליחת הודעה ללא אישור תקנון","actionType":"pending_welcome"}
+{"event":"message","ts":"2026-03-27T12:56:04.165Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"חחחחחחח","enforced":false}
+{"event":"message","ts":"2026-03-27T12:56:19.247Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"ניר תוסיף לקללות","enforced":false}
+{"event":"message","ts":"2026-03-27T12:56:30.139Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"אני מקלל אותך ליאב","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:56:31.894Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"לך תחפש מי תנענע אותך","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T12:56:34.299Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"שקד אתה חסר יצירתיות מצרי שכמוך","enforced":false}
+{"event":"message","ts":"2026-03-27T12:56:35.558Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"חחחחחח","enforced":false}
+{"event":"message","ts":"2026-03-27T12:56:39.897Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"לא תפס","enforced":false}
+{"event":"message","ts":"2026-03-27T12:56:42.923Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"מה קורה פה","enforced":false}
+{"event":"message","ts":"2026-03-27T12:56:44.128Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"אני אכן מצרי","enforced":false}
+{"event":"message","ts":"2026-03-27T12:56:46.024Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"רבע","enforced":false}
+{"event":"message","ts":"2026-03-27T12:56:50.953Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"וכל השאר אשכנזי","enforced":false}
+{"event":"message","ts":"2026-03-27T12:56:52.346Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"ידל אמצעים","enforced":false}
+{"event":"message","ts":"2026-03-27T12:56:55.451Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"sticker","content":"","enforced":false}
+{"event":"message","ts":"2026-03-27T12:56:56.756Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"צודק","enforced":false}
+{"event":"message","ts":"2026-03-27T12:57:00.670Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"את זה זה לא עוצר אה","enforced":false}
+{"event":"message","ts":"2026-03-27T12:57:01.805Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"אני עני","enforced":false}
+{"event":"message","ts":"2026-03-27T12:57:04.122Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"ואביון","enforced":false}
+{"event":"message","ts":"2026-03-27T12:57:17.378Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"sticker","content":"","enforced":false}
+{"event":"message","ts":"2026-03-27T12:57:17.955Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"נאצי נחשב?","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:57:18.506Z","group":"בדיקת אכיפת קללות","user":"972556662011","content":"נאצי נחשב?","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T12:57:25.601Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"כוס","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:57:25.603Z","group":"בדיקת אכיפת קללות","user":"972556662011","content":"כוס","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T12:57:32.755Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"אני אוהב לשתןת מים בכוס","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:57:32.756Z","group":"בדיקת אכיפת קללות","user":"972556662011","content":"אני אוהב לשתןת מים בכוס","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T12:57:35.917Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"איי","enforced":false}
+{"event":"message","ts":"2026-03-27T12:57:39.446Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"פושפוש","enforced":false}
+{"event":"message","ts":"2026-03-27T12:57:41.572Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"sticker","content":"","enforced":false}
+{"event":"message","ts":"2026-03-27T12:57:52.051Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"אני אפתח לאמא שלך את הפושפוש @146948162105458","enforced":false}
+{"event":"message","ts":"2026-03-27T12:58:00.235Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"חחחחחחחחח","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:58:01.538Z","group":"בדיקת אכיפת קללות","user":"972556662011","content":"אני אפתח לאמא שלך את הפושפוש @146948162105458","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T12:58:13.258Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"דיי  לא משהו הבוט","enforced":false}
+{"event":"message","ts":"2026-03-27T12:58:21.673Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"הבילבל של שקד קטן","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:58:21.683Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"הבילבל של שקד קטן","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T12:58:49.750Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"תשמע שקד אתה מרגל איראני","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:58:49.758Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"תשמע שקד אתה מרגל איראני","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T12:59:02.212Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"איראני","enforced":false}
+{"event":"message","ts":"2026-03-27T12:59:05.375Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"מרגל","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:59:05.378Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"מרגל","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T12:59:07.238Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"מקבל בישבן אתה","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:59:14.178Z","group":"בדיקת אכיפת קללות","user":"972556662011","content":"מקבל בישבן אתה","reason":"תוכן פוגעני (זוהה ע\"י AI)","actionType":"llm"}
+{"event":"message","ts":"2026-03-27T12:59:14.275Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"מקלף אבוקדו","enforced":false}
+{"event":"message","ts":"2026-03-27T12:59:20.143Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"או דיימ","enforced":false}
+{"event":"message","ts":"2026-03-27T12:59:27.265Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"שקד אתה נוגס בכריות","enforced":false}
+{"event":"message","ts":"2026-03-27T12:59:27.974Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"אבא שלך זה היטלר?","enforced":false}
+{"event":"message","ts":"2026-03-27T12:59:39.690Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"מה זאת הקנוניה הזאת עליי","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:59:41.750Z","group":"בדיקת אכיפת קללות","user":"972556662011","content":"אבא שלך זה היטלר?","reason":"תוכן פוגעני (זוהה ע\"י AI)","actionType":"llm"}
+{"event":"message","ts":"2026-03-27T12:59:47.656Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"מת","enforced":false}
+{"event":"message","ts":"2026-03-27T12:59:49.999Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"מזד**ן בתחת זה מה שאתה שקד","enforced":false}
+{"event":"enforced","ts":"2026-03-27T12:59:50.002Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"מזד**ן בתחת זה מה שאתה שקד","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"enforced","ts":"2026-03-27T12:59:57.771Z","group":"בדיקת אכיפת קללות","user":"972556662011","content":"מת","reason":"תוכן פוגעני (זוהה ע\"י AI)","actionType":"llm"}
+{"event":"message","ts":"2026-03-27T13:00:00.979Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"את זה הוא אישר כי זה נכוו כנראה","enforced":false}
+{"event":"message","ts":"2026-03-27T13:00:07.108Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"בעזרת השם","enforced":false}
+{"event":"message","ts":"2026-03-27T13:00:13.169Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"מז7ייN בתחת","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:00:13.173Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"מז7ייN בתחת","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T13:00:25.264Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"מז7ייN","enforced":false}
+{"event":"message","ts":"2026-03-27T13:00:29.467Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"שניכם על האשכים שלי","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:00:34.772Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"מז7ייN","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:00:36.644Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"לכל אחד יש פינה משלו","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:00:38.914Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"שניכם על האשכים שלי","reason":"תוכן פוגעני (זוהה ע\"י AI)","actionType":"llm"}
+{"event":"message","ts":"2026-03-27T13:00:49.540Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"ובאמצע יש חוצץ הפרדה","enforced":false}
+{"event":"message","ts":"2026-03-27T13:00:56.946Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"כל אחד מוזמן לתת בו לק","enforced":false}
+{"event":"message","ts":"2026-03-27T13:00:58.930Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"באלי לxנוס את אמא של שקד","enforced":false}
+{"event":"message","ts":"2026-03-27T13:01:05.864Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"היי גרוק","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:01:06.290Z","group":"בדיקת אכיפת קללות","user":"972556662011","content":"באלי לxנוס את אמא של שקד","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:01:08.958Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"שקד אתה תעוף מהקבוצה יותר מהר ממה שג׳פרי אפשטיין עשה ילדים","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:01:17.818Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"שקד אתה תעוף מהקבוצה יותר מהר ממה שג׳פרי אפשטיין עשה ילדים","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:01:19.140Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"הוא החזיק הרבה זמן חבוב","enforced":false}
+{"event":"message","ts":"2026-03-27T13:01:27.918Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"לקח ויאגרה","enforced":false}
+{"event":"message","ts":"2026-03-27T13:01:31.307Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"אני אוהב שהוא מאשר דברים נכונים","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:01:36.670Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"לקח ויאגרה","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:01:55.181Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"גונבים לך את העבודה ניר","enforced":false}
+{"event":"message","ts":"2026-03-27T13:02:00.571Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"השאלה זה האם כל שינוי סימן עובד כמו הבuלבuל של אמא של שקד","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:02:08.479Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"השאלה זה האם כל שינוי סימן עובד כמו הבuלבuל של אמא של שקד","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:02:17.934Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"סרסורים שכמותכם","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:02:17.940Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"סרסורים שכמותכם","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T13:02:26.327Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"שקד לא הבין את הקטע","enforced":false}
+{"event":"message","ts":"2026-03-27T13:02:27.604Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"שקד אתה כזה מIצץ","enforced":false}
+{"event":"message","ts":"2026-03-27T13:02:33.940Z","group":"בדיקת אכיפת קללות","user":"972509120181","type":"chat","content":"@209788399046903  תבדוק לי אם שקד גבר","enforced":false}
+{"event":"message","ts":"2026-03-27T13:02:36.237Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"הוא מfגר","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:02:37.148Z","group":"בדיקת אכיפת קללות","user":"972556662011","content":"שקד אתה כזה מIצץ","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:02:43.619Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"מרצי אתה גxי","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:02:48.816Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"הוא מfגר","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:02:52.152Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"מספר 1","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:02:53.818Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"מרצי אתה גxי","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:03:00.053Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"כולכם לגזים","enforced":false}
+{"event":"message","ts":"2026-03-27T13:03:07.434Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"שקד אתה ליידי boy","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:03:08.463Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"כולכם לגזים","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"enforced","ts":"2026-03-27T13:03:15.080Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"שקד אתה ליידי boy","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:03:21.496Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"אתה אומר מניסיון מתאילנד?","enforced":false}
+{"event":"message","ts":"2026-03-27T13:03:22.603Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"ליטרלי לא ככה רושמים ג\"","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:03:23.155Z","group":"בדיקת אכיפת קללות","user":"972556662011","content":"ליטרלי לא ככה רושמים ג\"","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T13:03:24.766Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"Gay","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:03:25.260Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"Gay","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:03:25.495Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"ניסית שם אחד לא?","enforced":false}
+{"event":"message","ts":"2026-03-27T13:03:27.740Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"או שיט","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:03:27.745Z","group":"בדיקת אכיפת קללות","user":"972556662011","content":"או שיט","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T13:03:31.665Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"Fucker","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:03:31.740Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"Fucker","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"enforced","ts":"2026-03-27T13:03:32.978Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"Gay","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:03:33.670Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"ג''","enforced":false}
+{"event":"message","ts":"2026-03-27T13:03:34.674Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"Rertard","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:03:34.732Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"Rertard","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"enforced","ts":"2026-03-27T13:03:40.645Z","group":"בדיקת אכיפת קללות","user":"972556662011","content":"ג''","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:03:41.332Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"You mom is a hoe","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:03:41.556Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"You mom is a hoe","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T13:03:46.927Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"חחחחחח","enforced":false}
+{"event":"message","ts":"2026-03-27T13:03:52.337Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"רזול","enforced":false}
+{"event":"message","ts":"2026-03-27T13:03:55.365Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"מקבל מאחור","enforced":false}
+{"event":"message","ts":"2026-03-27T13:04:02.426Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"כמוך אה מתוק","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:04:04.423Z","group":"בדיקת אכיפת קללות","user":"972556662011","content":"מקבל מאחור","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:04:10.539Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"מחפש באמפרים","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:04:10.543Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"מחפש באמפרים","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T13:04:17.354Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"יאללה יש לי בוט לטלגרם לסיים","enforced":false}
+{"event":"message","ts":"2026-03-27T13:04:18.092Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"אני מכניס לאמא של שקד לחור","enforced":false}
+{"event":"message","ts":"2026-03-27T13:04:19.771Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"נדבר אחרי","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:04:19.774Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"נדבר אחרי","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T13:04:21.260Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"לכל החורים","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:04:28.433Z","group":"בדיקת אכיפת קללות","user":"972556662011","content":"אני מכניס לאמא של שקד לחור","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:04:29.457Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"חחחחחחחח","enforced":false}
+{"event":"message","ts":"2026-03-27T13:04:29.947Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"את איבר הרבייה שלי","enforced":false}
+{"event":"message","ts":"2026-03-27T13:04:34.607Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"ומתרוקן בפנים","enforced":false}
+{"event":"message","ts":"2026-03-27T13:04:38.896Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"מרצי יבתול","enforced":false}
+{"event":"message","ts":"2026-03-27T13:04:43.784Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"גאון","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:04:44.621Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"מרצי יבתול","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:05:00.600Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"אני אבתק את הבתולים של אחות של שקד","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:05:06.252Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"אני אבתק את הבתולים של אחות של שקד","reason":"תוכן פוגעני (זוהה ע\"י AI)","actionType":"llm"}
+{"event":"message","ts":"2026-03-27T13:05:08.498Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"אין לי אחיות","enforced":false}
+{"event":"message","ts":"2026-03-27T13:05:10.313Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"בוצע כבר יא דוד","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:05:10.319Z","group":"בדיקת אכיפת קללות","user":"972556662011","content":"בוצע כבר יא דוד","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T13:05:14.530Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"מה","enforced":false}
+{"event":"message","ts":"2026-03-27T13:05:19.600Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"ליטרלי רשמתי לא קללה","enforced":false}
+{"event":"message","ts":"2026-03-27T13:05:22.898Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"חחחחחחחחח","enforced":false}
+{"event":"message","ts":"2026-03-27T13:05:25.239Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"כמה פסילות יש","enforced":false}
+{"event":"message","ts":"2026-03-27T13:05:28.418Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"15","enforced":false}
+{"event":"message","ts":"2026-03-27T13:05:29.543Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"בלי ליאב לא באלי להיות הפ","enforced":false}
+{"event":"message","ts":"2026-03-27T13:05:31.430Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"יש לך עוד אחת","enforced":false}
+{"event":"message","ts":"2026-03-27T13:05:39.077Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"כבשה","enforced":false}
+{"event":"message","ts":"2026-03-27T13:05:42.758Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"ליאב בוא נעבור לצאט של התואר","enforced":false}
+{"event":"message","ts":"2026-03-27T13:05:45.836Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"ונקלל את שקד","enforced":false}
+{"event":"message","ts":"2026-03-27T13:05:47.449Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"יאללה","enforced":false}
+{"event":"message","ts":"2026-03-27T13:05:56.999Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"מודלים חישוביים?","enforced":false}
+{"event":"message","ts":"2026-03-27T13:06:12.623Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"חשבתי על הנטווריקינג","enforced":false}
+{"event":"message","ts":"2026-03-27T13:06:23.885Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"אפשרי","enforced":false}
+{"event":"message","ts":"2026-03-27T13:06:37.664Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"אפשר בקבוצה של כל מי שתיקתק את אמא שלו","enforced":false}
+{"event":"message","ts":"2026-03-27T13:06:42.411Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"זה איזה 5000 אנשים","enforced":false}
+{"event":"message","ts":"2026-03-27T13:07:05.875Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"תרשום לו איזה משהו","enforced":false}
+{"event":"message","ts":"2026-03-27T13:07:09.575Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"תתחיל טרנד","enforced":false}
+{"event":"message","ts":"2026-03-27T13:07:10.063Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"מה את  עושה🤣🤣🤣","enforced":false}
+{"event":"message","ts":"2026-03-27T13:07:16.120Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"מה התחביר שם","enforced":false}
+{"event":"message","ts":"2026-03-27T13:07:27.405Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"אין לי מושג","enforced":false}
+{"event":"message","ts":"2026-03-27T13:07:30.487Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"חחחחחחחח","enforced":false}
+{"event":"message","ts":"2026-03-27T13:07:32.301Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"בטל בטל","enforced":false}
+{"event":"message","ts":"2026-03-27T13:07:37.876Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"שיט","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:07:37.881Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"שיט","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T13:07:38.106Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"עדיף שתכתוב בדיחה עם הבוט של רועי סיוון","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:07:53.097Z","group":"בדיקת אכיפת קללות","user":"972556662011","content":"אפשר בקבוצה של כל מי שתיקתק את אמא שלו","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:07:58.494Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"מחקתי","enforced":false}
+{"event":"message","ts":"2026-03-27T13:08:03.356Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"יופי","enforced":false}
+{"event":"message","ts":"2026-03-27T13:08:20.013Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"לא הבנת שהוא לא מוחק אם זה אמת?","enforced":false}
+{"event":"message","ts":"2026-03-27T13:08:33.362Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"זה שולח אותו לחקור בצ׳אט או משהו","enforced":false}
+{"event":"message","ts":"2026-03-27T13:08:52.313Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"נו נכון ואז הצ׳אט אומר זה אמת גמני בקבוצה","enforced":false}
+{"event":"message","ts":"2026-03-27T13:09:16.981Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"אבא של שקד זה ג׳פרי אפשטיין","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:09:25.656Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"אבא של שקד זה ג׳פרי אפשטיין","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:09:30.850Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"כנראה שזה אמת גם","enforced":false}
+{"event":"message","ts":"2026-03-27T13:09:45.959Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"שקד הוא קורבן של מסיבת דידי","enforced":false}
+{"event":"message","ts":"2026-03-27T13:09:46.953Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"אבא שלו מכניס את איבר הרבייה שלו לחור שמאחור של שקד","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:09:53.931Z","group":"בדיקת אכיפת קללות","user":"972556662011","content":"אבא שלו מכניס את איבר הרבייה שלו לחור שמאחור של שקד","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:10:02.035Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"לא מוחק אם זה נכון......","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:10:10.431Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"שקד הוא קורבן של מסיבת דידי","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"enforced","ts":"2026-03-27T13:10:11.135Z","group":"בדיקת אכיפת קללות","user":"972526980000","content":"פוטה","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:10:17.744Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"על שקד השתמשו בכל כל הרב שמן שהחוק מאחור שלו ממש גדול","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:10:18.391Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"על שקד השתמשו בכל כל הרב שמן שהחוק מאחור שלו ממש גדול","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:10:26.868Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"מה עברתם עליי","enforced":false}
+{"event":"message","ts":"2026-03-27T13:10:31.873Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"התחלתם על דרוקמן","enforced":false}
+{"event":"message","ts":"2026-03-27T13:10:33.429Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"רמאי","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:10:33.432Z","group":"בדיקת אכיפת קללות","user":"972556662011","content":"רמאי","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T13:10:35.106Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"תחזרו אליו","enforced":false}
+{"event":"message","ts":"2026-03-27T13:10:41.608Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"נבלות","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:10:41.611Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"נבלות","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T13:10:42.346Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"אני עוד לא הייתי שם","enforced":false}
+{"event":"message","ts":"2026-03-27T13:10:46.430Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"טרפות","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:10:46.431Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"טרפות","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T13:10:48.896Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"אני האשם נראלי","enforced":false}
+{"event":"message","ts":"2026-03-27T13:10:49.672Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"אז תתחיל","enforced":false}
+{"event":"message","ts":"2026-03-27T13:10:53.363Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"ביבי אשם","enforced":false}
+{"event":"message","ts":"2026-03-27T13:11:14.527Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"מדרכי חוסם רק את מי שמגיע לו","enforced":false}
+{"event":"message","ts":"2026-03-27T13:11:21.060Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"אתם בריונים","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:11:21.062Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"אתם בריונים","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T13:11:24.724Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"בריון","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:11:34.092Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"בריון","reason":"תוכן פוגעני (זוהה ע\"י AI)","actionType":"llm"}
+{"event":"message","ts":"2026-03-27T13:11:51.975Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"מרצי","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:12:00.594Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"מרצי","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:12:04.917Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"אני מרגיש שתינקר עם הבוט","enforced":false}
+{"event":"message","ts":"2026-03-27T13:12:05.631Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"מרצי","enforced":false}
+{"event":"message","ts":"2026-03-27T13:12:06.347Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"תגיד לי עוד הרבה תגיד לי מור הנה קיבלת בחור שמאחור","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:12:12.837Z","group":"בדיקת אכיפת קללות","user":"972526688393","content":"מרצי","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:12:15.678Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"מרצי","enforced":false}
+{"event":"message","ts":"2026-03-27T13:12:19.254Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"@209788399046903","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:12:21.195Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"תגיד לי עוד הרבה תגיד לי מור הנה קיבלת בחור שמאחור","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:12:23.198Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"ילמד ככה שאתה קללה","enforced":false}
+{"event":"message","ts":"2026-03-27T13:12:36.579Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"מור כהן?","enforced":false}
+{"event":"message","ts":"2026-03-27T13:12:49.897Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"קללה בשבילך ברכה בשביל אמא שלך","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:12:56.976Z","group":"בדיקת אכיפת קללות","user":"972556662011","content":"קללה בשבילך ברכה בשביל אמא שלך","reason":"תוכן פוגעני (זוהה ע\"י AI)","actionType":"llm"}
+{"event":"message","ts":"2026-03-27T13:12:58.189Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"מור באנגלית כאילו","enforced":false}
+{"event":"message","ts":"2026-03-27T13:13:02.290Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"דיים","enforced":false}
+{"event":"message","ts":"2026-03-27T13:13:06.922Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"כן אני יודע","enforced":false}
+{"event":"message","ts":"2026-03-27T13:13:11.859Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"איי","enforced":false}
+{"event":"message","ts":"2026-03-27T13:13:14.941Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"תעדכן שיהיה","enforced":false}
+{"event":"message","ts":"2026-03-27T13:13:28.915Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"שקד חולה על מלפפונים","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:13:28.924Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"שקד חולה על מלפפונים","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T13:13:41.492Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"שקד חולה על מלפלפונים","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:13:41.504Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"שקד חולה על מלפלפונים","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T13:13:49.627Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"איפה השדיים של רוני חקלאי","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:13:57.643Z","group":"בדיקת אכיפת קללות","user":"972556662011","content":"איפה השדיים של רוני חקלאי","reason":"תוכן פוגעני (זוהה ע\"י AI)","actionType":"llm"}
+{"event":"message","ts":"2026-03-27T13:14:04.008Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"🤣🤣🤣🤣","enforced":false}
+{"event":"message","ts":"2026-03-27T13:14:10.993Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"לקח לו הרבה זמן","enforced":false}
+{"event":"message","ts":"2026-03-27T13:14:16.104Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"שקד חולה על גברים","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:14:16.117Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"שקד חולה על גברים","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T13:14:22.975Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"וא היה בשוק","enforced":false}
+{"event":"message","ts":"2026-03-27T13:14:24.861Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"הוא","enforced":false}
+{"event":"message","ts":"2026-03-27T13:14:28.158Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"שקד לא בריא על גברים","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:14:46.264Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"שקד לא בריא על גברים","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:14:49.630Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"שקד לא בריא על יחסים עם אותו המין","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:14:49.636Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"שקד לא בריא על יחסים עם אותו המין","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T13:14:59.900Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"שקד לא בריא על יחסים עם עובדי בניין","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:14:59.904Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"שקד לא בריא על יחסים עם עובדי בניין","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T13:15:03.936Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"יחסים","enforced":false}
+{"event":"message","ts":"2026-03-27T13:15:12.209Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"שקד לא בריא על יחסים","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:15:12.214Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"שקד לא בריא על יחסים","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T13:15:31.742Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"שקד לא בריא על הזדווגות על גברים","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:15:39.098Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"שקד לא בריא על הזדווגות על גברים","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:15:44.562Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"זה אמתתתתתת","enforced":false}
+{"event":"message","ts":"2026-03-27T13:15:59.162Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"תחזרו לדרוקמן","enforced":false}
+{"event":"message","ts":"2026-03-27T13:16:01.556Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"חפרתם","enforced":false}
+{"event":"message","ts":"2026-03-27T13:16:12.962Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"זה כמו חול טובעני","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:16:12.972Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"זה כמו חול טובעני","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T13:16:20.172Z","group":"בדיקת אכיפת קללות","user":"972523310332","type":"chat","content":"חול טובעני","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:16:20.177Z","group":"בדיקת אכיפת קללות","user":"972523310332","content":"חול טובעני","reason":"תוכן הודעה אסור","actionType":"rule_engine"}
+{"event":"message","ts":"2026-03-27T13:16:34.167Z","group":"בדיקת אכיפת קללות","user":"972586566234","type":"chat","content":"אני בין בירה לשייק פה על הבריכה","enforced":false}
+{"event":"message","ts":"2026-03-27T13:16:38.147Z","group":"בדיקת אכיפת קללות","user":"972586566234","type":"chat","content":"אז תכף אתפנה","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:16:44.797Z","group":"בדיקת אכיפת קללות","user":"972586566234","content":"אני בין בירה לשייק פה על הבריכה","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:19:27.319Z","group":"בדיקת אכיפת קללות","user":"972586566234","type":"chat","content":"חחחח תכף","enforced":false}
+{"event":"message","ts":"2026-03-27T13:24:16.498Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"אבל צנועה שהבוט לא יחסום","enforced":false}
+{"event":"message","ts":"2026-03-27T13:24:23.736Z","group":"בדיקת אכיפת קללות","user":"972556662011","type":"chat","content":"בלי איבר רבייה","enforced":false}
+{"event":"enforced","ts":"2026-03-27T13:24:44.125Z","group":"בדיקת אכיפת קללות","user":"972586566234","content":"אז תכף אתפנה","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"enforced","ts":"2026-03-27T13:26:49.885Z","group":"בדיקת אכיפת קללות","user":"972556662011","content":"בלי איבר רבייה","reason":"LLM: passed","actionType":"llm_pass"}
+{"event":"message","ts":"2026-03-27T13:35:26.840Z","group":"בדיקת אכיפת קללות","user":"972526688393","type":"chat","content":"לפחות הוא הרבייה פעם","enforced":false}
