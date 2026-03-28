@@ -114,6 +114,13 @@ async function handleDM(client, msg, senderJid, content) {
         return;
     }
 
+    // Check for learning phrase approval/rejection ("אשר N" / "דחה N") — must run before developer path
+    const learnMatch = content.trim().match(/^(אשר|דחה)\s+(\d+)$/);
+    if (learnMatch) {
+        const handled = await handleLearningApproval(client, msg.from, senderJid, learnMatch[1], parseInt(learnMatch[2], 10), lang);
+        if (handled) return;
+    }
+
     // Developer: if actively in setup → continue setup; otherwise → execute commands directly
     if (config.isDeveloper(senderJid)) {
         const inSetup = await setupFlow.isInSetup(senderJid);
@@ -140,13 +147,6 @@ async function handleDM(client, msg, senderJid, content) {
     // Check for pending admin action responses (demotion/removal)
     if (await handleAdminActionResponse(client, msg, senderJid, content, lang)) {
         return;
-    }
-
-    // Check for learning phrase approval/rejection ("אשר N" / "דחה N")
-    const learnMatch = content.trim().match(/^(אשר|דחה)\s+(\d+)$/);
-    if (learnMatch) {
-        const handled = await handleLearningApproval(client, msg.from, senderJid, learnMatch[1], parseInt(learnMatch[2], 10), lang);
-        if (handled) return;
     }
 
     // If user is actively in a setup flow, route there immediately.
