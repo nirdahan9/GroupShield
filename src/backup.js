@@ -26,8 +26,8 @@ class BackupSystem {
             }
         });
 
-        const schedule = config.get('backup.schedule', '0 3 * * *');
-        const safeSchedule = cron.validate(schedule) ? schedule : '0 3 * * *';
+        const schedule = config.get('backup.schedule', '0 5 * * *');
+        const safeSchedule = cron.validate(schedule) ? schedule : '0 5 * * *';
         if (safeSchedule !== schedule) {
             logger.warn(`Invalid backup cron schedule "${schedule}" - using fallback "${safeSchedule}"`);
         }
@@ -35,7 +35,7 @@ class BackupSystem {
         cron.schedule(safeSchedule, () => {
             logger.info('Scheduled backup triggered');
             this.createBackup();
-        });
+        }, { timezone: 'Asia/Jerusalem' });
 
         this.initialized = true;
         logger.info(`Backup system initialized (schedule: ${safeSchedule})`);

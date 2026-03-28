@@ -212,25 +212,24 @@ async function startBot() {
 // ── Scheduling ───────────────────────────────────────────────────────────
 
 function scheduleRestarts() {
-    const schedule = getValidCronOrDefault('scheduling.dailyRestart', '0 4 * * *');
+    const schedule = getValidCronOrDefault('scheduling.dailyRestart', '0 6 * * *');
     return cron.schedule(schedule, () => {
         logger.info('Scheduled restart');
         setRestartReason('scheduled', schedule);
         process.exit(0);
-    });
+    }, { timezone: 'Asia/Jerusalem' });
 }
 
 function scheduleStatusMessages(client) {
-    const schedule = getValidCronOrDefault('scheduling.statusMessages', '0 8,12,16,20 * * *');
+    const schedule = getValidCronOrDefault('scheduling.statusMessages', '0 10,14,18,22 * * *');
     return cron.schedule(schedule, async () => {
         await sendStatusToDeveloper(client);
-    });
+    }, { timezone: 'Asia/Jerusalem' });
 }
 
 function scheduleShabbatFetch(client) {
-    // Every Thursday at 11:00 UTC = 13:00 Israel winter (UTC+2) / 14:00 Israel summer (UTC+3)
-    // Avoids conflicts with status messages (8/12/16/20 IL) and daily restart (04:00 IL)
-    const schedule = getValidCronOrDefault('scheduling.shabbatFetch', '0 11 * * 4');
+    // Every Thursday at 13:00 Israel time (Asia/Jerusalem) — handles DST automatically
+    const schedule = getValidCronOrDefault('scheduling.shabbatFetch', '0 13 * * 4');
     return cron.schedule(schedule, async () => {
         let times = null;
         try {
@@ -255,11 +254,11 @@ function scheduleShabbatFetch(client) {
             // Fetch failed — start interactive recovery flow with developer
             await shabbat.initiateRecovery(client, DEVELOPER_JID);
         }
-    });
+    }, { timezone: 'Asia/Jerusalem' });
 }
 
 function scheduleWarningsCleanup() {
-    const schedule = getValidCronOrDefault('scheduling.warningsCleanup', '15 4 * * *');
+    const schedule = getValidCronOrDefault('scheduling.warningsCleanup', '15 6 * * *');
     return cron.schedule(schedule, async () => {
         try {
             const removed = await database.cleanupExpiredWarnings();
@@ -269,14 +268,14 @@ function scheduleWarningsCleanup() {
         } catch (e) {
             logger.error('Scheduled warnings cleanup failed', e);
         }
-    });
+    }, { timezone: 'Asia/Jerusalem' });
 }
 
 function scheduleUnknownGroupExit(client) {
     const enabled = config.get('scheduling.unknownGroupExitEnabled', true);
     if (!enabled) return null;
 
-    const schedule = getValidCronOrDefault('scheduling.unknownGroupExit', '30 4 * * *');
+    const schedule = getValidCronOrDefault('scheduling.unknownGroupExit', '30 6 * * *');
     return cron.schedule(schedule, async () => {
         try {
             const dbFilePath = path.join(__dirname, config.get('database.file', 'groupshield.db'));
@@ -314,7 +313,7 @@ function scheduleUnknownGroupExit(client) {
         } catch (e) {
             logger.error('Unknown-group daily cleanup failed', e);
         }
-    });
+    }, { timezone: 'Asia/Jerusalem' });
 }
 
 function schedulePendingMembersCleanup(client) {
@@ -362,7 +361,7 @@ function schedulePendingMembersCleanup(client) {
         } catch (e) {
             logger.error('Pending members cleanup failed', e);
         }
-    });
+    }, { timezone: 'Asia/Jerusalem' });
 }
 
 function getValidCronOrDefault(configKey, fallback) {

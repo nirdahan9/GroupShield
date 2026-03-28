@@ -30,7 +30,7 @@
     },
     "backup": {
         "enabled": true,
-        "schedule": "0 3 * * *",
+        "schedule": "0 5 * * *",
         "keepBackups": 7,
         "backupDir": "backups"
     },
@@ -47,12 +47,12 @@
         "resetAfterDays": 60
     },
     "scheduling": {
-        "dailyRestart": "0 4 * * *",
-        "statusMessages": "0 8,12,16,20 * * *",
+        "dailyRestart": "0 6 * * *",
+        "statusMessages": "0 10,14,18,22 * * *",
         "groupNameRefreshIntervalMs": 300000,
-        "warningsCleanup": "15 4 * * *",
+        "warningsCleanup": "15 6 * * *",
         "unknownGroupExitEnabled": true,
-        "unknownGroupExit": "30 4 * * *",
+        "unknownGroupExit": "30 6 * * *",
         "adminActionTimeoutHours": 4
     }
 }
