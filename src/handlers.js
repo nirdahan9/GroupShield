@@ -682,7 +682,7 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
         if (hasCursesPreset) {
             // Repeat offenders (≥2 warnings) get force-checked by LLM even for non-suspicious messages
             const warnCount = await database.getWarningCount(groupJid, senderJid).catch(() => 0);
-            const forceCheck = warnCount >= 2;
+            const forceCheck = warnCount >= 5;
             checkWithLLM(client, msg, senderJid, content, msgType, groupConfig, enforcementConfig, rateLimiter, lang, forceCheck)
                 .catch(e => logger.warn('LLM check error', e.message));
         }
