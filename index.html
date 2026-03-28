@@ -75,6 +75,16 @@
                 <h3 data-i18n="f6-title">Bilingual Support</h3>
                 <p data-i18n="f6-desc">Full support for Hebrew and English out of the box, ensuring every user understands the rules.</p>
             </div>
+            <div class="card glass detail-card" style="text-align: center;">
+                <span class="icon">🤬</span>
+                <h3 data-i18n="f7-title">AI Curse Detection</h3>
+                <p data-i18n="f7-desc">A two-layer filter: a local curselist catches known violations, then an LLM catches leet-speak, special-character substitutions, and creative bypass attempts that regex alone can't detect.</p>
+            </div>
+            <div class="card glass detail-card" style="text-align: center;">
+                <span class="icon">🕯️</span>
+                <h3 data-i18n="f8-title">Shabbat Mode</h3>
+                <p data-i18n="f8-desc">Automatically locks the group before Shabbat and reopens it after. Accurate weekly entry/exit times are fetched live and the group re-locks if someone manually opens it during Shabbat.</p>
+            </div>
         </div>
     </section>
 
@@ -240,6 +250,16 @@
                 <h3 data-i18n="t6-title">No-Code Management</h3>
                 <p data-i18n="t6-desc">Configure complex rules, schedules, and immunity groups intuitively inside WhatsApp. No dashboard required.</p>
             </div>
+            <div class="card glass detail-card" style="text-align: center;">
+                <span class="icon">🧠</span>
+                <h3 data-i18n="t7-title">Groq API & Llama 3.1</h3>
+                <p data-i18n="t7-desc">The AI moderation layer runs Llama-3.1-8b-instant via Groq with a 4-second timeout and a monthly usage cap. A suspicion scorer pre-filters messages before any API call. Prompt injection attempts — in Hebrew or English — are blocked instantly without involving the LLM at all. Fails silently on infra errors: zero false positives.</p>
+            </div>
+            <div class="card glass detail-card" style="text-align: center;">
+                <span class="icon">📅</span>
+                <h3 data-i18n="t8-title">HebCal API & Shabbat Scheduler</h3>
+                <p data-i18n="t8-desc">Every Thursday a cron job fetches candle-lighting times (Jerusalem) and Havdalah times (Netanya) from the HebCal API. The bot locks groups 5 minutes before entry and unlocks 5 minutes after exit, re-locking on any manual override. If the fetch fails, a guided recovery flow lets the admin enter times manually.</p>
+            </div>
         </div>
     </section>
 
@@ -252,12 +272,18 @@ graph TD
     A["📱 WhatsApp Group"] -->|"New Message"| B["🤖 Puppeteer Bot\n(Node.js)"]
     B -->|"Enqueue"| C["⚡ Event Queue\n(Rate-Limiter)"]
     C --> D["🧠 Rule Engine\n(Regex / Time / Spam)"]
-    D -->|"Violation"| E["⚖️ Enforcement Pipeline"]
-    D -->|"Immune user"| F["✅ Ignore"]
+    D -->|"Clear Violation"| E["⚖️ Enforcement Pipeline"]
+    D -->|"Suspicious / Context Word"| LLM["🤖 AI Layer\n(Groq / Llama 3.1)"]
+    LLM -->|"Violation"| E
+    LLM -->|"Clean"| F["✅ Ignore"]
+    D -->|"Immune user"| F
     E --> G["🗑️ Delete Message"]
     E --> H["📩 DM Warning"]
     E --> I["🚫 Remove User"]
     E --> J["📣 Report to Mgmt Group"]
+
+    SCHED["🕯️ Shabbat Scheduler\n(Cron / HebCal API)"] -->|"Friday evening"| LOCK["🔒 Lock Group\n(Admins Only)"]
+    SCHED -->|"Saturday night"| UNLOCK["🔓 Unlock Group"]
 
     B -->|"Read/Write"| K[("🗄️ SQLite DB\n(Multitenant)")]
     K --- L["Groups Config"]
@@ -269,6 +295,10 @@ graph TD
     style C fill:#1a1a2e,stroke:#00e5ff,color:#fff
     style D fill:#1a1a2e,stroke:#00e5ff,color:#fff
     style E fill:#1a1a2e,stroke:#f59e0b,color:#fff
+    style LLM fill:#1a1a2e,stroke:#a855f7,color:#fff
+    style SCHED fill:#1a1a2e,stroke:#f59e0b,color:#fff
+    style LOCK fill:#1a1a2e,stroke:#ef4444,color:#fff
+    style UNLOCK fill:#1a1a2e,stroke:#00ffa3,color:#fff
     style K fill:#1a1a2e,stroke:#00ffa3,color:#fff
             </pre>
         </div>
