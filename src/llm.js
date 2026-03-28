@@ -9,6 +9,7 @@ const config = require('./config');
 const logger = require('./logger');
 const { CONTEXT_WORDS } = require('./cursesList');
 const messageLog = require('./messageLog');
+const { checkCosineSimilarity } = require('./cosine');
 
 const MODEL = 'llama-3.1-8b-instant';
 const TIMEOUT_MS = 4000;
@@ -258,8 +259,24 @@ async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfi
         return;
     }
 
-    // Layer 2: route to LLM if message is suspicious OR contains a context-dependent word
-    if (!forceCheck && !isSuspicious(content) && !containsContextWord(content)) return;
+    // Layer 1.5: Cosine similarity — fast hard-block for high-confidence curse matches
+    const cosineResult = checkCosineSimilarity(content);
+    if (cosineResult.isHardBlock) {
+        logger.info(`Cosine hard-block in ${groupConfig.groupName} from ${senderJid} (score=${cosineResult.score.toFixed(2)}, ~"${cosineResult.matchedWord}"): "${content.slice(0, 60)}"`);
+        try {
+            await executeEnforcement(
+                client, msg, senderJid,
+                [t('reason_forbidden_content', lang)],
+                content, msgType, groupConfig, enforcementConfig, rateLimiter, lang, 'cosine'
+            );
+        } catch (e) {
+            logger.warn('Enforcement after cosine detection failed', e.message);
+        }
+        return;
+    }
+
+    // Layer 2: route to LLM if suspicious / context-word / OR cosine medium-similarity
+    if (!forceCheck && !isSuspicious(content) && !containsContextWord(content) && !cosineResult.isSuspicious) return;
 
     const apiKey = config.get('groq.apiKey');
     if (!apiKey) return;
