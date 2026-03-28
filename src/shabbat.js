@@ -9,6 +9,10 @@ const RECOVERY_KEY  = 'shabbat_recovery';
 const LOCK_OFFSET_MS   = 5 * 60 * 1000;   // lock 5 min before entry
 const UNLOCK_OFFSET_MS = 5 * 60 * 1000;   // unlock 5 min after exit
 
+// Tracks whether each group was last observed as locked by WhatsApp (chat.announce).
+// Re-lock fires only on a confirmed locked→unlocked transition, not on stale API data.
+const confirmedLockedState = new Map(); // groupId → true | false
+
 // ── Timezone helper (used for manual entry in recovery flow) ─────────────────
 
 /**
@@ -211,20 +215,39 @@ async function checkShabbatGroups(client) {
                 if (isActuallyLocked) {
                     // Bot restarted mid-Shabbat — group already locked externally, take DB ownership
                     await database.setShabbatLocked(group.groupId, true);
+                    confirmedLockedState.set(group.groupId, true);
                     logger.info(`Shabbat: ${group.groupName} already locked on startup — took ownership`);
                 } else {
                     try {
                         await chat.setMessagesAdminsOnly(true);
                         await database.setShabbatLocked(group.groupId, true);
                         logger.info(`Shabbat locked: ${group.groupName}`);
+                        // confirmedLockedState stays unset until chat.announce confirms true
                     } catch (e) {
                         logger.warn(`Shabbat lock failed for ${group.groupName}`, e.message);
                         await alertOwner(client, group.ownerJid,
                             `⚠️ *GroupShield — שמירת שבת*\nהבוט לא הצליח לסגור את הקבוצה "${group.groupName}" לקראת שבת.\nשגיאה: ${e.message}`);
                     }
                 }
+            } else {
+                // shabbatLocked=1 — already locked this Shabbat.
+                // Update confirmed state, and re-lock only on a confirmed locked→unlocked transition.
+                if (isActuallyLocked) {
+                    confirmedLockedState.set(group.groupId, true);
+                } else if (confirmedLockedState.get(group.groupId) === true) {
+                    // Was confirmed locked; now open → someone manually unlocked during Shabbat
+                    confirmedLockedState.set(group.groupId, false);
+                    try {
+                        await chat.setMessagesAdminsOnly(true);
+                        logger.info(`Shabbat re-locked (manually opened during Shabbat): ${group.groupName}`);
+                    } catch (e) {
+                        logger.warn(`Shabbat re-lock failed for ${group.groupName}`, e.message);
+                        await alertOwner(client, group.ownerJid,
+                            `⚠️ *GroupShield — שמירת שבת*\nמישהו פתח את הקבוצה "${group.groupName}" בשבת והבוט לא הצליח לסגור אותה שוב.\nשגיאה: ${e.message}`);
+                    }
+                }
+                // else: isActuallyLocked=false but not yet confirmed-locked → stale API data, ignore
             }
-            // shabbatLocked=1 → already locked this Shabbat, nothing more to do
 
         } else {
             // ── Unlock ───────────────────────────────────────────────
@@ -247,11 +270,7 @@ async function checkShabbatGroups(client) {
                 }
                 if (unlockOk) {
                     await database.setShabbatLocked(group.groupId, false);
-                    // Clear re-lock tracking for this group
-                    if (times.lastReLock && times.lastReLock[group.groupId]) {
-                        delete times.lastReLock[group.groupId];
-                        timesModified = true;
-                    }
+                    confirmedLockedState.delete(group.groupId);
                 }
             }
             // else: shabbatLocked=0 and we're outside lock window → no action needed
