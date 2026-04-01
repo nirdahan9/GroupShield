@@ -117,6 +117,23 @@ function formatIsraelTime(ms) {
     return `${time} (${date})`;
 }
 
+function getHolidayBlessing(nameHe) {
+    const normalized = (nameHe || '').trim();
+    if (normalized.startsWith('ראש השנה')) return 'שנה טובה';
+    if (normalized.includes('יום כיפור')) return 'חתימה טובה';
+    return 'חג שמח';
+}
+
+function buildPreCloseGreeting(isShabbat, holidayName) {
+    if (isShabbat && holidayName) return `שבת שלום ו${getHolidayBlessing(holidayName)}`;
+    if (isShabbat) return 'שבת שלום';
+    return getHolidayBlessing(holidayName);
+}
+
+function windowsOverlap(startA, endA, startB, endB) {
+    return startA < endB && startB < endA;
+}
+
 /**
  * Fetch Shabbat times from HebCal and persist to settings table.
  * Called every Thursday by the scheduler.
@@ -328,12 +345,13 @@ async function checkShabbatAndHolidayGroups(client) {
     // ── Compute Shabbat window ────────────────────────────────────────────
     let isInShabbatWindow = false;
     let shabbatLockTime   = null;
+    let shabbatUnlockTime = null;
     const shabbatNotifiedGroups = shabbatTimes ? (shabbatTimes.notifiedGroups || {}) : {};
     let shabbatModified = false;
 
     if (shabbatTimes && shabbatTimes.entryMs && shabbatTimes.exitMs) {
         shabbatLockTime         = shabbatTimes.entryMs - LOCK_OFFSET_MS;
-        const shabbatUnlockTime = shabbatTimes.exitMs  + UNLOCK_OFFSET_MS;
+        shabbatUnlockTime       = shabbatTimes.exitMs  + UNLOCK_OFFSET_MS;
         isInShabbatWindow = (now >= shabbatLockTime && now < shabbatUnlockTime);
     }
 
@@ -364,8 +382,18 @@ async function checkShabbatAndHolidayGroups(client) {
             if (now >= notifyTime && now < shabbatLockTime && !shabbatNotifiedGroups[notifyKey]) {
                 try {
                     const remaining = Math.max(1, Math.round((shabbatLockTime - now) / 60000));
+                    const overlappingHoliday = (shabbatLockTime && shabbatUnlockTime)
+                        ? holidays.find((w) => windowsOverlap(
+                            shabbatLockTime,
+                            shabbatUnlockTime,
+                            w.entryMs - LOCK_OFFSET_MS,
+                            w.exitMs + UNLOCK_OFFSET_MS
+                        ))
+                        : null;
+                    const greeting = buildPreCloseGreeting(true, overlappingHoliday ? overlappingHoliday.nameHe : null);
+
                     await client.sendMessage(group.groupId,
-                        `שבת שלום, לידיעתכם הקבוצה תיסגר להודעות בעוד ${remaining} דקות.`
+                        `${greeting}, לידיעתכם הקבוצה תיסגר להודעות בעוד ${remaining} דקות.`
                     );
                     logger.info(`Shabbat pre-notify sent to ${group.groupName}`);
                     shabbatNotifiedGroups[notifyKey] = true;
@@ -378,22 +406,41 @@ async function checkShabbatAndHolidayGroups(client) {
 
         // ── Pre-holiday notification ──────────────────────────────────────
         // Skip if group is already locked (adjacent Shabbat+holiday: no mid-closure notification)
-        if (notifyMinutes > 0 && activeHolidayWindow && holidayLockTime && !alreadyLocked) {
-            const notifyTime = holidayLockTime - notifyMinutes * 60 * 1000;
-            const notifyKey  = `${group.groupId}_${activeHolidayWindow.entryMs}`;
+        if (notifyMinutes > 0 && !alreadyLocked) {
+            const upcomingHolidayWindow = holidays.find((w) => {
+                const lockTime = w.entryMs - LOCK_OFFSET_MS;
+                const notifyTime = lockTime - notifyMinutes * 60 * 1000;
+                return now >= notifyTime && now < lockTime;
+            });
 
-            if (now >= notifyTime && now < holidayLockTime && !activeHolidayWindow.notifiedGroups[notifyKey]) {
+            if (upcomingHolidayWindow) {
+                const upcomingHolidayLockTime = upcomingHolidayWindow.entryMs - LOCK_OFFSET_MS;
+                const upcomingHolidayUnlockTime = upcomingHolidayWindow.exitMs + UNLOCK_OFFSET_MS;
+                const notifyKey = `${group.groupId}_${upcomingHolidayWindow.entryMs}`;
+
+                if (!upcomingHolidayWindow.notifiedGroups[notifyKey]) {
                 try {
-                    const remaining = Math.max(1, Math.round((holidayLockTime - now) / 60000));
+                    const remaining = Math.max(1, Math.round((upcomingHolidayLockTime - now) / 60000));
+                    const overlapsShabbat = (shabbatLockTime && shabbatUnlockTime)
+                        ? windowsOverlap(
+                            shabbatLockTime,
+                            shabbatUnlockTime,
+                            upcomingHolidayLockTime,
+                            upcomingHolidayUnlockTime
+                        )
+                        : false;
+                    const greeting = buildPreCloseGreeting(overlapsShabbat, upcomingHolidayWindow.nameHe);
+
                     await client.sendMessage(group.groupId,
-                        `לקראת ${activeHolidayWindow.nameHe}, הקבוצה תיסגר להודעות בעוד ${remaining} דקות.`
+                        `${greeting}, לידיעתכם הקבוצה תיסגר להודעות בעוד ${remaining} דקות.`
                     );
-                    logger.info(`Holiday pre-notify sent to ${group.groupName} (${activeHolidayWindow.nameHe})`);
-                    activeHolidayWindow.notifiedGroups[notifyKey] = true;
+                    logger.info(`Holiday pre-notify sent to ${group.groupName} (${upcomingHolidayWindow.nameHe})`);
+                    upcomingHolidayWindow.notifiedGroups[notifyKey] = true;
                     holidaysModified = true;
                 } catch (e) {
                     logger.warn(`Holiday notify failed for ${group.groupName}`, e.message);
                 }
+            }
             }
         }
 
