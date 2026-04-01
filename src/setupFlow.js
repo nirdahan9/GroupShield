@@ -128,8 +128,32 @@ async function processSetupMessage(client, senderJid, content) {
             return await handleMgmtGroupConfirm(client, senderJid, content, state, lang);
         case 'mgmt_group_verify_count':
             return await handleMgmtGroupVerifyCount(client, senderJid, content, state, lang);
+        case 'time_window_type':
+            return await handleTimeWindowType(client, senderJid, content, state, lang);
+        case 'quiet_hours_start':
+            return await handleQuietHoursStart(client, senderJid, content, state, lang);
+        case 'quiet_hours_end':
+            return await handleQuietHoursEnd(client, senderJid, content, state, lang);
+        case 'public_removal_notice':
+            return await handlePublicRemovalNotice(client, senderJid, content, state, lang);
+        case 'clone_source_link':
+            return await handleCloneSourceLink(client, senderJid, content, state, lang);
+        case 'clone_source_confirm':
+            return await handleCloneSourceConfirm(client, senderJid, content, state, lang);
+        case 'grace_period':
+            return await handleGracePeriod(client, senderJid, content, state, lang);
+        case 'grace_period_minutes':
+            return await handleGracePeriodMinutes(client, senderJid, content, state, lang);
         case 'welcome_msg':
             return await handleWelcomeMsg(client, senderJid, content, state, lang);
+        case 'welcome_msg_custom':
+            return await handleWelcomeMsgCustom(client, senderJid, content, state, lang);
+        case 'periodic_reminder':
+            return await handlePeriodicReminder(client, senderJid, content, state, lang);
+        case 'periodic_reminder_interval':
+            return await handlePeriodicReminderInterval(client, senderJid, content, state, lang);
+        case 'rules_in_description':
+            return await handleRulesInDescription(client, senderJid, content, state, lang);
         case 'summary':
             return await handleSummary(client, senderJid, content, state, lang);
         default:
@@ -179,6 +203,20 @@ function getStepPrompt(step, lang, state) {
             ? t('mgmt_group_confirm', lang, { name: state.mgmtGroupName, count: '...' })
             : t('ask_mgmt_group_name', lang);
         case 'welcome_msg':     return t('ask_welcome_msg', lang);
+        case 'time_window_type': return t('ask_time_window_type', lang);
+        case 'quiet_hours_start': return t('ask_quiet_hours_start', lang);
+        case 'quiet_hours_end': return t('ask_quiet_hours_end', lang);
+        case 'public_removal_notice': return t('ask_public_removal_notice', lang);
+        case 'clone_source_link': return t('ask_clone_source_link', lang);
+        case 'clone_source_confirm': return state.cloneSourceName
+            ? t('clone_source_confirm', lang, { name: state.cloneSourceName, count: '...' })
+            : t('ask_clone_source_link', lang);
+        case 'grace_period':    return t('ask_grace_period', lang);
+        case 'grace_period_minutes': return t('ask_grace_period_minutes', lang);
+        case 'welcome_msg_custom': return t('ask_welcome_msg_custom', lang);
+        case 'periodic_reminder': return t('ask_periodic_reminder', lang);
+        case 'periodic_reminder_interval': return t('ask_periodic_reminder_interval', lang);
+        case 'rules_in_description': return t('ask_rules_in_description', lang);
         default:                return null;
     }
 }
@@ -232,7 +270,8 @@ function getNonTextTypeLabel(type, lang) {
         sticker: { he: 'סטיקרים', en: 'Stickers' },
         document: { he: 'מסמכים', en: 'Documents' },
         audio: { he: 'אודיו', en: 'Audio' },
-        other_non_text: { he: 'שאר סוגי לא-טקסט', en: 'Other non-text types' }
+        other_non_text: { he: 'שאר סוגי לא-טקסט', en: 'Other non-text types' },
+        link: { he: 'קישורים/לינקים', en: 'Links/URLs' }
     };
     return (labels[type] && labels[type][lang]) || type;
 }
@@ -486,6 +525,9 @@ async function handleRulesType(client, jid, content, state, lang) {
     } else if (choice === '4') {
         await advance(jid, state, { step: 'rules_custom_type' });
         return t('ask_rules_custom_type', lang);
+    } else if (choice === '5') {
+        await advance(jid, state, { step: 'clone_source_link' });
+        return t('ask_clone_source_link', lang);
     }
     return t('ask_rules_type', lang);
 }
@@ -578,7 +620,8 @@ async function handleNonTextTypes(client, jid, content, state, lang) {
         3: 'sticker',
         4: 'document',
         5: 'audio',
-        6: 'other_non_text'
+        6: 'other_non_text',
+        7: 'link'
     };
 
     const picks = content.trim().split(/[\s,]+/).map(x => parseInt(x, 10)).filter(n => !isNaN(n));
@@ -601,8 +644,8 @@ async function handleNonTextTypes(client, jid, content, state, lang) {
 async function handleTimeWindow(client, jid, content, state, lang) {
     const choice = content.trim();
     if (choice === '1' || choice.includes('כן') || choice.toLowerCase() === 'yes') {
-        await advance(jid, state, { step: 'time_day', timeWindows: state.timeWindows || [] });
-        return t('ask_time_day', lang);
+        await advance(jid, state, { step: 'time_window_type', timeWindows: state.timeWindows || [] });
+        return t('ask_time_window_type', lang);
     } else if (choice === '2' || choice.includes('לא') || choice.toLowerCase() === 'no') {
         await advance(jid, state, { step: 'antispam', timeWindow: null, timeWindows: [] });
         return t('ask_antispam', lang);
@@ -757,8 +800,8 @@ async function handleEnforcement(client, jid, content, state, lang) {
         warnPrivateDm: !!state.warnPrivateDm
     };
 
-    await advance(jid, state, { step: 'exempt', enforcementConfig });
-    return t('enforcement_saved', lang) + '\n\n' + t('ask_exempt', lang);
+    await advance(jid, state, { step: 'public_removal_notice', enforcementConfig });
+    return t('enforcement_saved', lang) + '\n\n' + t('ask_public_removal_notice', lang);
 }
 
 async function handleQuickEnforcement(client, jid, content, state, lang) {
@@ -822,8 +865,8 @@ async function handleExempt(client, jid, content, state, lang) {
     const text = content.trim();
     const skipWords = ['דלג', 'skip', 'לא', 'no'];
     if (skipWords.includes(text.toLowerCase())) {
-        await advance(jid, state, { step: 'report_target', exemptNumbers: [] });
-        return t('exempt_skipped', lang) + '\n\n' + t('ask_report_target', lang);
+        await advance(jid, state, { step: 'grace_period', exemptNumbers: [] });
+        return t('exempt_skipped', lang) + '\n\n' + t('ask_grace_period', lang);
     }
 
     const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
@@ -837,8 +880,8 @@ async function handleExempt(client, jid, content, state, lang) {
         return t('invalid_input', lang) + '\n\n' + t('ask_exempt', lang);
     }
 
-    await advance(jid, state, { step: 'report_target', exemptNumbers: numbers });
-    return t('exempt_saved', lang, { count: numbers.length.toString() }) + '\n\n' + t('ask_report_target', lang);
+    await advance(jid, state, { step: 'grace_period', exemptNumbers: numbers });
+    return t('exempt_saved', lang, { count: numbers.length.toString() }) + '\n\n' + t('ask_grace_period', lang);
 }
 
 async function handleReportTarget(client, jid, content, state, lang) {
@@ -956,13 +999,198 @@ async function handleMgmtGroupVerifyCount(client, jid, content, state, lang) {
 async function handleWelcomeMsg(client, jid, content, state, lang) {
     const choice = content.trim();
     if (choice === '1' || choice.includes('כן') || choice.toLowerCase() === 'yes') {
-        await advance(jid, state, { step: 'summary', welcomeMessageEnabled: true });
-        return t('welcome_msg_saved', lang) + '\n\n' + await buildSummary({ ...state, welcomeMessageEnabled: true }, state.reportTarget, state.mgmtGroupId, lang);
+        await advance(jid, state, { step: 'welcome_msg_custom', welcomeMessageEnabled: true });
+        return t('welcome_msg_saved', lang) + '\n\n' + t('ask_welcome_msg_custom', lang);
     } else if (choice === '2' || choice.includes('לא') || choice.toLowerCase() === 'no') {
-        await advance(jid, state, { step: 'summary', welcomeMessageEnabled: false });
-        return t('welcome_msg_saved', lang) + '\n\n' + await buildSummary({ ...state, welcomeMessageEnabled: false }, state.reportTarget, state.mgmtGroupId, lang);
+        await advance(jid, state, { step: 'periodic_reminder', welcomeMessageEnabled: false, welcomeMessageCustom: null });
+        return t('welcome_msg_saved', lang) + '\n\n' + t('ask_periodic_reminder', lang);
     }
     return t('ask_welcome_msg', lang);
+}
+
+// ── New Feature Handlers ──────────────────────────────────────────────────
+
+async function handleTimeWindowType(client, jid, content, state, lang) {
+    const choice = content.trim();
+    if (choice === '1') {
+        await advance(jid, state, { step: 'time_day' });
+        return t('ask_time_day', lang);
+    } else if (choice === '2') {
+        await advance(jid, state, { step: 'quiet_hours_start' });
+        return t('ask_quiet_hours_start', lang);
+    }
+    return t('ask_time_window_type', lang);
+}
+
+async function handleQuietHoursStart(client, jid, content, state, lang) {
+    const minutes = parseTimeToMinutes(content.trim());
+    if (minutes === null) return t('ask_quiet_hours_start', lang);
+    await advance(jid, state, { step: 'quiet_hours_end', quietHoursStart: minutes });
+    return t('ask_quiet_hours_end', lang);
+}
+
+async function handleQuietHoursEnd(client, jid, content, state, lang) {
+    const endMinutes = parseTimeToMinutes(content.trim());
+    if (endMinutes === null) return t('ask_quiet_hours_end', lang);
+
+    const startMinutes = state.quietHoursStart;
+    // day=7 means every day; block_in_window so messages are blocked during quiet hours
+    const window = { day: 7, startMinute: startMinutes, endMinute: endMinutes };
+    const startStr = formatMinutes(startMinutes);
+    const endStr = formatMinutes(endMinutes);
+
+    await advance(jid, state, {
+        step: 'antispam',
+        timeWindows: [window],
+        windowMode: 'block_in_window',
+        quietHoursEnd: endMinutes
+    });
+    return t('quiet_hours_saved', lang, { start: startStr, end: endStr }) + '\n\n' + t('ask_antispam', lang);
+}
+
+async function handlePublicRemovalNotice(client, jid, content, state, lang) {
+    const choice = content.trim();
+    const enabled = choice === '1' || choice.includes('כן') || choice.toLowerCase() === 'yes';
+    const disabled = choice === '2' || choice.includes('לא') || choice.toLowerCase() === 'no';
+    if (!enabled && !disabled) return t('ask_public_removal_notice', lang);
+
+    const status = enabled ? (lang === 'he' ? 'מופעל' : 'Enabled') : (lang === 'he' ? 'כבוי' : 'Disabled');
+    await advance(jid, state, { step: 'exempt', publicRemovalNotice: enabled });
+    return t('public_removal_notice_saved', lang, { status }) + '\n\n' + t('ask_exempt', lang);
+}
+
+async function handleCloneSourceLink(client, jid, content, state, lang) {
+    const text = content.trim();
+    const match = text.match(/chat\.whatsapp\.com\/([A-Za-z0-9]+)/i);
+    if (!match) return t('clone_source_invalid_link', lang) + '\n\n' + t('ask_clone_source_link', lang);
+
+    const inviteCode = match[1];
+    try {
+        // Look up the invite info without joining — use getInviteInfo if available
+        let sourceGroupId, sourceGroupName, memberCount;
+        try {
+            const info = await client.getInviteInfo(inviteCode);
+            sourceGroupId = info.id._serialized || info.id;
+            sourceGroupName = info.subject || info.name;
+            memberCount = info.size || '?';
+        } catch (e) {
+            // fallback: try to find by invite code in known chats
+            const chats = await client.getChats();
+            const found = chats.find(c => c.isGroup && c.inviteCode === inviteCode);
+            if (!found) {
+                return t('clone_source_not_managed', lang) + '\n\n' + t('ask_rules_type', lang);
+            }
+            sourceGroupId = found.id._serialized;
+            sourceGroupName = found.name;
+            memberCount = found.participants ? found.participants.length : '?';
+        }
+
+        // Check if bot is admin there
+        const chat = await client.getChatById(sourceGroupId);
+        const botJid = client.info.wid._serialized;
+        const botParticipant = chat.participants && chat.participants.find(p => p.id._serialized === botJid);
+        if (!botParticipant || !botParticipant.isAdmin) {
+            return t('clone_source_not_managed', lang) + '\n\n' + t('ask_rules_type', lang);
+        }
+
+        await advance(jid, state, {
+            step: 'clone_source_confirm',
+            cloneSourceGroupId: sourceGroupId,
+            cloneSourceName: sourceGroupName
+        });
+        return t('clone_source_confirm', lang, { name: sourceGroupName, count: memberCount.toString() });
+    } catch (e) {
+        logger.error('handleCloneSourceLink error', e);
+        return t('clone_source_not_managed', lang) + '\n\n' + t('ask_rules_type', lang);
+    }
+}
+
+async function handleCloneSourceConfirm(client, jid, content, state, lang) {
+    const choice = content.trim();
+    if (choice === '1' || choice.includes('כן') || choice.toLowerCase() === 'yes') {
+        // Rules will be copied during handleSummary
+        await advance(jid, state, {
+            step: 'non_text_rule',
+            rulesType: 'clone',
+            blockNonText: false,
+            blockedNonTextTypes: [],
+            timeWindows: [],
+            antiSpam: null
+        });
+        return t('clone_rules_copied', lang, {
+            count: '...',
+            name: state.cloneSourceName
+        }) + '\n\n' + t('ask_non_text_rule', lang);
+    } else {
+        await advance(jid, state, { step: 'clone_source_link' });
+        return t('ask_clone_source_link', lang);
+    }
+}
+
+async function handleGracePeriod(client, jid, content, state, lang) {
+    const choice = content.trim();
+    if (choice === '1' || choice.includes('כן') || choice.toLowerCase() === 'yes') {
+        await advance(jid, state, { step: 'grace_period_minutes' });
+        return t('ask_grace_period_minutes', lang);
+    } else if (choice === '2' || choice.includes('לא') || choice.toLowerCase() === 'no') {
+        await advance(jid, state, { step: 'report_target', gracePeriodMinutes: 0 });
+        return t('ask_report_target', lang);
+    }
+    return t('ask_grace_period', lang);
+}
+
+async function handleGracePeriodMinutes(client, jid, content, state, lang) {
+    const minutes = parseInt(content.trim(), 10);
+    if (isNaN(minutes) || minutes < 1 || minutes > 10080) {
+        return t('ask_grace_period_minutes', lang);
+    }
+    await advance(jid, state, { step: 'report_target', gracePeriodMinutes: minutes });
+    return t('grace_period_saved', lang, { minutes: minutes.toString() }) + '\n\n' + t('ask_report_target', lang);
+}
+
+async function handleWelcomeMsgCustom(client, jid, content, state, lang) {
+    const text = content.trim();
+    const skipWords = ['דלג', 'skip'];
+    if (skipWords.includes(text.toLowerCase())) {
+        await advance(jid, state, { step: 'periodic_reminder', welcomeMessageCustom: null });
+        return t('welcome_msg_custom_skipped', lang) + '\n\n' + t('ask_periodic_reminder', lang);
+    }
+    if (!text) return t('ask_welcome_msg_custom', lang);
+    await advance(jid, state, { step: 'periodic_reminder', welcomeMessageCustom: text });
+    return t('welcome_msg_custom_saved', lang) + '\n\n' + t('ask_periodic_reminder', lang);
+}
+
+async function handlePeriodicReminder(client, jid, content, state, lang) {
+    const choice = content.trim();
+    if (choice === '1' || choice.includes('כן') || choice.toLowerCase() === 'yes') {
+        await advance(jid, state, { step: 'periodic_reminder_interval', periodicReminderEnabled: true });
+        return t('ask_periodic_reminder_interval', lang);
+    } else if (choice === '2' || choice.includes('לא') || choice.toLowerCase() === 'no') {
+        await advance(jid, state, { step: 'rules_in_description', periodicReminderEnabled: false });
+        return t('ask_rules_in_description', lang);
+    }
+    return t('ask_periodic_reminder', lang);
+}
+
+async function handlePeriodicReminderInterval(client, jid, content, state, lang) {
+    const hours = parseInt(content.trim(), 10);
+    if (isNaN(hours) || hours < 1 || hours > 720) {
+        return t('ask_periodic_reminder_interval', lang);
+    }
+    await advance(jid, state, { step: 'rules_in_description', periodicReminderIntervalHours: hours });
+    return t('periodic_reminder_saved', lang, { hours: hours.toString() }) + '\n\n' + t('ask_rules_in_description', lang);
+}
+
+async function handleRulesInDescription(client, jid, content, state, lang) {
+    const choice = content.trim();
+    const enabled = choice === '1' || choice.includes('כן') || choice.toLowerCase() === 'yes';
+    const disabled = choice === '2' || choice.includes('לא') || choice.toLowerCase() === 'no';
+    if (!enabled && !disabled) return t('ask_rules_in_description', lang);
+
+    const status = enabled ? (lang === 'he' ? 'מופעל' : 'Enabled') : (lang === 'he' ? 'כבוי' : 'Disabled');
+    const newState = { ...state, rulesInDescription: enabled };
+    await advance(jid, state, { step: 'summary', rulesInDescription: enabled });
+    return t('rules_in_description_saved', lang, { status }) + '\n\n' + await buildSummary(newState, state.reportTarget, state.mgmtGroupId, lang);
 }
 
 async function buildSummary(state, reportTarget, mgmtGroupId, lang) {
@@ -971,7 +1199,8 @@ async function buildSummary(state, reportTarget, mgmtGroupId, lang) {
         'forbidden': lang === 'he' ? 'הודעות אסורות' : 'Forbidden messages',
         'none':     lang === 'he' ? 'ללא חוקי תוכן' : 'No content rules',
         'curses':   lang === 'he' ? 'חסימת קללות (רשימה מוכנה)' : 'Curse blocking (preset list)',
-        'shabbat':  lang === 'he' ? 'שמירת שבת וחג 🕯️' : 'Shabbat & Holiday mode 🕯️'
+        'shabbat':  lang === 'he' ? 'שמירת שבת וחג 🕯️' : 'Shabbat & Holiday mode 🕯️',
+        'clone':    lang === 'he' ? 'הועתק מקבוצה אחרת' : 'Cloned from another group'
     };
 
     const rulesModeValue = state.rulesType === 'allowed'
@@ -1073,9 +1302,11 @@ async function handleSummary(client, jid, content, state, lang) {
             await database.createGroup(groupId, jid, state.groupName);
             await database.updateUserGroup(jid, groupId);
 
-            // 2. Save rules
+            // 2. Save rules (skip if clone — already copied during setup)
             await database.clearRules(groupId);
-            if (state.rulesType === 'allowed' && state.rulesMessages) {
+            if (state.rulesType === 'clone' && state.cloneSourceGroupId) {
+                await database.copyRulesFromGroup(state.cloneSourceGroupId, groupId);
+            } else if (state.rulesType === 'allowed' && state.rulesMessages) {
                 await database.addRule(groupId, 'allowed_messages', {
                     messages: state.rulesMessages,
                     matchMode: state.rulesMatchMode || 'exact'
@@ -1116,14 +1347,18 @@ async function handleSummary(client, jid, content, state, lang) {
                 await database.addRule(groupId, 'anti_spam', state.antiSpam);
             }
 
-            // 3. Save enforcement
-            await database.setEnforcement(groupId, state.enforcementConfig);
+            // 3. Save enforcement (incl. publicRemovalNotice)
+            const enfConfig = { ...state.enforcementConfig, publicRemovalNotice: !!state.publicRemovalNotice };
+            await database.setEnforcement(groupId, enfConfig);
 
             // 4. Save warning count
             await database.updateGroupWarningCount(groupId, state.warningCount || 0);
 
-            // 5. Save welcome message setting
+            // 5. Save welcome message setting + custom text
             await database.updateGroupWelcomeMessage(groupId, !!state.welcomeMessageEnabled);
+            if (state.welcomeMessageCustom) {
+                await database.updateGroupWelcomeMessageCustom(groupId, state.welcomeMessageCustom);
+            }
 
             // 6. Save exempt users
             await database.clearExemptUsers(groupId);
@@ -1141,7 +1376,22 @@ async function handleSummary(client, jid, content, state, lang) {
                 await database.updateGroupMgmt(groupId, state.mgmtGroupId);
             }
 
-            // 8. Clear setup state
+            // 9. Save grace period
+            if (state.gracePeriodMinutes > 0) {
+                await database.updateGroupGracePeriod(groupId, state.gracePeriodMinutes);
+            }
+
+            // 10. Save periodic reminder
+            if (state.periodicReminderEnabled) {
+                await database.updateGroupPeriodicReminder(groupId, true, state.periodicReminderIntervalHours || 168);
+            }
+
+            // 11. Save rules-in-description
+            if (state.rulesInDescription) {
+                await database.updateGroupRulesInDescription(groupId, true);
+            }
+
+            // 12. Clear setup state
             await saveState(jid, { step: 'done' });
 
             logger.info(`Setup completed for group ${state.groupName} by ${extractNumber(jid)}`);

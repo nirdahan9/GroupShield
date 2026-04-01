@@ -10,7 +10,7 @@ const config = require('./src/config');
 const logger = require('./src/logger');
 const database = require('./src/database');
 const { setRestartReason, getRestartReason, formatRestartMessage } = require('./src/restartTracker');
-const { RateLimiter } = require('./src/utils');
+const { RateLimiter, buildGroupRulesSummary } = require('./src/utils');
 const { t } = require('./src/i18n');
 const handlers = require('./src/handlers');
 const { buildFullGroupsStatus } = require('./src/commands');
@@ -116,6 +116,7 @@ async function startBot() {
         runtime.cronTasks.push(scheduleWarningsCleanup());
         runtime.cronTasks.push(scheduleUnknownGroupExit(client));
         runtime.cronTasks.push(schedulePendingMembersCleanup(client));
+        runtime.cronTasks.push(schedulePeriodicReminders(client));
         runtime.cronTasks.push(scheduleShabbatFetch(client));
         runtime.cronTasks.push(scheduleHolidayFetch(client));
 
@@ -394,6 +395,50 @@ function schedulePendingMembersCleanup(client) {
             }
         } catch (e) {
             logger.error('Pending members cleanup failed', e);
+        }
+    }, { timezone: 'Asia/Jerusalem' });
+}
+
+function schedulePeriodicReminders(client) {
+    // Runs every hour — checks which groups need a rules reminder
+    return cron.schedule('0 * * * *', async () => {
+        try {
+            const groups = await database.getGroupsForPeriodicReminder();
+            if (!groups || groups.length === 0) return;
+
+            for (const groupConfig of groups) {
+                try {
+                    const ownerUser = await database.getUser(groupConfig.ownerJid);
+                    const lang = ownerUser ? ownerUser.language || 'he' : 'he';
+
+                    const rules = await database.getRules(groupConfig.groupId);
+                    const enf = await database.getEnforcement(groupConfig.groupId);
+                    const rulesSummary = buildGroupRulesSummary(groupConfig, rules, enf, t, lang);
+
+                    const reminderText = t('periodic_reminder_message', lang, {
+                        groupName: groupConfig.groupName,
+                        rulesSummary
+                    });
+
+                    await client.sendMessage(groupConfig.groupId, reminderText, { linkPreview: false });
+                    await database.updateGroupLastReminderAt(groupConfig.groupId);
+                    logger.info(`Sent periodic rules reminder to ${groupConfig.groupName}`);
+
+                    // Update group description if enabled
+                    if (groupConfig.rulesInDescription) {
+                        try {
+                            const chat = await client.getChatById(groupConfig.groupId);
+                            await chat.setDescription(rulesSummary.slice(0, 500));
+                        } catch (e) {
+                            logger.warn(`Failed to update description for ${groupConfig.groupName}`, e);
+                        }
+                    }
+                } catch (e) {
+                    logger.error(`Periodic reminder failed for group ${groupConfig.groupId}`, e);
+                }
+            }
+        } catch (e) {
+            logger.error('schedulePeriodicReminders error', e);
         }
     }, { timezone: 'Asia/Jerusalem' });
 }

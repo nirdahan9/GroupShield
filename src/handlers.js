@@ -807,6 +807,11 @@ async function handleGroupNotification(client, notification) {
             const addedNum = extractNumber(addedJid);
             logger.info(`JOIN: ${addedNum} joined ${groupConfig.groupName}`);
 
+            // Record join time for grace period tracking
+            database.recordMemberJoin(groupConfig.groupId, addedJid).catch(e => {
+                logger.warn(`Failed to record member join for ${addedNum}`, e);
+            });
+
             // Welcome Message Logic
             if (groupConfig.welcomeMessageEnabled) {
                 // Determine if user is exempt/immune
@@ -820,6 +825,11 @@ async function handleGroupNotification(client, notification) {
                         const rules = await database.getRules(groupConfig.groupId);
                         const enf = await database.getEnforcement(groupConfig.groupId);
                         const rulesSummary = buildGroupRulesSummary(groupConfig, rules, enf, t, lang);
+
+                        // Send custom welcome text first (if configured)
+                        if (groupConfig.welcomeMessageCustom) {
+                            await client.sendMessage(addedJid, groupConfig.welcomeMessageCustom, { linkPreview: false });
+                        }
 
                         const welcomeText = t('welcome_dm', lang, {
                             groupName: groupConfig.groupName,

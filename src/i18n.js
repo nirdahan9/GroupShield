@@ -73,8 +73,8 @@ const strings = {
 
     // ── Rules Setup ──────────────────────────────────────────────────────
     'ask_rules_type': {
-        he: '📏 *שלב 2: הגדרת חוקים*\n\nאיזה סוג חוקי תוכן תרצה?\n\n1️⃣ *חסימת קללות* — חסום קללות נפוצות בעברית ובאנגלית אוטומטית\n2️⃣ *שמירת שבת וחג* 🕯️ — סגור הקבוצה אוטומטית לפני כניסת שבת וחגים ופתח אחרי יציאתם (לפי שעון ישראל)\n3️⃣ *ללא חוקי תוכן* — ללא הגבלת תוכן\n4️⃣ *חוקים בהתאמה אישית* — הגדרת הודעות מותרות/אסורות',
-        en: '📏 *Step 2: Set Rules*\n\nWhat type of content rules do you want?\n\n1️⃣ *Block curses* — automatically block common Hebrew and English profanity\n2️⃣ *Shabbat & Holiday mode* 🕯️ — automatically lock the group before Shabbat and Jewish holidays and unlock after they end (Israel time)\n3️⃣ *No content rules* — no content restrictions\n4️⃣ *Custom rules* — define allowed or forbidden messages'
+        he: '📏 *שלב 2: הגדרת חוקים*\n\nאיזה סוג חוקי תוכן תרצה?\n\n1️⃣ *חסימת קללות* — חסום קללות נפוצות בעברית ובאנגלית אוטומטית\n2️⃣ *שמירת שבת וחג* 🕯️ — סגור הקבוצה אוטומטית לפני כניסת שבת וחגים ופתח אחרי יציאתם (לפי שעון ישראל)\n3️⃣ *ללא חוקי תוכן* — ללא הגבלת תוכן\n4️⃣ *חוקים בהתאמה אישית* — הגדרת הודעות מותרות/אסורות\n5️⃣ *העתק כללים מקבוצה אחרת* — הדבק לינק הצטרפות לקבוצת מקור',
+        en: '📏 *Step 2: Set Rules*\n\nWhat type of content rules do you want?\n\n1️⃣ *Block curses* — automatically block common Hebrew and English profanity\n2️⃣ *Shabbat & Holiday mode* 🕯️ — automatically lock the group before Shabbat and Jewish holidays and unlock after they end (Israel time)\n3️⃣ *No content rules* — no content restrictions\n4️⃣ *Custom rules* — define allowed or forbidden messages\n5️⃣ *Clone rules from another group* — paste an invite link from the source group'
     },
     'ask_rules_custom_type': {
         he: '⚙️ *חוקים בהתאמה אישית*\n\nבחר סוג:\n\n1️⃣ *הודעות מותרות בלבד* — רק הודעות ספציפיות מותרות\n2️⃣ *הודעות אסורות* — הודעות ספציפיות אסורות, השאר מותר',
@@ -105,8 +105,8 @@ const strings = {
         en: '🖼️ *Message type rule*\n\nDo you want to block non-text messages? (image/video/document etc.)\n\n1️⃣ Yes, block\n2️⃣ No, allow (default)'
     },
     'ask_non_text_types': {
-        he: '🧩 אילו סוגי הודעות לא-טקסט לחסום?\n\n0️⃣ הכל (כל סוג לא-טקסט)\n1️⃣ תמונות\n2️⃣ וידאו\n3️⃣ סטיקרים\n4️⃣ מסמכים\n5️⃣ אודיו\n6️⃣ כל סוג לא-טקסט אחר (למשל מיקום, איש קשר, סקר ועוד)\n\nשלח מספר/ים מופרדים בפסיק.\n✳️ לדוגמה: 0 או 1,3',
-        en: '🧩 Which non-text message types should be blocked?\n\n0️⃣ All (all non-text types)\n1️⃣ Images\n2️⃣ Video\n3️⃣ Stickers\n4️⃣ Documents\n5️⃣ Audio\n6️⃣ Any other non-text type (e.g., location, contact cards, polls, etc.)\n\nSend number(s) separated by commas.\n✳️ Example: 0 or 1,3'
+        he: '🧩 אילו סוגי הודעות לא-טקסט לחסום?\n\n0️⃣ הכל (כל סוג לא-טקסט)\n1️⃣ תמונות\n2️⃣ וידאו\n3️⃣ סטיקרים\n4️⃣ מסמכים\n5️⃣ אודיו\n6️⃣ כל סוג לא-טקסט אחר (למשל מיקום, איש קשר, סקר ועוד)\n7️⃣ קישורים/לינקים (כולל הזמנות ל-WhatsApp)\n\nשלח מספר/ים מופרדים בפסיק.\n✳️ לדוגמה: 0 או 1,3,7',
+        en: '🧩 Which non-text message types should be blocked?\n\n0️⃣ All (all non-text types)\n1️⃣ Images\n2️⃣ Video\n3️⃣ Stickers\n4️⃣ Documents\n5️⃣ Audio\n6️⃣ Any other non-text type (e.g., location, contact cards, polls, etc.)\n7️⃣ Links/URLs (including WhatsApp invites)\n\nSend number(s) separated by commas.\n✳️ Example: 0 or 1,3,7'
     },
     'non_text_types_saved': {
         he: '✅ סוגי הודעות לא-טקסט לחסימה נשמרו: {{types}}',
@@ -421,6 +421,7 @@ const strings = {
     'type_document': { he: 'מסמך', en: 'document' },
     'type_audio': { he: 'הודעות קוליות (אודיו)', en: 'audio/voice' },
     'type_other_non_text': { he: 'מיקום, איש קשר, סקר וכו׳', en: 'location/contact/poll etc' },
+    'type_link': { he: 'קישורים/לינקים', en: 'links/URLs' },
 
     // ── Undo ─────────────────────────────────────────────────────────────
     'undo_success': {
@@ -640,6 +641,114 @@ const strings = {
     'no_group_linked': {
         he: '❌ אין קבוצה מקושרת. שלח *"הגדרות"* כדי להגדיר.',
         en: '❌ No group linked. Send *"settings"* to configure.'
+    },
+
+    // ── Feature 1: Quiet Hours ───────────────────────────────────────────
+    'ask_time_window_type': {
+        he: '⏰ *סוג הגבלת זמן*\n\nבחר כיצד להגדיר את הגבלת הזמן:\n\n1️⃣ *הגדרה ידנית* — הגדר חלונות זמן ספציפיים לפי ימים ושעות\n2️⃣ *שעות שקט* 🌙 — נעילה יומית אוטומטית בין שתי שעות קבועות (חסימה בתוך הטווח)',
+        en: '⏰ *Time restriction type*\n\nHow would you like to set the time restriction?\n\n1️⃣ *Manual* — define specific time windows by day and hour\n2️⃣ *Quiet Hours* 🌙 — automatic daily lock between two fixed times (blocked within range)'
+    },
+    'ask_quiet_hours_start': {
+        he: '🌙 *שעות שקט — שעת התחלה*\n\nמאיזו שעה להתחיל לחסום הודעות?\n\n✳️ לדוגמה: 22:00 או 23',
+        en: '🌙 *Quiet Hours — Start time*\n\nFrom what time should messages be blocked?\n\n✳️ Example: 22:00 or 23'
+    },
+    'ask_quiet_hours_end': {
+        he: '🌅 *שעות שקט — שעת סיום*\n\nעד איזו שעה לחסום הודעות?\n\n✳️ לדוגמה: 07:00 או 8',
+        en: '🌅 *Quiet Hours — End time*\n\nUntil what time should messages be blocked?\n\n✳️ Example: 07:00 or 8'
+    },
+    'quiet_hours_saved': {
+        he: '✅ שעות שקט נשמרו: {{start}} — {{end}} (חסום מדי יום)',
+        en: '✅ Quiet hours saved: {{start}} — {{end}} (blocked daily)'
+    },
+
+    // ── Feature 4: Public Removal Notice ────────────────────────────────
+    'ask_public_removal_notice': {
+        he: '📢 *הודעה פומבית על מחיקה*\n\nכאשר הודעה נמחקת, האם לפרסם הודעה בקבוצה?\n(לדוגמה: "@משתמש — הודעתך הוסרה (סיבה)")\n\n1️⃣ כן — פרסם הודעה בקבוצה ✅\n2️⃣ לא — מחיקה שקטה ❌',
+        en: '📢 *Public removal notice*\n\nWhen a message is deleted, should the bot post a notice in the group?\n(e.g., "@user — your message was removed (reason)")\n\n1️⃣ Yes — post notice in group ✅\n2️⃣ No — silent deletion ❌'
+    },
+    'public_removal_notice_saved': {
+        he: '✅ הודעה פומבית על מחיקה: {{status}}',
+        en: '✅ Public removal notice: {{status}}'
+    },
+    'public_removal_notice_msg': {
+        he: '@{{number}} — הודעתך הוסרה ({{reason}})',
+        en: '@{{number}} — your message was removed ({{reason}})'
+    },
+
+    // ── Feature 6: Grace Period ──────────────────────────────────────────
+    'ask_grace_period': {
+        he: '🕊️ *תקופת חסד לחברים חדשים*\n\nהאם לאפשר תקופת חסד לחברים חדשים?\nבמשך תקופה זו לא תחול עליהם כל אכיפה.\n\n1️⃣ כן ✅\n2️⃣ לא ❌',
+        en: '🕊️ *Grace period for new members*\n\nShould new members get a grace period?\nDuring this time no enforcement will apply to them.\n\n1️⃣ Yes ✅\n2️⃣ No ❌'
+    },
+    'ask_grace_period_minutes': {
+        he: '⏱️ *תקופת חסד — משך*\n\nכמה דקות תקופת החסד?\n(בין 1 ל-10080 — כלומר עד שבוע)\n\n✳️ תשובות מוצעות:\n30\n60\n1440',
+        en: '⏱️ *Grace period — Duration*\n\nHow many minutes should the grace period last?\n(between 1 and 10080 — up to one week)\n\n✳️ Suggested replies:\n30\n60\n1440'
+    },
+    'grace_period_saved': {
+        he: '✅ תקופת חסד נשמרה: {{minutes}} דקות לחברים חדשים',
+        en: '✅ Grace period saved: {{minutes}} minutes for new members'
+    },
+
+    // ── Feature 7: Clone Rules ───────────────────────────────────────────
+    'ask_clone_source_link': {
+        he: '🔗 *העתקת כללים*\n\nהדבק לינק הצטרפות לקבוצה שממנה תרצה להעתיק כללים.\nחשוב: הבוט חייב להיות מנהל בקבוצת המקור.\n\n✳️ לדוגמה: https://chat.whatsapp.com/ABC123',
+        en: '🔗 *Clone rules*\n\nPaste the invite link of the group you want to copy rules from.\nImportant: the bot must be admin in the source group.\n\n✳️ Example: https://chat.whatsapp.com/ABC123'
+    },
+    'clone_source_confirm': {
+        he: '✅ מצאתי קבוצה: *{{name}}* ({{count}} משתתפים)\n\nהאם להעתיק ממנה את הכללים?\n\n1️⃣ כן, העתק ✅\n2️⃣ לא, בחר קבוצה אחרת ❌',
+        en: '✅ Found group: *{{name}}* ({{count}} participants)\n\nCopy rules from it?\n\n1️⃣ Yes, copy ✅\n2️⃣ No, choose another ❌'
+    },
+    'clone_rules_copied': {
+        he: '✅ הועתקו {{count}} כללים מהקבוצה *{{name}}*.',
+        en: '✅ Copied {{count}} rules from *{{name}}*.'
+    },
+    'clone_source_not_managed': {
+        he: '❌ הבוט אינו מנהל בקבוצה שציינת, ולכן לא ניתן להעתיק ממנה כללים.\n\nנסה לינק אחר, או בחר אפשרות אחרת:',
+        en: '❌ The bot is not an admin in the group you specified, so rules cannot be copied from it.\n\nTry a different link, or choose another option:'
+    },
+    'clone_source_invalid_link': {
+        he: '❌ הלינק שהזנת אינו תקין. שלח לינק הצטרפות לוואטסאפ (chat.whatsapp.com/...).',
+        en: '❌ The link you entered is invalid. Send a WhatsApp invite link (chat.whatsapp.com/...).'
+    },
+
+    // ── Feature 8: Periodic Reminder + Rules in Description ─────────────
+    'ask_periodic_reminder': {
+        he: '🔔 *תזכורת כללים תקופתית*\n\nהאם לשלוח תזכורת כללים בקבוצה מדי פרק זמן?\n\n1️⃣ כן ✅\n2️⃣ לא ❌',
+        en: '🔔 *Periodic rules reminder*\n\nShould the bot periodically send a rules reminder to the group?\n\n1️⃣ Yes ✅\n2️⃣ No ❌'
+    },
+    'ask_periodic_reminder_interval': {
+        he: '⏱️ *תזכורת — תדירות*\n\nכל כמה שעות לשלוח תזכורת?\n(בין 1 ל-720)\n\n✳️ תשובות מוצעות:\n24\n48\n168 (פעם בשבוע)',
+        en: '⏱️ *Reminder — Frequency*\n\nHow many hours between reminders?\n(between 1 and 720)\n\n✳️ Suggested replies:\n24\n48\n168 (once a week)'
+    },
+    'periodic_reminder_saved': {
+        he: '✅ תזכורת תקופתית נשמרה: כל {{hours}} שעות',
+        en: '✅ Periodic reminder saved: every {{hours}} hours'
+    },
+    'ask_rules_in_description': {
+        he: '📝 *כללים בתיאור הקבוצה*\n\nהאם לעדכן את תיאור הקבוצה לפי הכללים שהגדרת?\n(התיאור הנוכחי יוחלף לחלוטין)\n\n1️⃣ כן, עדכן תיאור ✅\n2️⃣ לא ❌',
+        en: '📝 *Rules in group description*\n\nShould the bot update the group description based on your configured rules?\n(The current description will be fully replaced)\n\n1️⃣ Yes, update description ✅\n2️⃣ No ❌'
+    },
+    'rules_in_description_saved': {
+        he: '✅ עדכון תיאור קבוצה: {{status}}',
+        en: '✅ Group description update: {{status}}'
+    },
+    'periodic_reminder_message': {
+        he: '📋 *תזכורת כללי קבוצה — {{groupName}}*\n\n{{rulesSummary}}',
+        en: '📋 *Group rules reminder — {{groupName}}*\n\n{{rulesSummary}}'
+    },
+
+    // ── Feature 11: Custom Welcome Message ──────────────────────────────
+    'ask_welcome_msg_custom': {
+        he: '✍️ *הודעת ברוכים הבאים מותאמת אישית*\n\nהזן טקסט מותאם אישית שיישלח לפני סיכום הכללים האוטומטי.\n\nאו שלח *"דלג"* להשתמש רק בסיכום הכללים הסטנדרטי.',
+        en: '✍️ *Custom welcome message*\n\nEnter a custom text to send before the automatic rules summary.\n\nOr send *"skip"* to use only the standard rules summary.'
+    },
+    'welcome_msg_custom_saved': {
+        he: '✅ הודעת ברוכים הבאים מותאמת נשמרה.',
+        en: '✅ Custom welcome message saved.'
+    },
+    'welcome_msg_custom_skipped': {
+        he: '✅ ישמש הסיכום הסטנדרטי בלבד.',
+        en: '✅ Standard rules summary will be used.'
     }
 };
 

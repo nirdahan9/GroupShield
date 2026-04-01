@@ -31,7 +31,7 @@ function evaluateMessage(rules, msgInfo, lang = 'he') {
                 violations.push(...checkForbiddenMessages(rule.ruleData, content, lang));
                 break;
             case 'block_non_text':
-                violations.push(...checkNonTextRule(rule.ruleData, msgType, lang));
+                violations.push(...checkNonTextRule(rule.ruleData, msgType, lang, content));
                 break;
             case 'time_window':
                 violations.push(...checkTimeWindow(rule.ruleData, lang));
@@ -82,16 +82,28 @@ function checkAllowedMessages(ruleData, content, msgType, lang) {
     return violations;
 }
 
+const URL_REGEX = /(https?:\/\/|www\.)[^\s]+/i;
+const WHATSAPP_INVITE_REGEX = /chat\.whatsapp\.com\//i;
+
 /**
- * Optional rule: block non-text messages
+ * Optional rule: block non-text messages (and optionally links in text messages)
  */
-function checkNonTextRule(ruleData, msgType, lang) {
+function checkNonTextRule(ruleData, msgType, lang, content = '') {
     const violations = [];
-    if (msgType === 'chat') return violations;
 
     const blockedTypes = Array.isArray(ruleData && ruleData.blockedTypes)
         ? ruleData.blockedTypes
         : ['other_non_text'];
+
+    // Link blocking applies to text (chat) messages
+    if (msgType === 'chat') {
+        if (blockedTypes.includes('link') || blockedTypes.includes('all_non_text')) {
+            if (URL_REGEX.test(content) || WHATSAPP_INVITE_REGEX.test(content)) {
+                violations.push(t('reason_forbidden_type', lang, { type: t('type_link', lang) }));
+            }
+        }
+        return violations;
+    }
 
     const knownMap = {
         image: 'image',

@@ -62,6 +62,24 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
         return;
     }
 
+    // Grace period check — skip enforcement for recently joined members
+    const gracePeriodMinutes = groupConfig.gracePeriodMinutes || 0;
+    if (gracePeriodMinutes > 0) {
+        try {
+            const joinRecord = await database.getMemberJoinTime(groupId, senderJid);
+            if (joinRecord) {
+                const joinedAt = new Date(joinRecord.joinedAt).getTime();
+                const graceEndsAt = joinedAt + gracePeriodMinutes * 60 * 1000;
+                if (Date.now() < graceEndsAt) {
+                    logger.info(`Grace period active for ${number} in ${groupConfig.groupName} — skipping enforcement`);
+                    return;
+                }
+            }
+        } catch (e) {
+            logger.warn(`Grace period check failed for ${number}`, e);
+        }
+    }
+
     logger.warn(`🚨 Violation: ${number} in ${groupConfig.groupName} | Reason: ${reason}`);
 
     await database.createEnforcementAction({
@@ -138,11 +156,22 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
 
     try {
         // STEP 1: Delete message
+        let messageWasDeleted = false;
         if (enforcementConfig.deleteMessage) {
-            const deleted = await deleteMessage(client, msg);
-            await database.updateEnforcementActionStep(actionId, 'deleteStatus', deleted ? 'success' : 'failed');
+            messageWasDeleted = await deleteMessage(client, msg);
+            await database.updateEnforcementActionStep(actionId, 'deleteStatus', messageWasDeleted ? 'success' : 'failed');
         } else {
             await database.updateEnforcementActionStep(actionId, 'deleteStatus', 'skipped');
+        }
+
+        // STEP 1b: Public removal notice in group (if enabled)
+        if (enforcementConfig.publicRemovalNotice) {
+            try {
+                const noticeText = t('public_removal_notice_msg', lang, { number, reason });
+                await client.sendMessage(groupId, noticeText);
+            } catch (e) {
+                logger.warn(`Public removal notice failed for ${number}`, e);
+            }
         }
 
         // STEP 2: Private warning/notification

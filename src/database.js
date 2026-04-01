@@ -184,14 +184,28 @@ class Database {
                 last_updated TEXT DEFAULT (datetime('now'))
             )`);
 
+            // Member join times (for grace period feature)
+            this.db.run(`CREATE TABLE IF NOT EXISTS member_join_times (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                groupId TEXT NOT NULL,
+                userJid TEXT NOT NULL,
+                joinedAt TEXT NOT NULL,
+                UNIQUE(groupId, userJid)
+            )`);
+
             // Check if welcomeMessageEnabled column exists, if not, add it (schema migration)
-            // Migrate enforcement table: add warnPrivateDm column
+            // Migrate enforcement table: add warnPrivateDm + publicRemovalNotice columns
             this.db.all("PRAGMA table_info(enforcement)", (err, rows) => {
                 if (!err && rows) {
                     const hasWarnPrivateDm = rows.some(r => r.name === 'warnPrivateDm');
                     if (!hasWarnPrivateDm) {
                         this.db.run("ALTER TABLE enforcement ADD COLUMN warnPrivateDm INTEGER DEFAULT 0");
                         logger.info("Migrated schema: Added warnPrivateDm to enforcement");
+                    }
+                    const hasPublicRemovalNotice = rows.some(r => r.name === 'publicRemovalNotice');
+                    if (!hasPublicRemovalNotice) {
+                        this.db.run("ALTER TABLE enforcement ADD COLUMN publicRemovalNotice INTEGER DEFAULT 0");
+                        logger.info("Migrated schema: Added publicRemovalNotice to enforcement");
                     }
                 }
             });
@@ -246,7 +260,7 @@ class Database {
                 }
             });
 
-            // Migrate groups: add shabbatConfig and shabbatLocked columns if missing
+            // Migrate groups: add shabbatConfig, shabbatLocked, and new feature columns if missing
             this.db.all("PRAGMA table_info(groups)", (err2, rows2) => {
                 if (!err2 && rows2) {
                     const hasShabbatConfig = rows2.some(r => r.name === 'shabbatConfig');
@@ -258,6 +272,36 @@ class Database {
                     if (!hasShabbatLocked) {
                         this.db.run("ALTER TABLE groups ADD COLUMN shabbatLocked INTEGER DEFAULT 0");
                         logger.info("Migrated schema: Added shabbatLocked to groups");
+                    }
+                    const hasGracePeriod = rows2.some(r => r.name === 'gracePeriodMinutes');
+                    if (!hasGracePeriod) {
+                        this.db.run("ALTER TABLE groups ADD COLUMN gracePeriodMinutes INTEGER DEFAULT 0");
+                        logger.info("Migrated schema: Added gracePeriodMinutes to groups");
+                    }
+                    const hasPeriodicReminderEnabled = rows2.some(r => r.name === 'periodicReminderEnabled');
+                    if (!hasPeriodicReminderEnabled) {
+                        this.db.run("ALTER TABLE groups ADD COLUMN periodicReminderEnabled INTEGER DEFAULT 0");
+                        logger.info("Migrated schema: Added periodicReminderEnabled to groups");
+                    }
+                    const hasPeriodicReminderInterval = rows2.some(r => r.name === 'periodicReminderIntervalHours');
+                    if (!hasPeriodicReminderInterval) {
+                        this.db.run("ALTER TABLE groups ADD COLUMN periodicReminderIntervalHours INTEGER DEFAULT 168");
+                        logger.info("Migrated schema: Added periodicReminderIntervalHours to groups");
+                    }
+                    const hasRulesInDescription = rows2.some(r => r.name === 'rulesInDescription');
+                    if (!hasRulesInDescription) {
+                        this.db.run("ALTER TABLE groups ADD COLUMN rulesInDescription INTEGER DEFAULT 0");
+                        logger.info("Migrated schema: Added rulesInDescription to groups");
+                    }
+                    const hasLastReminderAt = rows2.some(r => r.name === 'lastReminderAt');
+                    if (!hasLastReminderAt) {
+                        this.db.run("ALTER TABLE groups ADD COLUMN lastReminderAt TEXT DEFAULT NULL");
+                        logger.info("Migrated schema: Added lastReminderAt to groups");
+                    }
+                    const hasWelcomeMessageCustom = rows2.some(r => r.name === 'welcomeMessageCustom');
+                    if (!hasWelcomeMessageCustom) {
+                        this.db.run("ALTER TABLE groups ADD COLUMN welcomeMessageCustom TEXT DEFAULT NULL");
+                        logger.info("Migrated schema: Added welcomeMessageCustom to groups");
                     }
                 }
             });
@@ -628,8 +672,8 @@ class Database {
     async setEnforcement(groupId, config) {
         await this._run(
             `INSERT OR REPLACE INTO enforcement
-             (groupId, deleteMessage, privateWarning, removeFromGroup, blockUser, sendReport, warnPrivateDm)
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+             (groupId, deleteMessage, privateWarning, removeFromGroup, blockUser, sendReport, warnPrivateDm, publicRemovalNotice)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 groupId,
                 config.deleteMessage ? 1 : 0,
@@ -637,7 +681,8 @@ class Database {
                 config.removeFromGroup ? 1 : 0,
                 config.blockUser ? 1 : 0,
                 config.sendReport ? 1 : 0,
-                config.warnPrivateDm ? 1 : 0
+                config.warnPrivateDm ? 1 : 0,
+                config.publicRemovalNotice ? 1 : 0
             ]
         );
     }
@@ -651,7 +696,8 @@ class Database {
                 removeFromGroup: true,
                 blockUser: false,
                 sendReport: true,
-                warnPrivateDm: false
+                warnPrivateDm: false,
+                publicRemovalNotice: false
             };
         }
         return {
@@ -660,7 +706,8 @@ class Database {
             removeFromGroup: !!row.removeFromGroup,
             blockUser: !!row.blockUser,
             sendReport: !!row.sendReport,
-            warnPrivateDm: !!row.warnPrivateDm
+            warnPrivateDm: !!row.warnPrivateDm,
+            publicRemovalNotice: !!row.publicRemovalNotice
         };
     }
 
@@ -1050,6 +1097,76 @@ class Database {
     async getPendingLearnedPhrasesCount() {
         const row = await this._get('SELECT COUNT(*) as cnt FROM pending_learned_phrases');
         return row ? row.cnt : 0;
+    }
+
+    // ── Grace Period / Join Times ─────────────────────────────────────────
+
+    async recordMemberJoin(groupId, userJid) {
+        await this._run(
+            `INSERT OR REPLACE INTO member_join_times (groupId, userJid, joinedAt) VALUES (?, ?, ?)`,
+            [groupId, userJid, new Date().toISOString()]
+        );
+    }
+
+    async getMemberJoinTime(groupId, userJid) {
+        return this._get('SELECT joinedAt FROM member_join_times WHERE groupId = ? AND userJid = ?', [groupId, userJid]);
+    }
+
+    async deleteMemberJoinTime(groupId, userJid) {
+        await this._run('DELETE FROM member_join_times WHERE groupId = ? AND userJid = ?', [groupId, userJid]);
+    }
+
+    async updateGroupGracePeriod(groupId, minutes) {
+        await this._run('UPDATE groups SET gracePeriodMinutes = ? WHERE groupId = ?', [minutes, groupId]);
+    }
+
+    // ── Periodic Reminder / Rules in Description ──────────────────────────
+
+    async updateGroupPeriodicReminder(groupId, enabled, intervalHours) {
+        await this._run(
+            'UPDATE groups SET periodicReminderEnabled = ?, periodicReminderIntervalHours = ? WHERE groupId = ?',
+            [enabled ? 1 : 0, intervalHours, groupId]
+        );
+    }
+
+    async updateGroupRulesInDescription(groupId, enabled) {
+        await this._run('UPDATE groups SET rulesInDescription = ? WHERE groupId = ?', [enabled ? 1 : 0, groupId]);
+    }
+
+    async updateGroupLastReminderAt(groupId) {
+        await this._run('UPDATE groups SET lastReminderAt = ? WHERE groupId = ?', [new Date().toISOString(), groupId]);
+    }
+
+    async getGroupsForPeriodicReminder() {
+        const now = new Date().toISOString();
+        return this._all(`
+            SELECT * FROM groups
+            WHERE active = 1 AND verified = 1 AND status = 'ACTIVE'
+              AND periodicReminderEnabled = 1
+              AND (
+                lastReminderAt IS NULL
+                OR datetime(lastReminderAt, '+' || periodicReminderIntervalHours || ' hours') <= ?
+              )
+        `, [now]);
+    }
+
+    // ── Custom Welcome Message ────────────────────────────────────────────
+
+    async updateGroupWelcomeMessageCustom(groupId, text) {
+        await this._run('UPDATE groups SET welcomeMessageCustom = ? WHERE groupId = ?', [text || null, groupId]);
+    }
+
+    // ── Clone Rules ───────────────────────────────────────────────────────
+
+    async copyRulesFromGroup(sourceGroupId, targetGroupId) {
+        const rules = await this._all('SELECT ruleType, ruleData, enabled FROM rules WHERE groupId = ?', [sourceGroupId]);
+        for (const rule of rules) {
+            await this._run(
+                'INSERT INTO rules (groupId, ruleType, ruleData, enabled) VALUES (?, ?, ?, ?)',
+                [targetGroupId, rule.ruleType, rule.ruleData, rule.enabled]
+            );
+        }
+        return rules.length;
     }
 
     // ── Lifecycle ────────────────────────────────────────────────────────
