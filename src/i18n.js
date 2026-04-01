@@ -339,7 +339,7 @@ const strings = {
         en: 'ℹ️ Enforcement is already active and not paused.'
     },
     'invalid_pause_duration': {
-        he: '❌ לא הוגדר זמן נכון. אנא שלח השהיה בצירוף מספר שעות. לדוגמה: `pause 24`',
+        he: '❌ לא הוגדר זמן נכון. אנא שלח השהיה בצירוף מספר שעות. לדוגמה: `השהה 24`',
         en: '❌ Invalid duration. Please provide hours. Example: `pause 24`'
     },
 
