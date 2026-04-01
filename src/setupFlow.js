@@ -971,7 +971,7 @@ async function buildSummary(state, reportTarget, mgmtGroupId, lang) {
         'forbidden': lang === 'he' ? 'הודעות אסורות' : 'Forbidden messages',
         'none':     lang === 'he' ? 'ללא חוקי תוכן' : 'No content rules',
         'curses':   lang === 'he' ? 'חסימת קללות (רשימה מוכנה)' : 'Curse blocking (preset list)',
-        'shabbat':  lang === 'he' ? 'שמירת שבת 🕯️' : 'Shabbat mode 🕯️'
+        'shabbat':  lang === 'he' ? 'שמירת שבת וחג 🕯️' : 'Shabbat & Holiday mode 🕯️'
     };
 
     const rulesModeValue = state.rulesType === 'allowed'

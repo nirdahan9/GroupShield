@@ -73,8 +73,8 @@ const strings = {
 
     // ── Rules Setup ──────────────────────────────────────────────────────
     'ask_rules_type': {
-        he: '📏 *שלב 2: הגדרת חוקים*\n\nאיזה סוג חוקי תוכן תרצה?\n\n1️⃣ *חסימת קללות* — חסום קללות נפוצות בעברית ובאנגלית אוטומטית\n2️⃣ *שמירת שבת* 🕯️ — סגור הקבוצה אוטומטית לפני כניסת שבת ופתח אחרי יציאתה (לפי שעון ישראל)\n3️⃣ *ללא חוקי תוכן* — ללא הגבלת תוכן\n4️⃣ *חוקים בהתאמה אישית* — הגדרת הודעות מותרות/אסורות',
-        en: '📏 *Step 2: Set Rules*\n\nWhat type of content rules do you want?\n\n1️⃣ *Block curses* — automatically block common Hebrew and English profanity\n2️⃣ *Shabbat mode* 🕯️ — automatically lock the group before Shabbat and unlock after it ends (Israel time)\n3️⃣ *No content rules* — no content restrictions\n4️⃣ *Custom rules* — define allowed or forbidden messages'
+        he: '📏 *שלב 2: הגדרת חוקים*\n\nאיזה סוג חוקי תוכן תרצה?\n\n1️⃣ *חסימת קללות* — חסום קללות נפוצות בעברית ובאנגלית אוטומטית\n2️⃣ *שמירת שבת וחג* 🕯️ — סגור הקבוצה אוטומטית לפני כניסת שבת וחגים ופתח אחרי יציאתם (לפי שעון ישראל)\n3️⃣ *ללא חוקי תוכן* — ללא הגבלת תוכן\n4️⃣ *חוקים בהתאמה אישית* — הגדרת הודעות מותרות/אסורות',
+        en: '📏 *Step 2: Set Rules*\n\nWhat type of content rules do you want?\n\n1️⃣ *Block curses* — automatically block common Hebrew and English profanity\n2️⃣ *Shabbat & Holiday mode* 🕯️ — automatically lock the group before Shabbat and Jewish holidays and unlock after they end (Israel time)\n3️⃣ *No content rules* — no content restrictions\n4️⃣ *Custom rules* — define allowed or forbidden messages'
     },
     'ask_rules_custom_type': {
         he: '⚙️ *חוקים בהתאמה אישית*\n\nבחר סוג:\n\n1️⃣ *הודעות מותרות בלבד* — רק הודעות ספציפיות מותרות\n2️⃣ *הודעות אסורות* — הודעות ספציפיות אסורות, השאר מותר',
@@ -85,8 +85,8 @@ const strings = {
         en: '✅ Curse blocking enabled.\nThe bot will block common Hebrew and English profanity using smart bypass detection.'
     },
     'shabbat_preset_selected': {
-        he: '🕯️ *שמירת שבת הופעלה!*\nהבוט יסגור את הקבוצה 5 דקות לפני כניסת השבת ויפתח אותה 5 דקות לאחר יציאתה.\nהשעות הן לפי שעון ישראל.\n\n⚠️ *שים לב:* גם כשהקבוצה נעולה, *למנהלים תמיד יש אפשרות לשלוח הודעות* בקבוצה. אם אתה רוצה למנוע זאת, תצטרך להסיר הרשאות מנהל בזמן השבת ידנית.',
-        en: '🕯️ *Shabbat mode enabled!*\nThe bot will lock the group 5 minutes before Shabbat begins and unlock it 5 minutes after it ends.\nTimes are based on Israel time.\n\n⚠️ *Note:* Even when the group is locked, *group admins can still send messages*. If you want to prevent that, you will need to remove admin permissions manually during Shabbat.'
+        he: '🕯️ *שמירת שבת וחג הופעלה!*\nהבוט יסגור את הקבוצה 5 דקות לפני כניסת השבת והחגים ויפתח אותה 5 דקות לאחר יציאתם.\nחגים: ר"ה (2 ימים), יוה"כ, סוכות א\', שמיני עצרת, פסח א\' ושביעי, שבועות.\nהשעות לפי שעון ישראל.\n\n⚠️ *שים לב:* גם כשהקבוצה נעולה, *למנהלים תמיד יש אפשרות לשלוח הודעות* בקבוצה. אם אתה רוצה למנוע זאת, תצטרך להסיר הרשאות מנהל בזמן השבת ידנית.',
+        en: '🕯️ *Shabbat & Holiday mode enabled!*\nThe bot will lock the group 5 minutes before Shabbat and Jewish holidays begin and unlock it 5 minutes after they end.\nHolidays: Rosh Hashana (2 days), Yom Kippur, Sukkot day 1, Shemini Atzeret, Pesach days 1 & 7, Shavuot.\nTimes based on Israel time.\n\n⚠️ *Note:* Even when the group is locked, *group admins can still send messages*. If you want to prevent that, you will need to remove admin permissions manually during Shabbat/holidays.'
     },
     'ask_shabbat_notify': {
         he: '🔔 *התראה לפני סגירה*\n\nהאם לשלוח הודעה לקבוצה לפני שהיא נסגרת?\n\n1️⃣ כן\n2️⃣ לא',

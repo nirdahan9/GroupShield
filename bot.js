@@ -117,11 +117,18 @@ async function startBot() {
         runtime.cronTasks.push(scheduleUnknownGroupExit(client));
         runtime.cronTasks.push(schedulePendingMembersCleanup(client));
         runtime.cronTasks.push(scheduleShabbatFetch(client));
+        runtime.cronTasks.push(scheduleHolidayFetch(client));
 
-        // Check every minute whether any Shabbat group needs to be locked/unlocked/notified
+        // Fetch holiday times for current year on startup (non-blocking)
+        shabbat.fetchAndSaveHolidayTimes().then(h => {
+            if (!h) logger.warn('Holiday fetch on startup failed — Shabbat-only mode until restart');
+            else logger.info(`Startup: loaded ${h.length} holiday windows`);
+        }).catch(e => logger.error('Holiday fetch startup error', e));
+
+        // Check every minute whether any Shabbat/holiday group needs to be locked/unlocked/notified
         const shabbatCheckHandle = setInterval(async () => {
-            try { await shabbat.checkShabbatGroups(client); } catch (e) {
-                logger.warn('Shabbat check failed', e.message);
+            try { await shabbat.checkShabbatAndHolidayGroups(client); } catch (e) {
+                logger.warn('Shabbat/holiday check failed', e.message);
             }
         }, 60 * 1000);
         runtime.intervals.push(shabbatCheckHandle);
@@ -256,6 +263,30 @@ function scheduleShabbatFetch(client) {
         } else {
             // Fetch failed — start interactive recovery flow with developer
             await shabbat.initiateRecovery(client, DEVELOPER_JID);
+        }
+    }, { timezone: 'Asia/Jerusalem' });
+}
+
+function scheduleHolidayFetch(client) {
+    // Every January 1st at 08:00 Israel time — fetch the new year's holiday windows
+    const schedule = getValidCronOrDefault('scheduling.holidayFetch', '0 8 1 1 *');
+    return cron.schedule(schedule, async () => {
+        const year = new Date().getFullYear();
+        let holidays = null;
+        try {
+            holidays = await shabbat.fetchAndSaveHolidayTimes(year);
+        } catch (e) {
+            logger.error(`Annual holiday fetch failed for ${year}`, e);
+        }
+
+        if (!DEVELOPER_JID) return;
+        try {
+            await client.sendMessage(DEVELOPER_JID, holidays
+                ? `🕍 *GroupShield — שעות חגים נשמרו לשנת ${year}*\nנשמרו ${holidays.length} חלונות סגירה לחגים.`
+                : `⚠️ *GroupShield — שגיאה בשליפת שעות חגים לשנת ${year}*\nשמירת שבת תמשיך לפעול כרגיל. נסה ריסטארט לניסיון חוזר.`
+            );
+        } catch (e) {
+            logger.warn('Failed to send holiday fetch notification', e.message);
         }
     }, { timezone: 'Asia/Jerusalem' });
 }

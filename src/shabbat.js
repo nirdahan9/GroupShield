@@ -1,11 +1,12 @@
-// src/shabbat.js - Shabbat mode: weekly time fetch (LLM) + group lock/unlock
+// src/shabbat.js - Shabbat & Holiday mode: weekly Shabbat fetch + annual holiday fetch + group lock/unlock
 
 const https = require('https');
 const database = require('./database');
 const logger = require('./logger');
 
-const SETTINGS_KEY  = 'shabbat_times';
-const RECOVERY_KEY  = 'shabbat_recovery';
+const SETTINGS_KEY             = 'shabbat_times';
+const RECOVERY_KEY             = 'shabbat_recovery';
+const HOLIDAY_SETTINGS_KEY_PREFIX = 'holiday_times_'; // e.g. 'holiday_times_2026'
 const LOCK_OFFSET_MS   = 5 * 60 * 1000;   // lock 5 min before entry
 const UNLOCK_OFFSET_MS = 5 * 60 * 1000;   // unlock 5 min after exit
 
@@ -38,7 +39,7 @@ function israelTimeToUtcMs(dateStr, timeStr) {
     return Date.UTC(year, month - 1, day, h - 2, m, 0); // fallback UTC+2
 }
 
-// ── HebCal fetch ─────────────────────────────────────────────────────────────
+// ── HebCal fetch (Shabbat — weekly) ─────────────────────────────────────────
 
 /**
  * Fetch Shabbat items for a given city from the free HebCal API.
@@ -117,12 +118,12 @@ function formatIsraelTime(ms) {
 }
 
 /**
- * Fetch Shabbat times from LLM and persist to settings table.
+ * Fetch Shabbat times from HebCal and persist to settings table.
  * Called every Thursday by the scheduler.
  * Returns the saved times object on success, or null on failure.
  */
 async function fetchAndSaveShabbatTimes() {
-    logger.info('Fetching Shabbat times from LLM...');
+    logger.info('Fetching Shabbat times from HebCal...');
     const times = await fetchShabbatTimes();
     if (!times) {
         logger.warn('Shabbat time fetch returned null — keeping previous times');
@@ -133,158 +134,369 @@ async function fetchAndSaveShabbatTimes() {
     return times;
 }
 
+// ── HebCal fetch (Holidays — annual) ────────────────────────────────────────
+
+/**
+ * Fetch annual holiday calendar for a given city and year from HebCal.
+ * Uses maj=on (major holidays), s=off (no Shabbat entries), c=on (candle/havdalah times),
+ * i=on (Israel 1-day yom tov), mf=off (no fast days), min=off (no minor holidays).
+ * Returns array of items, or null on failure.
+ */
+function hebcalAnnualFetch(city, year) {
+    return new Promise((resolve) => {
+        const url =
+            `https://www.hebcal.com/hebcal?v=1&cfg=json` +
+            `&year=${year}&maj=on&min=off&ss=off&mf=off` +
+            `&c=on&geo=city&city=${encodeURIComponent(city)}&M=on&s=off&i=on`;
+        const req = https.get(url, (res) => {
+            let data = '';
+            res.on('data', chunk => { data += chunk; });
+            res.on('end', () => {
+                try { resolve(JSON.parse(data).items || []); }
+                catch (e) {
+                    logger.warn(`HebCal annual parse error for ${city}/${year}`, e.message);
+                    resolve(null);
+                }
+            });
+        });
+        req.setTimeout(12000, () => { req.destroy(); resolve(null); });
+        req.on('error', e => {
+            logger.warn(`HebCal annual fetch error for ${city}/${year}`, e.message);
+            resolve(null);
+        });
+    });
+}
+
+/**
+ * Given a sorted array of HebCal annual items (s=off, so no Shabbat entries),
+ * pair each candles→havdalah sequence into a closed window.
+ *
+ * Algorithm:
+ *  - candles with no open window → opens a new window (entryMs = item.date)
+ *  - candles with window already open → skipped (inter-day lighting, e.g. RH day 2)
+ *  - first major holiday item inside open window → captures Hebrew name
+ *  - havdalah with open window → closes window (exitMs = item.date), saves to array
+ *
+ * Returns: [{ nameHe, entryMs, exitMs, notifiedGroups: {} }, ...]
+ */
+function pairHolidayWindows(items) {
+    const windows = [];
+    let openWindow = null; // { entryMs, nameHe }
+
+    for (const item of items) {
+        const ms = new Date(item.date).getTime();
+        if (isNaN(ms)) continue;
+
+        if (item.category === 'candles') {
+            if (!openWindow) {
+                openWindow = { entryMs: ms, nameHe: null };
+            }
+            // else: already in a multi-day window (e.g. Rosh Hashana day 2 candles) — skip
+        } else if (item.category === 'holiday' && item.subcat === 'major' && openWindow && !openWindow.nameHe) {
+            openWindow.nameHe = item.hebrew || null;
+        } else if (item.category === 'havdalah' && openWindow) {
+            windows.push({
+                nameHe: openWindow.nameHe || 'חג',
+                entryMs: openWindow.entryMs,
+                exitMs: ms,
+                notifiedGroups: {}
+            });
+            openWindow = null;
+        }
+    }
+    return windows;
+}
+
+/**
+ * Fetch holiday windows for a given year.
+ * Entry times from Jerusalem (earlier candle lighting), exit times from Netanya (later havdalah).
+ * Returns array of { nameHe, entryMs, exitMs, notifiedGroups }, or null on failure.
+ */
+async function fetchHolidayTimes(year) {
+    const [jerusalemItems, netanyaItems] = await Promise.all([
+        hebcalAnnualFetch('Jerusalem', year),
+        hebcalAnnualFetch('Netanya', year)
+    ]);
+
+    if (!jerusalemItems || !netanyaItems) {
+        logger.warn(`Holiday fetch failed for year ${year}`);
+        return null;
+    }
+
+    const sortByDate = arr => arr.slice().sort((a, b) =>
+        new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+
+    const entryWindows = pairHolidayWindows(sortByDate(jerusalemItems));
+    const exitWindows  = pairHolidayWindows(sortByDate(netanyaItems));
+
+    if (entryWindows.length !== exitWindows.length) {
+        logger.warn(`Holiday window count mismatch: Jerusalem=${entryWindows.length}, Netanya=${exitWindows.length} for ${year}`);
+    }
+
+    const count = Math.min(entryWindows.length, exitWindows.length);
+    const holidays = [];
+    for (let i = 0; i < count; i++) {
+        holidays.push({
+            nameHe:         entryWindows[i].nameHe,
+            entryMs:        entryWindows[i].entryMs,   // Jerusalem candle lighting
+            exitMs:         exitWindows[i].exitMs,      // Netanya havdalah
+            notifiedGroups: {}
+        });
+        logger.info(`Holiday[${i}] ${entryWindows[i].nameHe}: entry=${new Date(entryWindows[i].entryMs).toISOString()}, exit=${new Date(exitWindows[i].exitMs).toISOString()}`);
+    }
+
+    logger.info(`Fetched ${holidays.length} holiday windows for ${year}`);
+    return holidays;
+}
+
+/**
+ * Fetch holiday windows for the given year (defaults to current civil year)
+ * and persist to settings table under key 'holiday_times_YEAR'.
+ * Returns the saved array on success, or null on failure.
+ */
+async function fetchAndSaveHolidayTimes(year) {
+    const y = year || new Date().getFullYear();
+    logger.info(`Fetching holiday times for ${y}...`);
+    const holidays = await fetchHolidayTimes(y);
+    if (!holidays) {
+        logger.warn(`Holiday fetch returned null for ${y}`);
+        return null;
+    }
+    const key = HOLIDAY_SETTINGS_KEY_PREFIX + y;
+    await database.setSetting(key, JSON.stringify(holidays));
+    logger.info(`Holiday times saved: ${holidays.length} windows for ${y}`);
+    return holidays;
+}
+
+/**
+ * Return the holiday window that contains 'now' (with offsets applied), or null.
+ * lockTime   = window.entryMs - LOCK_OFFSET_MS
+ * unlockTime = window.exitMs  + UNLOCK_OFFSET_MS
+ */
+function getCurrentHolidayWindow(now, holidays) {
+    if (!holidays || holidays.length === 0) return null;
+    for (const w of holidays) {
+        const lockTime   = w.entryMs - LOCK_OFFSET_MS;
+        const unlockTime = w.exitMs  + UNLOCK_OFFSET_MS;
+        if (now >= lockTime && now < unlockTime) return w;
+    }
+    return null;
+}
+
 // ── Lock / Unlock / Notify ────────────────────────────────────────────────────
 
 /**
- * Alert the group owner about a Shabbat lock/unlock failure.
+ * Alert the group owner about a lock/unlock failure.
  */
 async function alertOwner(client, ownerJid, message) {
     try { await client.sendMessage(ownerJid, message); } catch (_) {}
 }
 
 /**
- * Called every minute.  For each group with Shabbat mode enabled:
- *  - Send pre-Shabbat notification (once per week)
- *  - Lock the group 5 min before Shabbat entry (and re-lock if someone opens it during Shabbat)
- *  - Unlock the group 5 min after Shabbat exit
+ * Called every minute. For each group with Shabbat/holiday mode enabled:
+ *  - Send pre-Shabbat or pre-holiday notification (once per event, skipped if already locked)
+ *  - Lock the group 5 min before Shabbat/holiday entry
+ *  - Re-lock if someone opens the group during Shabbat/holiday
+ *  - Unlock 5 min after both Shabbat AND any active holiday have ended
  *  - Alert the owner on any lock/unlock failure
  *
- * State sync: the actual WhatsApp announce-flag is always read to handle
- * cases where the group was already locked/unlocked externally (or the bot
- * restarted mid-Shabbat).
+ * shouldBeLocked = isInShabbatWindow OR isInHolidayWindow
+ * Adjacent Shabbat+holiday: the group stays locked throughout with no unlock in between.
+ * Pre-notifications are skipped if the group is already locked (group.shabbatLocked=1).
  */
-async function checkShabbatGroups(client) {
-    const raw = await database.getSetting(SETTINGS_KEY);
-    if (!raw) return;
-
-    let times;
-    try { times = JSON.parse(raw); } catch { return; }
-
+async function checkShabbatAndHolidayGroups(client) {
     const now = Date.now();
-    const lockTime   = times.entryMs - LOCK_OFFSET_MS;
-    const unlockTime = times.exitMs  + UNLOCK_OFFSET_MS;
+
+    // ── Load Shabbat times ────────────────────────────────────────────────
+    const shabbatRaw = await database.getSetting(SETTINGS_KEY);
+    let shabbatTimes = null;
+    if (shabbatRaw) {
+        try { shabbatTimes = JSON.parse(shabbatRaw); } catch { /* ignore */ }
+    }
+
+    // ── Load Holiday times for current year ──────────────────────────────
+    const currentYear = new Date().getFullYear();
+    const holidayKey  = HOLIDAY_SETTINGS_KEY_PREFIX + currentYear;
+    const holidayRaw  = await database.getSetting(holidayKey);
+    let holidays = [];
+    let holidaysModified = false;
+    if (holidayRaw) {
+        try { holidays = JSON.parse(holidayRaw); } catch { /* ignore */ }
+    }
+
+    // ── Compute Shabbat window ────────────────────────────────────────────
+    let isInShabbatWindow = false;
+    let shabbatLockTime   = null;
+    const shabbatNotifiedGroups = shabbatTimes ? (shabbatTimes.notifiedGroups || {}) : {};
+    let shabbatModified = false;
+
+    if (shabbatTimes && shabbatTimes.entryMs && shabbatTimes.exitMs) {
+        shabbatLockTime         = shabbatTimes.entryMs - LOCK_OFFSET_MS;
+        const shabbatUnlockTime = shabbatTimes.exitMs  + UNLOCK_OFFSET_MS;
+        isInShabbatWindow = (now >= shabbatLockTime && now < shabbatUnlockTime);
+    }
+
+    // ── Compute Holiday window ────────────────────────────────────────────
+    const activeHolidayWindow = getCurrentHolidayWindow(now, holidays);
+    const isInHolidayWindow   = activeHolidayWindow !== null;
+    const holidayLockTime     = activeHolidayWindow
+        ? activeHolidayWindow.entryMs - LOCK_OFFSET_MS
+        : null;
 
     const groups = await database.getShabbatGroups();
     if (!groups || groups.length === 0) return;
-
-    // Track per-group notification state in the stored times object (avoid re-notifying)
-    const notifiedGroups = times.notifiedGroups || {};
-    let timesModified = false;
 
     for (const group of groups) {
         let shabbatCfg;
         try { shabbatCfg = JSON.parse(group.shabbatConfig); } catch { continue; }
         if (!shabbatCfg || !shabbatCfg.enabled) continue;
 
-        // ── Pre-Shabbat notification ─────────────────────────────────
         const notifyMinutes = shabbatCfg.notifyMinutes || 0;
-        if (notifyMinutes > 0) {
-            const notifyTime = lockTime - notifyMinutes * 60 * 1000;
-            const notifyKey  = `${group.groupId}_${times.friday}`;
+        const alreadyLocked = !!group.shabbatLocked;
 
-            if (now >= notifyTime && now < lockTime && !notifiedGroups[notifyKey]) {
+        // ── Pre-Shabbat notification ──────────────────────────────────────
+        // Skip if group is already locked (adjacent holiday+Shabbat: no mid-closure notification)
+        if (notifyMinutes > 0 && shabbatTimes && shabbatLockTime && !alreadyLocked) {
+            const notifyTime = shabbatLockTime - notifyMinutes * 60 * 1000;
+            const notifyKey  = `${group.groupId}_${shabbatTimes.friday}`;
+
+            if (now >= notifyTime && now < shabbatLockTime && !shabbatNotifiedGroups[notifyKey]) {
                 try {
-                    const remaining = Math.max(1, Math.round((lockTime - now) / 60000));
-                    const notifyText = `שבת שלום, לידיעתכם הקבוצה תיסגר להודעות בעוד ${remaining} דקות.`;
-                    await client.sendMessage(group.groupId, notifyText);
+                    const remaining = Math.max(1, Math.round((shabbatLockTime - now) / 60000));
+                    await client.sendMessage(group.groupId,
+                        `שבת שלום, לידיעתכם הקבוצה תיסגר להודעות בעוד ${remaining} דקות.`
+                    );
                     logger.info(`Shabbat pre-notify sent to ${group.groupName}`);
-                    notifiedGroups[notifyKey] = true;
-                    timesModified = true;
+                    shabbatNotifiedGroups[notifyKey] = true;
+                    shabbatModified = true;
                 } catch (e) {
                     logger.warn(`Shabbat notify failed for ${group.groupName}`, e.message);
                 }
             }
         }
 
-        // ── Read actual WhatsApp group state ─────────────────────────
+        // ── Pre-holiday notification ──────────────────────────────────────
+        // Skip if group is already locked (adjacent Shabbat+holiday: no mid-closure notification)
+        if (notifyMinutes > 0 && activeHolidayWindow && holidayLockTime && !alreadyLocked) {
+            const notifyTime = holidayLockTime - notifyMinutes * 60 * 1000;
+            const notifyKey  = `${group.groupId}_${activeHolidayWindow.entryMs}`;
+
+            if (now >= notifyTime && now < holidayLockTime && !activeHolidayWindow.notifiedGroups[notifyKey]) {
+                try {
+                    const remaining = Math.max(1, Math.round((holidayLockTime - now) / 60000));
+                    await client.sendMessage(group.groupId,
+                        `לקראת ${activeHolidayWindow.nameHe}, הקבוצה תיסגר להודעות בעוד ${remaining} דקות.`
+                    );
+                    logger.info(`Holiday pre-notify sent to ${group.groupName} (${activeHolidayWindow.nameHe})`);
+                    activeHolidayWindow.notifiedGroups[notifyKey] = true;
+                    holidaysModified = true;
+                } catch (e) {
+                    logger.warn(`Holiday notify failed for ${group.groupName}`, e.message);
+                }
+            }
+        }
+
+        // ── Read actual WhatsApp group state ──────────────────────────────
         let chat, isActuallyLocked;
         try {
             chat = await client.getChatById(group.groupId);
-            // chat.announce === true means only admins can send messages
             isActuallyLocked = chat.announce === true;
         } catch (e) {
-            logger.warn(`Shabbat: could not read state for ${group.groupName}`, e.message);
-            continue; // skip this group this cycle
+            logger.warn(`Shabbat/holiday: could not read state for ${group.groupName}`, e.message);
+            continue;
         }
 
-        const shouldBeLocked = (now >= lockTime && now < unlockTime);
+        const shouldBeLocked = isInShabbatWindow || isInHolidayWindow;
+        const lockLabel = isInHolidayWindow
+            ? `שמירת חג (${activeHolidayWindow.nameHe})`
+            : 'שמירת שבת';
 
         if (shouldBeLocked) {
             if (!group.shabbatLocked) {
-                // ── First lock of this Shabbat ────────────────────────
+                // ── First lock ────────────────────────────────────────────
                 if (isActuallyLocked) {
-                    // Bot restarted mid-Shabbat — group already locked externally, take DB ownership
+                    // Bot restarted mid-Shabbat/holiday — group already locked, take ownership
                     await database.setShabbatLocked(group.groupId, true);
                     confirmedLockedState.set(group.groupId, true);
-                    logger.info(`Shabbat: ${group.groupName} already locked on startup — took ownership`);
+                    logger.info(`${lockLabel}: ${group.groupName} already locked — took ownership`);
                 } else {
                     try {
                         await chat.setMessagesAdminsOnly(true);
                         await database.setShabbatLocked(group.groupId, true);
-                        logger.info(`Shabbat locked: ${group.groupName}`);
+                        logger.info(`${lockLabel} locked: ${group.groupName}`);
                         // confirmedLockedState stays unset until chat.announce confirms true
                     } catch (e) {
-                        logger.warn(`Shabbat lock failed for ${group.groupName}`, e.message);
+                        logger.warn(`${lockLabel} lock failed for ${group.groupName}`, e.message);
                         await alertOwner(client, group.ownerJid,
-                            `⚠️ *GroupShield — שמירת שבת*\nהבוט לא הצליח לסגור את הקבוצה "${group.groupName}" לקראת שבת.\nשגיאה: ${e.message}`);
+                            `⚠️ *GroupShield — שמירת שבת וחג*\n` +
+                            `הבוט לא הצליח לסגור את הקבוצה "${group.groupName}" לקראת ${lockLabel}.\n` +
+                            `שגיאה: ${e.message}`
+                        );
                     }
                 }
             } else {
-                // shabbatLocked=1 — already locked this Shabbat.
-                // Update confirmed state, and re-lock only on a confirmed locked→unlocked transition.
+                // shabbatLocked=1 — already locked. Re-lock only on confirmed locked→unlocked transition.
                 if (isActuallyLocked) {
                     confirmedLockedState.set(group.groupId, true);
                 } else if (confirmedLockedState.get(group.groupId) === true) {
-                    // Was confirmed locked; now open → someone manually unlocked during Shabbat
+                    // Was confirmed locked; now open → someone manually unlocked
                     confirmedLockedState.set(group.groupId, false);
                     try {
                         await chat.setMessagesAdminsOnly(true);
-                        logger.info(`Shabbat re-locked (manually opened during Shabbat): ${group.groupName}`);
+                        logger.info(`${lockLabel} re-locked (manually opened): ${group.groupName}`);
                     } catch (e) {
-                        logger.warn(`Shabbat re-lock failed for ${group.groupName}`, e.message);
+                        logger.warn(`${lockLabel} re-lock failed for ${group.groupName}`, e.message);
                         await alertOwner(client, group.ownerJid,
-                            `⚠️ *GroupShield — שמירת שבת*\nמישהו פתח את הקבוצה "${group.groupName}" בשבת והבוט לא הצליח לסגור אותה שוב.\nשגיאה: ${e.message}`);
+                            `⚠️ *GroupShield — שמירת שבת וחג*\n` +
+                            `מישהו פתח את הקבוצה "${group.groupName}" ב${lockLabel} ` +
+                            `והבוט לא הצליח לסגור אותה שוב.\nשגיאה: ${e.message}`
+                        );
                     }
                 }
                 // else: isActuallyLocked=false but not yet confirmed-locked → stale API data, ignore
             }
 
         } else {
-            // ── Unlock ───────────────────────────────────────────────
+            // ── Unlock (only when BOTH Shabbat and holiday windows are inactive) ──
             if (group.shabbatLocked) {
-                // We own the lock — release it
                 let unlockOk = true;
                 if (isActuallyLocked) {
                     try {
                         await chat.setMessagesAdminsOnly(false);
-                        logger.info(`Shabbat unlocked: ${group.groupName}`);
+                        logger.info(`Shabbat/holiday unlocked: ${group.groupName}`);
                     } catch (e) {
-                        logger.warn(`Shabbat unlock failed for ${group.groupName}`, e.message);
+                        logger.warn(`Shabbat/holiday unlock failed for ${group.groupName}`, e.message);
                         await alertOwner(client, group.ownerJid,
-                            `⚠️ *GroupShield — שמירת שבת*\nהבוט לא הצליח לפתוח את הקבוצה "${group.groupName}" אחרי שבת.\nשגיאה: ${e.message}`);
+                            `⚠️ *GroupShield — שמירת שבת וחג*\n` +
+                            `הבוט לא הצליח לפתוח את הקבוצה "${group.groupName}" אחרי שבת/חג.\n` +
+                            `שגיאה: ${e.message}`
+                        );
                         unlockOk = false; // keep shabbatLocked=1 so we retry next minute
                     }
                 } else {
-                    // Already unlocked (someone opened it manually, or unlock succeeded in a prior cycle)
-                    logger.info(`Shabbat: ${group.groupName} already unlocked — syncing DB`);
+                    logger.info(`Shabbat/holiday: ${group.groupName} already unlocked — syncing DB`);
                 }
                 if (unlockOk) {
                     await database.setShabbatLocked(group.groupId, false);
                     confirmedLockedState.delete(group.groupId);
                 }
             }
-            // else: shabbatLocked=0 and we're outside lock window → no action needed
+            // else: shabbatLocked=0 and outside all lock windows → no action needed
         }
     }
 
-    // Persist any notification state changes
-    if (timesModified) {
-        times.notifiedGroups = notifiedGroups;
-        await database.setSetting(SETTINGS_KEY, JSON.stringify(times));
+    // ── Persist notification state changes ────────────────────────────────
+    if (shabbatModified && shabbatTimes) {
+        shabbatTimes.notifiedGroups = shabbatNotifiedGroups;
+        await database.setSetting(SETTINGS_KEY, JSON.stringify(shabbatTimes));
+    }
+    if (holidaysModified) {
+        await database.setSetting(holidayKey, JSON.stringify(holidays));
     }
 }
 
-// ── Manual recovery state machine ────────────────────────────────────────────
+// ── Manual recovery state machine (Shabbat weekly fetch) ─────────────────────
 
 /**
  * Parse a user-supplied time string — accepts "HHMM" or "HH:MM" / "H:MM".
@@ -451,4 +663,11 @@ async function handleShabbatRecovery(client, developerJid, content) {
     return null;
 }
 
-module.exports = { fetchAndSaveShabbatTimes, checkShabbatGroups, formatIsraelTime, initiateRecovery, handleShabbatRecovery };
+module.exports = {
+    fetchAndSaveShabbatTimes,
+    fetchAndSaveHolidayTimes,
+    checkShabbatAndHolidayGroups,
+    formatIsraelTime,
+    initiateRecovery,
+    handleShabbatRecovery
+};
