@@ -105,12 +105,21 @@ async function fetchShabbatTimes() {
     }
 
     // Find the first havdalah from Netanya that comes AFTER candle lighting.
-    // When a holiday overlaps with Shabbat, HebCal may return an earlier havdalah
-    // for Motzei Yom Tov (before Shabbat starts) — we must skip that one.
-    const havdalahItem = netanyaItems.find(i => i.category === 'havdalah' && new Date(i.date).getTime() > entryMs);
+    // When Yom Tov precedes Shabbat, HebCal may return an earlier Motzei-Yom-Tov havdalah
+    // for Netanya (before Shabbat starts) and sometimes omits the Motzei-Shabbat havdalah.
+    // Fallback: try Jerusalem's havdalah items in that case.
+    let havdalahItem = netanyaItems.find(i => i.category === 'havdalah' && new Date(i.date).getTime() > entryMs);
 
     if (!havdalahItem) {
-        logger.warn('HebCal: no havdalah found after candle lighting time');
+        // Netanya has no havdalah after entry — try Jerusalem (less common but more complete)
+        havdalahItem = jerusalemItems.find(i => i.category === 'havdalah' && new Date(i.date).getTime() > entryMs);
+        if (havdalahItem) {
+            logger.info(`HebCal: Netanya havdalah missing after entry — using Jerusalem havdalah as fallback`);
+        }
+    }
+
+    if (!havdalahItem) {
+        logger.warn('HebCal: no havdalah found after candle lighting time in either city');
         return null;
     }
 
@@ -121,7 +130,7 @@ async function fetchShabbatTimes() {
         return null;
     }
 
-    logger.info(`HebCal times: candles(Jerusalem)=${candlesItem.date}, havdalah(Netanya)=${havdalahItem.date}`);
+    logger.info(`HebCal times: candles(Jerusalem)=${candlesItem.date}, havdalah=${havdalahItem.date}`);
     return { entryMs, exitMs, friday, notifiedGroups: {} };
 }
 
