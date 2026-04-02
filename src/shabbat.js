@@ -84,22 +84,40 @@ async function fetchShabbatTimes() {
         return null;
     }
 
-    const candlesItem  = jerusalemItems.find(i => i.category === 'candles');
-    const havdalahItem = netanyaItems.find(i => i.category === 'havdalah');
+    // Use the LAST candles item from Jerusalem — when a holiday precedes Shabbat, HebCal
+    // may emit an earlier candles item for Yom Tov; the Shabbat candles come last.
+    const candlesItems = jerusalemItems.filter(i => i.category === 'candles');
+    const candlesItem  = candlesItems[candlesItems.length - 1];
 
-    if (!candlesItem || !havdalahItem) {
-        logger.warn('HebCal: missing candles or havdalah item in response');
+    if (!candlesItem) {
+        logger.warn('HebCal: missing candles item in response');
         return null;
     }
 
     // HebCal dates include timezone offset (e.g. "2026-03-27T18:15:00+03:00")
     // — JavaScript Date parses them correctly to UTC ms.
     const entryMs = new Date(candlesItem.date).getTime();
-    const exitMs  = new Date(havdalahItem.date).getTime();
     const friday  = candlesItem.date.slice(0, 10);
 
-    if (isNaN(entryMs) || isNaN(exitMs)) {
-        logger.warn('HebCal: invalid date format', candlesItem.date, havdalahItem.date);
+    if (isNaN(entryMs)) {
+        logger.warn('HebCal: invalid candles date format', candlesItem.date);
+        return null;
+    }
+
+    // Find the first havdalah from Netanya that comes AFTER candle lighting.
+    // When a holiday overlaps with Shabbat, HebCal may return an earlier havdalah
+    // for Motzei Yom Tov (before Shabbat starts) — we must skip that one.
+    const havdalahItem = netanyaItems.find(i => i.category === 'havdalah' && new Date(i.date).getTime() > entryMs);
+
+    if (!havdalahItem) {
+        logger.warn('HebCal: no havdalah found after candle lighting time');
+        return null;
+    }
+
+    const exitMs = new Date(havdalahItem.date).getTime();
+
+    if (isNaN(exitMs)) {
+        logger.warn('HebCal: invalid havdalah date format', havdalahItem.date);
         return null;
     }
 
@@ -185,14 +203,17 @@ function hebcalAnnualFetch(city, year) {
 }
 
 /**
- * Given a sorted array of HebCal annual items (s=off, so no Shabbat entries),
- * pair each candles→havdalah sequence into a closed window.
+ * Given a sorted array of HebCal annual items, pair each candles→havdalah sequence
+ * into a closed window — but only for real holidays (windows that contain a major
+ * holiday item). Plain Shabbat windows are discarded even though c=on causes HebCal
+ * to emit candles/havdalah for every Friday/Saturday regardless of s=off.
  *
  * Algorithm:
  *  - candles with no open window → opens a new window (entryMs = item.date)
  *  - candles with window already open → skipped (inter-day lighting, e.g. RH day 2)
  *  - first major holiday item inside open window → captures Hebrew name
- *  - havdalah with open window → closes window (exitMs = item.date), saves to array
+ *  - havdalah with open window and a holiday name → closes window, saves to array
+ *  - havdalah with open window but no holiday name → discards (plain Shabbat)
  *
  * Returns: [{ nameHe, entryMs, exitMs, notifiedGroups: {} }, ...]
  */
@@ -212,12 +233,16 @@ function pairHolidayWindows(items) {
         } else if (item.category === 'holiday' && item.subcat === 'major' && openWindow && !openWindow.nameHe) {
             openWindow.nameHe = item.hebrew || null;
         } else if (item.category === 'havdalah' && openWindow) {
-            windows.push({
-                nameHe: openWindow.nameHe || 'חג',
-                entryMs: openWindow.entryMs,
-                exitMs: ms,
-                notifiedGroups: {}
-            });
+            // Only keep windows that contain a real holiday — skip plain Shabbat windows
+            // (c=on in the HebCal URL emits candles/havdalah for every Shabbat even with s=off)
+            if (openWindow.nameHe) {
+                windows.push({
+                    nameHe: openWindow.nameHe,
+                    entryMs: openWindow.entryMs,
+                    exitMs: ms,
+                    notifiedGroups: {}
+                });
+            }
             openWindow = null;
         }
     }
