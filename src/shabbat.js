@@ -84,13 +84,15 @@ async function fetchShabbatTimes() {
         return null;
     }
 
-    // Use the LAST candles item from Jerusalem — when a holiday precedes Shabbat, HebCal
-    // may emit an earlier candles item for Yom Tov; the Shabbat candles come last.
-    const candlesItems = jerusalemItems.filter(i => i.category === 'candles');
-    const candlesItem  = candlesItems[candlesItems.length - 1];
+    // Find the candles item that falls on a Friday (Israel time).
+    // HebCal's weekly endpoint may return extra candles items for Yom Tov days that
+    // appear in the same week (before or after Shabbat) — we must pick only the Shabbat candles.
+    // Shabbat candle lighting is always Friday evening in Israel (UTC+2/3), so it is
+    // still Friday in UTC (earliest candle times are ~13:00 UTC). getUTCDay() === 5 → Friday.
+    const candlesItem = jerusalemItems.find(i => i.category === 'candles' && new Date(i.date).getUTCDay() === 5);
 
     if (!candlesItem) {
-        logger.warn('HebCal: missing candles item in response');
+        logger.warn('HebCal: no Friday candles item found in Jerusalem response');
         return null;
     }
 
