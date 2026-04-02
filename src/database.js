@@ -177,6 +177,13 @@ class Database {
                 created_at TEXT DEFAULT (datetime('now'))
             )`);
 
+            // Allowed phrases (whitelist) — developer-managed; overrides curse detection
+            this.db.run(`CREATE TABLE IF NOT EXISTS allowed_phrases (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                phrase TEXT UNIQUE NOT NULL,
+                created_at TEXT DEFAULT (datetime('now'))
+            )`);
+
             // Enforcement stats — counts by detection source (rule_engine, cosine, llm, injection)
             this.db.run(`CREATE TABLE IF NOT EXISTS enforcement_stats (
                 source TEXT PRIMARY KEY,
@@ -302,6 +309,31 @@ class Database {
                     if (!hasWelcomeMessageCustom) {
                         this.db.run("ALTER TABLE groups ADD COLUMN welcomeMessageCustom TEXT DEFAULT NULL");
                         logger.info("Migrated schema: Added welcomeMessageCustom to groups");
+                    }
+                    const hasPeriodicFrequency = rows2.some(r => r.name === 'periodicReminderFrequency');
+                    if (!hasPeriodicFrequency) {
+                        this.db.run("ALTER TABLE groups ADD COLUMN periodicReminderFrequency TEXT DEFAULT NULL");
+                        logger.info("Migrated schema: Added periodicReminderFrequency to groups");
+                    }
+                    const hasPeriodicTime = rows2.some(r => r.name === 'periodicReminderTime');
+                    if (!hasPeriodicTime) {
+                        this.db.run("ALTER TABLE groups ADD COLUMN periodicReminderTime TEXT DEFAULT NULL");
+                        logger.info("Migrated schema: Added periodicReminderTime to groups");
+                    }
+                    const hasPeriodicDayOfWeek = rows2.some(r => r.name === 'periodicReminderDayOfWeek');
+                    if (!hasPeriodicDayOfWeek) {
+                        this.db.run("ALTER TABLE groups ADD COLUMN periodicReminderDayOfWeek INTEGER DEFAULT NULL");
+                        logger.info("Migrated schema: Added periodicReminderDayOfWeek to groups");
+                    }
+                    const hasPeriodicDayOfMonth = rows2.some(r => r.name === 'periodicReminderDayOfMonth');
+                    if (!hasPeriodicDayOfMonth) {
+                        this.db.run("ALTER TABLE groups ADD COLUMN periodicReminderDayOfMonth INTEGER DEFAULT NULL");
+                        logger.info("Migrated schema: Added periodicReminderDayOfMonth to groups");
+                    }
+                    const hasPeriodicDateOfYear = rows2.some(r => r.name === 'periodicReminderDateOfYear');
+                    if (!hasPeriodicDateOfYear) {
+                        this.db.run("ALTER TABLE groups ADD COLUMN periodicReminderDateOfYear TEXT DEFAULT NULL");
+                        logger.info("Migrated schema: Added periodicReminderDateOfYear to groups");
                     }
                 }
             });
@@ -1038,14 +1070,34 @@ class Database {
     // ── Learned phrases ──────────────────────────────────────────────────
 
     async addLearnedPhrase(phrase, listType, sourceMessage = null) {
-        await this._run(
-            'INSERT OR IGNORE INTO learned_phrases (phrase, list_type, source_message) VALUES (?, ?, ?)',
-            [phrase, listType, sourceMessage]
-        );
+        if (listType === 'allowed') {
+            // Allowed phrases have their own table (no CHECK constraint conflict)
+            await this._run(
+                'INSERT OR IGNORE INTO allowed_phrases (phrase) VALUES (?)',
+                [phrase]
+            );
+        } else {
+            await this._run(
+                'INSERT OR IGNORE INTO learned_phrases (phrase, list_type, source_message) VALUES (?, ?, ?)',
+                [phrase, listType, sourceMessage]
+            );
+        }
     }
 
     async getLearnedPhrases() {
         return this._all('SELECT phrase, list_type FROM learned_phrases ORDER BY id ASC');
+    }
+
+    async getAllowedPhrases() {
+        return this._all("SELECT phrase, 'allowed' AS list_type FROM allowed_phrases ORDER BY id ASC");
+    }
+
+    async removeAllowedPhrase(phrase) {
+        await this._run('DELETE FROM allowed_phrases WHERE phrase = ?', [phrase.trim()]);
+    }
+
+    async removeCursePhrase(phrase) {
+        await this._run('DELETE FROM learned_phrases WHERE phrase = ? AND list_type = ?', [phrase.trim(), 'forbidden']);
     }
 
     // ── Pending learned phrases (awaiting approval) ───────────────────────
@@ -1127,10 +1179,26 @@ class Database {
 
     // ── Periodic Reminder / Rules in Description ──────────────────────────
 
-    async updateGroupPeriodicReminder(groupId, enabled, intervalHours) {
+    async updateGroupPeriodicReminder(groupId, enabled, options = {}) {
+        const {
+            intervalHours = null,
+            frequency = null,
+            time = null,
+            dayOfWeek = null,
+            dayOfMonth = null,
+            dateOfYear = null
+        } = typeof options === 'object' ? options : { intervalHours: options };
         await this._run(
-            'UPDATE groups SET periodicReminderEnabled = ?, periodicReminderIntervalHours = ? WHERE groupId = ?',
-            [enabled ? 1 : 0, intervalHours, groupId]
+            `UPDATE groups SET
+             periodicReminderEnabled = ?,
+             periodicReminderIntervalHours = COALESCE(?, periodicReminderIntervalHours),
+             periodicReminderFrequency = ?,
+             periodicReminderTime = ?,
+             periodicReminderDayOfWeek = ?,
+             periodicReminderDayOfMonth = ?,
+             periodicReminderDateOfYear = ?
+             WHERE groupId = ?`,
+            [enabled ? 1 : 0, intervalHours, frequency, time, dayOfWeek, dayOfMonth, dateOfYear, groupId]
         );
     }
 
@@ -1143,16 +1211,11 @@ class Database {
     }
 
     async getGroupsForPeriodicReminder() {
-        const now = new Date().toISOString();
         return this._all(`
             SELECT * FROM groups
             WHERE active = 1 AND verified = 1 AND status = 'ACTIVE'
               AND periodicReminderEnabled = 1
-              AND (
-                lastReminderAt IS NULL
-                OR datetime(lastReminderAt, '+' || periodicReminderIntervalHours || ' hours') <= ?
-              )
-        `, [now]);
+        `);
     }
 
     // ── Custom Welcome Message ────────────────────────────────────────────

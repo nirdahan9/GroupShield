@@ -1,7 +1,7 @@
 // src/ruleEngine.js - Generic rule evaluation engine
 const logger = require('./logger');
 const { t } = require('./i18n');
-const { CURSE_WORDS } = require('./cursesList');
+const { CURSE_WORDS, ALLOWED_WORDS } = require('./cursesList');
 
 const JERUSALEM_PARTS_FORMATTER = new Intl.DateTimeFormat('en-US', {
     timeZone: 'Asia/Jerusalem',
@@ -147,6 +147,16 @@ function checkForbiddenMessages(ruleData, content, lang) {
     const forbiddenList = ruleData.isCursesPreset ? CURSE_WORDS : (ruleData.messages || []);
     const matchMode = ruleData.matchMode || 'contains';
     const normalizedContent = content.trim().toLowerCase();
+
+    // Allowed-words override: if the message contains any phrase from the developer
+    // whitelist, skip curse enforcement entirely for this message.
+    if (ruleData.isCursesPreset && ALLOWED_WORDS.length > 0) {
+        for (const allowed of ALLOWED_WORDS) {
+            if (normalizedContent.includes(allowed.trim().toLowerCase())) {
+                return violations; // empty — no violation
+            }
+        }
+    }
 
     const matchedForbidden = forbiddenList.find(forbidden => {
         const target = forbidden.trim().toLowerCase();

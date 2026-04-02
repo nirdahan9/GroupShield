@@ -105,8 +105,8 @@ const strings = {
         en: '🖼️ *Message type rule*\n\nDo you want to block non-text messages? (image/video/document etc.)\n\n1️⃣ Yes, block\n2️⃣ No, allow (default)'
     },
     'ask_non_text_types': {
-        he: '🧩 אילו סוגי הודעות לא-טקסט לחסום?\n\n0️⃣ הכל (כל סוג לא-טקסט)\n1️⃣ תמונות\n2️⃣ וידאו\n3️⃣ סטיקרים\n4️⃣ מסמכים\n5️⃣ אודיו\n6️⃣ כל סוג לא-טקסט אחר (למשל מיקום, איש קשר, סקר ועוד)\n7️⃣ קישורים/לינקים (כולל הזמנות ל-WhatsApp)\n\nשלח מספר/ים מופרדים בפסיק.\n✳️ לדוגמה: 0 או 1,3,7',
-        en: '🧩 Which non-text message types should be blocked?\n\n0️⃣ All (all non-text types)\n1️⃣ Images\n2️⃣ Video\n3️⃣ Stickers\n4️⃣ Documents\n5️⃣ Audio\n6️⃣ Any other non-text type (e.g., location, contact cards, polls, etc.)\n7️⃣ Links/URLs (including WhatsApp invites)\n\nSend number(s) separated by commas.\n✳️ Example: 0 or 1,3,7'
+        he: '🧩 אילו סוגי הודעות לא-טקסט לחסום?\n\n0️⃣ הכל (כל סוג לא-טקסט)\n1️⃣ תמונות\n2️⃣ וידאו\n3️⃣ סטיקרים\n4️⃣ מסמכים\n5️⃣ אודיו\n6️⃣ קישורים/לינקים (כולל הזמנות ל-WhatsApp)\n7️⃣ כל סוג לא-טקסט אחר (למשל מיקום, איש קשר, סקר ועוד)\n\nשלח מספר/ים מופרדים בפסיק.\n✳️ לדוגמה: 0 או 1,3,6',
+        en: '🧩 Which non-text message types should be blocked?\n\n0️⃣ All (all non-text types)\n1️⃣ Images\n2️⃣ Video\n3️⃣ Stickers\n4️⃣ Documents\n5️⃣ Audio\n6️⃣ Links/URLs (including WhatsApp invites)\n7️⃣ Any other non-text type (e.g., location, contact cards, polls, etc.)\n\nSend number(s) separated by commas.\n✳️ Example: 0 or 1,3,6'
     },
     'non_text_types_saved': {
         he: '✅ סוגי הודעות לא-טקסט לחסימה נשמרו: {{types}}',
@@ -716,13 +716,29 @@ const strings = {
         he: '🔔 *תזכורת כללים תקופתית*\n\nהאם לשלוח תזכורת כללים בקבוצה מדי פרק זמן?\n\n1️⃣ כן ✅\n2️⃣ לא ❌',
         en: '🔔 *Periodic rules reminder*\n\nShould the bot periodically send a rules reminder to the group?\n\n1️⃣ Yes ✅\n2️⃣ No ❌'
     },
-    'ask_periodic_reminder_interval': {
-        he: '⏱️ *תזכורת — תדירות*\n\nכל כמה שעות לשלוח תזכורת?\n(בין 1 ל-720)\n\n✳️ תשובות מוצעות:\n24\n48\n168 (פעם בשבוע)',
-        en: '⏱️ *Reminder — Frequency*\n\nHow many hours between reminders?\n(between 1 and 720)\n\n✳️ Suggested replies:\n24\n48\n168 (once a week)'
+    'ask_periodic_reminder_frequency': {
+        he: '⏱️ *תזכורת כללים — תדירות*\n\nבאיזו תדירות לשלוח תזכורת כללים לקבוצה?\n\n1️⃣ יומי\n2️⃣ שבועי\n3️⃣ חודשי\n4️⃣ שנתי',
+        en: '⏱️ *Rules reminder — Frequency*\n\nHow often should the rules reminder be sent?\n\n1️⃣ Daily\n2️⃣ Weekly\n3️⃣ Monthly\n4️⃣ Yearly'
+    },
+    'ask_periodic_reminder_day_of_week': {
+        he: '📅 *תזכורת שבועית — יום*\n\nבאיזה יום בשבוע לשלוח?\n\n1️⃣ ראשון\n2️⃣ שני\n3️⃣ שלישי\n4️⃣ רביעי\n5️⃣ חמישי\n6️⃣ שישי\n7️⃣ שבת\n\n✳️ שלח *היום* לבחור את היום הנוכחי ({{todayName}})',
+        en: '📅 *Weekly reminder — Day*\n\nWhich day of the week?\n\n1️⃣ Sunday\n2️⃣ Monday\n3️⃣ Tuesday\n4️⃣ Wednesday\n5️⃣ Thursday\n6️⃣ Friday\n7️⃣ Saturday\n\n✳️ Send *today* to use the current day ({{todayName}})'
+    },
+    'ask_periodic_reminder_day_of_month': {
+        he: '📅 *תזכורת חודשית — יום*\n\nאיזה יום בחודש? (1-31)\n\n✳️ שלח *היום* לבחור את היום הנוכחי ({{todayDay}})',
+        en: '📅 *Monthly reminder — Day*\n\nWhich day of the month? (1-31)\n\n✳️ Send *today* to use the current day ({{todayDay}})'
+    },
+    'ask_periodic_reminder_date_of_year': {
+        he: '📅 *תזכורת שנתית — תאריך*\n\nאיזה תאריך? (DD/MM)\n\n✳️ שלח *היום* לבחור את התאריך הנוכחי ({{todayDate}})',
+        en: '📅 *Yearly reminder — Date*\n\nWhich date? (DD/MM)\n\n✳️ Send *today* to use the current date ({{todayDate}})'
+    },
+    'ask_periodic_reminder_time': {
+        he: '🕐 *תזכורת — שעת שליחה*\n\nבאיזו שעה לשלוח? (0-23, שעון ישראל)',
+        en: '🕐 *Reminder — Send time*\n\nAt which hour to send? (0-23, Israel time)'
     },
     'periodic_reminder_saved': {
-        he: '✅ תזכורת תקופתית נשמרה: כל {{hours}} שעות',
-        en: '✅ Periodic reminder saved: every {{hours}} hours'
+        he: '✅ תזכורת תקופתית נשמרה',
+        en: '✅ Periodic reminder saved'
     },
     'ask_rules_in_description': {
         he: '📝 *כללים בתיאור הקבוצה*\n\nהאם לעדכן את תיאור הקבוצה לפי הכללים שהגדרת?\n(התיאור הנוכחי יוחלף לחלוטין)\n\n1️⃣ כן, עדכן תיאור ✅\n2️⃣ לא ❌',

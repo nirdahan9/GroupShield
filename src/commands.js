@@ -192,6 +192,51 @@ async function executeCommand(client, senderJid, command, lang, overrideGroupCon
             return t('restart_message', lang);
         }
 
+        // ── Developer: manage allowed-words whitelist ─────────────────
+        const allowMatch = cmd.match(/^allow\s+(.+)$/i) || cmd.match(/^מותר\s+(.+)$/i);
+        if (allowMatch) {
+            if (!isDeveloper) return t('developer_only_command', lang);
+            const { addToLiveList, ALLOWED_WORDS } = require('./cursesList');
+            const phrase = allowMatch[1].trim();
+            const added = addToLiveList(phrase, 'allowed', true);
+            return added
+                ? `✅ "${phrase}" נוסף לרשימת המילים המותרות (${ALLOWED_WORDS.length} סה"כ)`
+                : `ℹ️ "${phrase}" כבר קיים ברשימה המותרת`;
+        }
+
+        const unallowMatch = cmd.match(/^unallow\s+(.+)$/i) || cmd.match(/^בטל.?מותר\s+(.+)$/i);
+        if (unallowMatch) {
+            if (!isDeveloper) return t('developer_only_command', lang);
+            const { ALLOWED_WORDS } = require('./cursesList');
+            const phrase = unallowMatch[1].trim();
+            const idx = ALLOWED_WORDS.findIndex(w => w.toLowerCase() === phrase.toLowerCase());
+            if (idx !== -1) {
+                ALLOWED_WORDS.splice(idx, 1);
+                await database.removeAllowedPhrase(phrase);
+                return `✅ "${phrase}" הוסר מרשימת המילים המותרות`;
+            }
+            return `ℹ️ "${phrase}" לא נמצא ברשימה המותרת`;
+        }
+
+        // ── Developer: add word to curse list ─────────────────────────
+        const curseMatch = cmd.match(/^curse\s+(.+)$/i) || cmd.match(/^קללה\s+(.+)$/i);
+        if (curseMatch) {
+            if (!isDeveloper) return t('developer_only_command', lang);
+            const { addToLiveList, CURSE_WORDS } = require('./cursesList');
+            const phrase = curseMatch[1].trim();
+            const added = addToLiveList(phrase, 'forbidden', true);
+            return added
+                ? `✅ "${phrase}" נוסף לרשימת הקללות (${CURSE_WORDS.length} סה"כ)`
+                : `ℹ️ "${phrase}" כבר קיים ברשימת הקללות`;
+        }
+
+        if (cmdLower === 'allowed list' || cmdLower === 'רשימה מותרת') {
+            if (!isDeveloper) return t('developer_only_command', lang);
+            const { ALLOWED_WORDS } = require('./cursesList');
+            if (ALLOWED_WORDS.length === 0) return '📋 רשימת המילים המותרות ריקה';
+            return `📋 *מילים מותרות (${ALLOWED_WORDS.length}):*\n${ALLOWED_WORDS.map((w, i) => `${i + 1}. ${w}`).join('\n')}`;
+        }
+
         // ── Group Name Change Approvals ─────────────────────────────
         if (cmdLower.startsWith('אימות שם ') || cmdLower.startsWith('verify name ')) {
             const requestId = cmd.split(/\s+/).slice(2).join(' ').trim();
@@ -383,10 +428,24 @@ async function buildGroupRulesMessage(groupConfig, lang) {
         const rd = rule.ruleData || {};
         switch (rule.ruleType) {
             case 'time_window': {
-                const windows = Array.isArray(rd.windows) ? rd.windows : (rd.start ? [rd] : []);
+                const windows = Array.isArray(rd.windows) ? rd.windows
+                    : (rd.startMinute !== undefined || rd.startHour !== undefined ? [rd] : []);
                 if (windows.length > 0) {
-                    const wStrs = windows.map(w => `${w.start}–${w.end}`).join(', ');
-                    lines.push(lang === 'he' ? `⏰ *שעות פעילות:* ${wStrs}` : `⏰ *Active hours:* ${wStrs}`);
+                    const fmtMin = m => `${Math.floor(m / 60).toString().padStart(2, '0')}:${(m % 60).toString().padStart(2, '0')}`;
+                    const modeLabel = rd.windowMode === 'block_in_window'
+                        ? (lang === 'he' ? 'חסום' : 'blocked')
+                        : (lang === 'he' ? 'מותר' : 'allowed');
+                    const wStrs = windows.map(w => {
+                        const startMin = typeof w.startMinute === 'number' ? w.startMinute : (w.startHour || 0) * 60;
+                        const endMin = typeof w.endMinute === 'number' ? w.endMinute : (w.endHour || 0) * 60;
+                        const dayStr = w.day === 7
+                            ? (lang === 'he' ? 'כל יום' : 'Every day')
+                            : t(`day_${w.day}`, lang);
+                        return `${dayStr} ${fmtMin(startMin)}–${fmtMin(endMin)}`;
+                    }).join(', ');
+                    lines.push(lang === 'he'
+                        ? `⏰ *שעות פעילות (${modeLabel}):* ${wStrs}`
+                        : `⏰ *Active hours (${modeLabel}):* ${wStrs}`);
                 }
                 break;
             }
@@ -412,12 +471,13 @@ async function buildGroupRulesMessage(groupConfig, lang) {
             }
             case 'block_non_text': {
                 const mediaTypeLabels = {
-                    all_non_text: { he: 'הכל (כל סוג לא-טקסט)', en: 'All non-text types' },
-                    image: { he: 'תמונות', en: 'Images' },
-                    video: { he: 'וידאו', en: 'Video' },
-                    sticker: { he: 'סטיקרים', en: 'Stickers' },
-                    document: { he: 'מסמכים', en: 'Documents' },
-                    audio: { he: 'אודיו', en: 'Audio' },
+                    all_non_text:   { he: 'הכל (כל סוג לא-טקסט)', en: 'All non-text types' },
+                    image:          { he: 'תמונות', en: 'Images' },
+                    video:          { he: 'וידאו', en: 'Video' },
+                    sticker:        { he: 'סטיקרים', en: 'Stickers' },
+                    document:       { he: 'מסמכים', en: 'Documents' },
+                    audio:          { he: 'אודיו', en: 'Audio' },
+                    link:           { he: 'קישורים/לינקים', en: 'Links/URLs' },
                     other_non_text: { he: 'שאר לא-טקסט', en: 'Other non-text' }
                 };
                 const getLabel = (type) => (mediaTypeLabels[type] && mediaTypeLabels[type][lang]) || type;

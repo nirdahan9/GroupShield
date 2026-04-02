@@ -2,7 +2,7 @@
 const database = require('./database');
 const logger = require('./logger');
 const { t } = require('./i18n');
-const { parsePhoneNumber, getNormalizedJid, extractNumber } = require('./utils');
+const { parsePhoneNumber, getNormalizedJid, extractNumber, buildGroupRulesSummary } = require('./utils');
 const config = require('./config');
 
 const { CURSE_WORDS } = require('./cursesList');
@@ -150,8 +150,16 @@ async function processSetupMessage(client, senderJid, content) {
             return await handleWelcomeMsgCustom(client, senderJid, content, state, lang);
         case 'periodic_reminder':
             return await handlePeriodicReminder(client, senderJid, content, state, lang);
-        case 'periodic_reminder_interval':
-            return await handlePeriodicReminderInterval(client, senderJid, content, state, lang);
+        case 'periodic_reminder_frequency':
+            return await handlePeriodicReminderFrequency(client, senderJid, content, state, lang);
+        case 'periodic_reminder_day_of_week':
+            return await handlePeriodicReminderDayOfWeek(client, senderJid, content, state, lang);
+        case 'periodic_reminder_day_of_month':
+            return await handlePeriodicReminderDayOfMonth(client, senderJid, content, state, lang);
+        case 'periodic_reminder_date_of_year':
+            return await handlePeriodicReminderDateOfYear(client, senderJid, content, state, lang);
+        case 'periodic_reminder_time':
+            return await handlePeriodicReminderTime(client, senderJid, content, state, lang);
         case 'rules_in_description':
             return await handleRulesInDescription(client, senderJid, content, state, lang);
         case 'summary':
@@ -215,7 +223,22 @@ function getStepPrompt(step, lang, state) {
         case 'grace_period_minutes': return t('ask_grace_period_minutes', lang);
         case 'welcome_msg_custom': return t('ask_welcome_msg_custom', lang);
         case 'periodic_reminder': return t('ask_periodic_reminder', lang);
-        case 'periodic_reminder_interval': return t('ask_periodic_reminder_interval', lang);
+        case 'periodic_reminder_frequency': return t('ask_periodic_reminder_frequency', lang);
+        case 'periodic_reminder_day_of_week': {
+            const nowJer = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jerusalem' }));
+            return t('ask_periodic_reminder_day_of_week', lang, { todayName: t(`day_${nowJer.getDay()}`, lang) });
+        }
+        case 'periodic_reminder_day_of_month': {
+            const nowJer = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jerusalem' }));
+            return t('ask_periodic_reminder_day_of_month', lang, { todayDay: nowJer.getDate().toString() });
+        }
+        case 'periodic_reminder_date_of_year': {
+            const nowJer = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jerusalem' }));
+            const d = String(nowJer.getDate()).padStart(2, '0');
+            const m = String(nowJer.getMonth() + 1).padStart(2, '0');
+            return t('ask_periodic_reminder_date_of_year', lang, { todayDate: `${d}/${m}` });
+        }
+        case 'periodic_reminder_time': return t('ask_periodic_reminder_time', lang);
         case 'rules_in_description': return t('ask_rules_in_description', lang);
         default:                return null;
     }
@@ -620,8 +643,8 @@ async function handleNonTextTypes(client, jid, content, state, lang) {
         3: 'sticker',
         4: 'document',
         5: 'audio',
-        6: 'other_non_text',
-        7: 'link'
+        6: 'link',
+        7: 'other_non_text'
     };
 
     const picks = content.trim().split(/[\s,]+/).map(x => parseInt(x, 10)).filter(n => !isNaN(n));
@@ -1163,8 +1186,8 @@ async function handleWelcomeMsgCustom(client, jid, content, state, lang) {
 async function handlePeriodicReminder(client, jid, content, state, lang) {
     const choice = content.trim();
     if (choice === '1' || choice.includes('כן') || choice.toLowerCase() === 'yes') {
-        await advance(jid, state, { step: 'periodic_reminder_interval', periodicReminderEnabled: true });
-        return t('ask_periodic_reminder_interval', lang);
+        await advance(jid, state, { step: 'periodic_reminder_frequency', periodicReminderEnabled: true });
+        return t('ask_periodic_reminder_frequency', lang);
     } else if (choice === '2' || choice.includes('לא') || choice.toLowerCase() === 'no') {
         await advance(jid, state, { step: 'rules_in_description', periodicReminderEnabled: false });
         return t('ask_rules_in_description', lang);
@@ -1172,13 +1195,112 @@ async function handlePeriodicReminder(client, jid, content, state, lang) {
     return t('ask_periodic_reminder', lang);
 }
 
-async function handlePeriodicReminderInterval(client, jid, content, state, lang) {
-    const hours = parseInt(content.trim(), 10);
-    if (isNaN(hours) || hours < 1 || hours > 720) {
-        return t('ask_periodic_reminder_interval', lang);
+function getJerusalemNow() {
+    return new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jerusalem' }));
+}
+
+async function handlePeriodicReminderFrequency(client, jid, content, state, lang) {
+    const choice = content.trim();
+    let frequency = null;
+    if (choice === '1') frequency = 'daily';
+    else if (choice === '2') frequency = 'weekly';
+    else if (choice === '3') frequency = 'monthly';
+    else if (choice === '4') frequency = 'yearly';
+    else return t('ask_periodic_reminder_frequency', lang);
+
+    if (frequency === 'daily') {
+        await advance(jid, state, { step: 'periodic_reminder_time', periodicReminderFrequency: frequency });
+        return t('ask_periodic_reminder_time', lang);
     }
-    await advance(jid, state, { step: 'rules_in_description', periodicReminderIntervalHours: hours });
-    return t('periodic_reminder_saved', lang, { hours: hours.toString() }) + '\n\n' + t('ask_rules_in_description', lang);
+    if (frequency === 'weekly') {
+        const now = getJerusalemNow();
+        await advance(jid, state, { step: 'periodic_reminder_day_of_week', periodicReminderFrequency: frequency });
+        return t('ask_periodic_reminder_day_of_week', lang, { todayName: t(`day_${now.getDay()}`, lang) });
+    }
+    if (frequency === 'monthly') {
+        const now = getJerusalemNow();
+        await advance(jid, state, { step: 'periodic_reminder_day_of_month', periodicReminderFrequency: frequency });
+        return t('ask_periodic_reminder_day_of_month', lang, { todayDay: now.getDate().toString() });
+    }
+    // yearly
+    const now = getJerusalemNow();
+    const d = String(now.getDate()).padStart(2, '0');
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    await advance(jid, state, { step: 'periodic_reminder_date_of_year', periodicReminderFrequency: frequency });
+    return t('ask_periodic_reminder_date_of_year', lang, { todayDate: `${d}/${m}` });
+}
+
+async function handlePeriodicReminderDayOfWeek(client, jid, content, state, lang) {
+    const text = content.trim().toLowerCase();
+    const now = getJerusalemNow();
+    const todayName = t(`day_${now.getDay()}`, lang);
+
+    let dayOfWeek = null;
+    if (text === 'היום' || text === 'today') {
+        dayOfWeek = now.getDay();
+    } else {
+        const choice = parseInt(text, 10);
+        if (!isNaN(choice) && choice >= 1 && choice <= 7) {
+            dayOfWeek = choice - 1; // 1=Sun(0) … 7=Sat(6)
+        }
+    }
+    if (dayOfWeek === null) return t('ask_periodic_reminder_day_of_week', lang, { todayName });
+
+    await advance(jid, state, { step: 'periodic_reminder_time', periodicReminderDayOfWeek: dayOfWeek });
+    return t('ask_periodic_reminder_time', lang);
+}
+
+async function handlePeriodicReminderDayOfMonth(client, jid, content, state, lang) {
+    const text = content.trim().toLowerCase();
+    const now = getJerusalemNow();
+
+    let dayOfMonth = null;
+    if (text === 'היום' || text === 'today') {
+        dayOfMonth = now.getDate();
+    } else {
+        const val = parseInt(text, 10);
+        if (!isNaN(val) && val >= 1 && val <= 31) dayOfMonth = val;
+    }
+    if (dayOfMonth === null) {
+        return t('ask_periodic_reminder_day_of_month', lang, { todayDay: now.getDate().toString() });
+    }
+
+    await advance(jid, state, { step: 'periodic_reminder_time', periodicReminderDayOfMonth: dayOfMonth });
+    return t('ask_periodic_reminder_time', lang);
+}
+
+async function handlePeriodicReminderDateOfYear(client, jid, content, state, lang) {
+    const text = content.trim().toLowerCase();
+    const now = getJerusalemNow();
+    const todayDate = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    let dateOfYear = null;
+    if (text === 'היום' || text === 'today') {
+        dateOfYear = todayDate;
+    } else {
+        const match = text.match(/^(\d{1,2})\/(\d{1,2})$/);
+        if (match) {
+            const d = parseInt(match[1], 10);
+            const m = parseInt(match[2], 10);
+            if (d >= 1 && d <= 31 && m >= 1 && m <= 12) {
+                dateOfYear = `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}`;
+            }
+        }
+    }
+    if (dateOfYear === null) return t('ask_periodic_reminder_date_of_year', lang, { todayDate });
+
+    await advance(jid, state, { step: 'periodic_reminder_time', periodicReminderDateOfYear: dateOfYear });
+    return t('ask_periodic_reminder_time', lang);
+}
+
+async function handlePeriodicReminderTime(client, jid, content, state, lang) {
+    const hour = parseInt(content.trim(), 10);
+    if (isNaN(hour) || hour < 0 || hour > 23) {
+        return t('ask_periodic_reminder_time', lang);
+    }
+    const timeStr = String(hour).padStart(2, '0') + ':00';
+    await advance(jid, state, { step: 'rules_in_description', periodicReminderTime: timeStr });
+    return t('periodic_reminder_saved', lang) + '\n\n' + t('ask_rules_in_description', lang);
 }
 
 async function handleRulesInDescription(client, jid, content, state, lang) {
@@ -1383,12 +1505,29 @@ async function handleSummary(client, jid, content, state, lang) {
 
             // 10. Save periodic reminder
             if (state.periodicReminderEnabled) {
-                await database.updateGroupPeriodicReminder(groupId, true, state.periodicReminderIntervalHours || 168);
+                await database.updateGroupPeriodicReminder(groupId, true, {
+                    intervalHours: state.periodicReminderIntervalHours || null,
+                    frequency: state.periodicReminderFrequency || null,
+                    time: state.periodicReminderTime || null,
+                    dayOfWeek: state.periodicReminderDayOfWeek !== undefined ? state.periodicReminderDayOfWeek : null,
+                    dayOfMonth: state.periodicReminderDayOfMonth || null,
+                    dateOfYear: state.periodicReminderDateOfYear || null,
+                });
             }
 
             // 11. Save rules-in-description
             if (state.rulesInDescription) {
                 await database.updateGroupRulesInDescription(groupId, true);
+                try {
+                    const groupConfig = await database.getGroup(groupId);
+                    const freshRules = await database.getRules(groupId);
+                    const freshEnf = await database.getEnforcement(groupId);
+                    const descSummary = buildGroupRulesSummary(groupConfig, freshRules, freshEnf, t, lang);
+                    const chat = await client.getChatById(groupId);
+                    await chat.setDescription(descSummary.slice(0, 500));
+                } catch (e) {
+                    logger.warn('Failed to set group description on setup complete', e);
+                }
             }
 
             // 12. Clear setup state

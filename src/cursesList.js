@@ -266,24 +266,35 @@ const CONTEXT_WORDS = [
     'white'       // color/identity vs slur
 ];
 
+// ─── Allowed-words list (override) ───────────────────────────────────────────
+// If a message contains any phrase from this list, curse enforcement is skipped
+// entirely for that message (absolute whitelist override).
+const ALLOWED_WORDS = [];
+
 // ── Runtime learning ──────────────────────────────────────────────────────────
 
 /**
- * Add a phrase to the live CURSE_WORDS or CONTEXT_WORDS array at runtime.
- * Persists to DB if persist=true (default). Invalidates the cosine vector cache.
+ * Add a phrase to the live CURSE_WORDS, CONTEXT_WORDS, or ALLOWED_WORDS array
+ * at runtime. Persists to DB if persist=true (default).
  * Returns true if the phrase was new, false if it already existed.
  */
 function addToLiveList(phrase, type, persist = true) {
     const normalized = phrase.trim();
     if (!normalized || normalized.length < 2) return false;
 
-    const target = type === 'context' ? CONTEXT_WORDS : CURSE_WORDS;
-    if (target.includes(normalized)) return false; // already in static or learned list
+    let target;
+    if (type === 'context') target = CONTEXT_WORDS;
+    else if (type === 'allowed') target = ALLOWED_WORDS;
+    else target = CURSE_WORDS;
+
+    if (target.includes(normalized)) return false;
 
     target.push(normalized);
 
     // Invalidate cosine reference vectors so the new phrase is included next check
-    try { require('./cosine').resetReferenceVectors(); } catch (e) { /* ignore */ }
+    if (type !== 'allowed') {
+        try { require('./cosine').resetReferenceVectors(); } catch (e) { /* ignore */ }
+    }
 
     if (persist) {
         try {
@@ -301,9 +312,12 @@ function addToLiveList(phrase, type, persist = true) {
 async function initLearnedPhrases() {
     try {
         const database = require('./database');
-        const rows = await database.getLearnedPhrases();
+        const [learnedRows, allowedRows] = await Promise.all([
+            database.getLearnedPhrases(),
+            database.getAllowedPhrases()
+        ]);
         let loaded = 0;
-        for (const { phrase, list_type } of rows) {
+        for (const { phrase, list_type } of [...learnedRows, ...allowedRows]) {
             if (addToLiveList(phrase, list_type, false)) loaded++;
         }
         if (loaded > 0) {
@@ -315,4 +329,4 @@ async function initLearnedPhrases() {
     }
 }
 
-module.exports = { CURSE_WORDS, CONTEXT_WORDS, addToLiveList, initLearnedPhrases };
+module.exports = { CURSE_WORDS, CONTEXT_WORDS, ALLOWED_WORDS, addToLiveList, initLearnedPhrases };

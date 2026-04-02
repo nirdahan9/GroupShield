@@ -399,6 +399,41 @@ function schedulePendingMembersCleanup(client) {
     }, { timezone: 'Asia/Jerusalem' });
 }
 
+function isPeriodicReminderDue(groupConfig, nowJer) {
+    const freq = groupConfig.periodicReminderFrequency;
+    const currentHour = nowJer.getHours();
+
+    if (!freq) {
+        // Legacy: hours-based interval
+        const intervalHours = groupConfig.periodicReminderIntervalHours || 168;
+        if (!groupConfig.lastReminderAt) return true;
+        const nextAt = new Date(new Date(groupConfig.lastReminderAt).getTime() + intervalHours * 3600000);
+        return nowJer >= nextAt;
+    }
+
+    // Frequency-based: check hour first
+    const configuredHour = groupConfig.periodicReminderTime
+        ? parseInt(groupConfig.periodicReminderTime.split(':')[0], 10)
+        : 9;
+    if (currentHour !== configuredHour) return false;
+
+    // Avoid double-send within the same hour
+    if (groupConfig.lastReminderAt) {
+        const lastJer = new Date(new Date(groupConfig.lastReminderAt).toLocaleString('en-US', { timeZone: 'Asia/Jerusalem' }));
+        if (lastJer.toDateString() === nowJer.toDateString() && lastJer.getHours() === currentHour) return false;
+    }
+
+    if (freq === 'daily') return true;
+    if (freq === 'weekly') return nowJer.getDay() === groupConfig.periodicReminderDayOfWeek;
+    if (freq === 'monthly') return nowJer.getDate() === groupConfig.periodicReminderDayOfMonth;
+    if (freq === 'yearly') {
+        const dd = String(nowJer.getDate()).padStart(2, '0');
+        const mm = String(nowJer.getMonth() + 1).padStart(2, '0');
+        return `${dd}/${mm}` === groupConfig.periodicReminderDateOfYear;
+    }
+    return false;
+}
+
 function schedulePeriodicReminders(client) {
     // Runs every hour — checks which groups need a rules reminder
     return cron.schedule('0 * * * *', async () => {
@@ -406,8 +441,12 @@ function schedulePeriodicReminders(client) {
             const groups = await database.getGroupsForPeriodicReminder();
             if (!groups || groups.length === 0) return;
 
+            const nowJer = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jerusalem' }));
+
             for (const groupConfig of groups) {
                 try {
+                    if (!isPeriodicReminderDue(groupConfig, nowJer)) continue;
+
                     const ownerUser = await database.getUser(groupConfig.ownerJid);
                     const lang = ownerUser ? ownerUser.language || 'he' : 'he';
 
