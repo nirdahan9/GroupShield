@@ -319,7 +319,7 @@ function scheduleUnknownGroupExit(client) {
                 return;
             }
 
-            const activeGroups = await database.getAllActiveGroups();
+            const activeGroups = await database.getAllManagedGroups();
             const allowedGroupIds = new Set();
             activeGroups.forEach(g => {
                 allowedGroupIds.add(g.groupId);

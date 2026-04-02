@@ -575,6 +575,11 @@ class Database {
         return this._all("SELECT * FROM groups WHERE active = 1 AND verified = 1 AND status = 'ACTIVE'");
     }
 
+    async getAllManagedGroups() {
+        // All groups the bot should remain in, regardless of operational status (paused, pending admin action, etc.)
+        return this._all("SELECT * FROM groups WHERE active = 1 AND verified = 1");
+    }
+
     async getAllManagedGroupsForNameRefresh() {
         return this._all("SELECT * FROM groups WHERE active = 1 AND verified = 1");
     }
