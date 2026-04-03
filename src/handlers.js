@@ -105,6 +105,16 @@ async function handleDM(client, msg, senderJid, content) {
     const user = await database.getUser(senderJid);
     const lang = user ? user.language || 'he' : 'he';
 
+    // Reconfiguration deep-link trigger: "הגדר מחדש [groupName]"
+    const reconfigGroupName = setupFlow.getReconfigGroupName(content);
+    if (reconfigGroupName) {
+        await setupFlow.startSetup(senderJid, lang);
+        // Pre-fill the group name step by processing it immediately
+        const response = await setupFlow.processSetupMessage(client, senderJid, reconfigGroupName);
+        if (response) await client.sendMessage(msg.from, response, { linkPreview: false });
+        return;
+    }
+
     // Explicit setup start trigger (anyone, including developer)
     if (setupFlow.isSetupTrigger(content)) {
         const response = await setupFlow.startSetup(senderJid, lang);
@@ -239,9 +249,9 @@ async function handleDM(client, msg, senderJid, content) {
     let setupState = {};
     try { setupState = user && user.setupState ? JSON.parse(user.setupState) : {}; } catch (e) { setupState = {}; }
     if (!user || !user.groupId) {
-        // Only show setup hint if user has previously interacted with the bot
-        // (prevents spamming warned group members who never opened the bot)
-        if (user && setupState.step !== 'stopped') {
+        // Send setup hint to anyone who messages the bot without an active group,
+        // unless they explicitly stopped enforcement.
+        if (!user || setupState.step !== 'stopped') {
             await client.sendMessage(msg.from, t('setup_start_hint', lang), { linkPreview: false });
         }
         return;

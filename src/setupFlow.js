@@ -1599,6 +1599,19 @@ function isSetupTrigger(content) {
     return triggers.includes(normalized);
 }
 
+/**
+ * Returns the group name if message is a reconfiguration trigger ("הגדר מחדש [name]"),
+ * or null otherwise.
+ */
+function getReconfigGroupName(content) {
+    const trimmed = (content || '').trim();
+    const heMatch = trimmed.match(/^הגדר מחדש (.+)$/i);
+    if (heMatch) return heMatch[1].trim();
+    const enMatch = trimmed.match(/^reconfigure (.+)$/i);
+    if (enMatch) return enMatch[1].trim();
+    return null;
+}
+
 async function startSetup(jid, preferredLang = 'he') {
     let user = await database.getUser(jid);
     if (!user) {
@@ -1626,5 +1639,6 @@ module.exports = {
     resetSetup,
     isSetupTrigger,
     startSetup,
-    startQuickEnforcementUpdate
+    startQuickEnforcementUpdate,
+    getReconfigGroupName
 };

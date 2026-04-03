@@ -158,6 +158,14 @@ async function startBot() {
         }, 30 * 60 * 1000);
         runtime.intervals.push(adminTimeoutHandle);
 
+        // Check for expired enforcement pauses every 5 minutes
+        const pauseExpiryHandle = setInterval(async () => {
+            try { await checkExpiredPauses(client); } catch (e) {
+                logger.warn('Pause expiry check failed', e.message);
+            }
+        }, 5 * 60 * 1000);
+        runtime.intervals.push(pauseExpiryHandle);
+
         // Send startup notification to developer
         handleStartupNotification(client);
 
@@ -218,6 +226,43 @@ async function startBot() {
 
     // Initialize client
     client.initialize();
+}
+
+// ── Pause Expiry Check ───────────────────────────────────────────────────
+
+async function checkExpiredPauses(client) {
+    const pausedGroups = await database.getPausedGroups();
+    if (!pausedGroups || pausedGroups.length === 0) return;
+
+    for (const group of pausedGroups) {
+        const untilIso = group.status.split('PAUSED_UNTIL:')[1];
+        if (!untilIso) continue;
+        const untilTime = new Date(untilIso).getTime();
+        if (Date.now() < untilTime) continue;
+
+        // Pause has expired — resume and notify
+        await database.updateGroupStatus(group.groupId, 'ACTIVE');
+        logger.info(`Pause expired for ${group.groupName}, resuming enforcement.`);
+
+        try {
+            const ownerUser = await database.getUser(group.ownerJid);
+            const lang = ownerUser ? ownerUser.language || 'he' : 'he';
+            const msg = t('action_resume_auto', lang, { groupName: group.groupName });
+            const target = group.reportTarget || 'dm';
+            if (target === 'dm') {
+                await client.sendMessage(group.ownerJid, msg);
+            } else if (target.startsWith('phone:')) {
+                const phone = target.split(':')[1];
+                await client.sendMessage((phone || group.ownerJid.split('@')[0]) + '@s.whatsapp.net', msg);
+            } else if (target === 'mgmt_group' && group.mgmtGroupId) {
+                await client.sendMessage(group.mgmtGroupId, msg);
+            } else {
+                await client.sendMessage(group.ownerJid, msg);
+            }
+        } catch (e) {
+            logger.warn(`Failed to send pause-expired notification for ${group.groupName}`, e.message);
+        }
+    }
 }
 
 // ── Scheduling ───────────────────────────────────────────────────────────

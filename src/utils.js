@@ -153,6 +153,43 @@ async function withRetry(fn, attempts = 3, delayMs = 800) {
 function buildGroupRulesSummary(groupConfig, rules, enforceConfig, t, lang) {
     let text = '';
 
+    // ── Shabbat mode: special description ───────────────────────────────────
+    let shabbatCfg = null;
+    try {
+        if (groupConfig.shabbatConfig) {
+            shabbatCfg = typeof groupConfig.shabbatConfig === 'string'
+                ? JSON.parse(groupConfig.shabbatConfig)
+                : groupConfig.shabbatConfig;
+        }
+    } catch { /* ignore */ }
+
+    if (shabbatCfg && shabbatCfg.enabled) {
+        text += lang === 'he'
+            ? '🕯️ קבוצה זו שומרת שבת וחג.\nהקבוצה נסגרת להודעות לפני כניסת השבת והחגים ונפתחת מחדש לאחר צאתם.\n'
+            : '🕯️ This group observes Shabbat and Jewish holidays.\nThe group is closed before Shabbat and holidays begin and reopens after they end.\n';
+
+        // Time windows (if any)
+        const timeRule = rules.find(r => r.ruleType === 'time_window');
+        if (timeRule) {
+            text += `\n⏰ ${t('rules_summary_time_window_title', lang)}\n`;
+            const windows = Array.isArray(timeRule.ruleData.windows) ? timeRule.ruleData.windows : [timeRule.ruleData];
+            const fmtMin = m => `${Math.floor(m/60).toString().padStart(2,'0')}:${(m%60).toString().padStart(2,'0')}`;
+            windows.forEach(tw => {
+                const startMin = typeof tw.startMinute === 'number' ? tw.startMinute : (tw.startHour || 0) * 60;
+                const endMin = typeof tw.endMinute === 'number' ? tw.endMinute : (tw.endHour || 0) * 60;
+                const dayName = t(`day_${tw.day}`, lang);
+                const modeLabel = timeRule.ruleData.windowMode === 'block_in_window'
+                    ? (lang === 'he' ? '🚫 זמן חסום' : '🚫 Blocked window')
+                    : (lang === 'he' ? '✅ זמן מותר' : '✅ Allowed window');
+                text += `• ${dayName}: ${fmtMin(startMin)} - ${fmtMin(endMin)} (${modeLabel})\n`;
+            });
+        }
+
+        return text.trim();
+    }
+
+    // ── Standard mode ────────────────────────────────────────────────────────
+
     // Non-text rules
     const nonTextRule = rules.find(r => r.ruleType === 'block_non_text');
     if (nonTextRule) {

@@ -49,11 +49,24 @@ async function executeCommand(client, senderJid, command, lang, overrideGroupCon
         // ── Reset All Configuration ──────────────────────────────────
         if (cmdLower === 'איפוס' || cmdLower === 'reset') {
             if (!groupConfig) return t('no_group_linked', lang);
+            const resetGroupName = groupConfig.groupName;
             await database.deleteGroup(groupConfig.groupId);
             await database.updateUserGroup(senderJid, null);
             await setupFlow.resetSetup(senderJid);
-            logger.auditLog(senderJid, 'RESET_CONFIG', `Group: ${groupConfig.groupName}`, true);
-            return t('reset_completed', lang);
+            logger.auditLog(senderJid, 'RESET_CONFIG', `Group: ${resetGroupName}`, true);
+            // Build wa.me deep-link for quick reconfiguration from private chat
+            let reconfigMsg = '';
+            try {
+                const botPhone = client.info?.wid?.user;
+                if (botPhone) {
+                    const prefilledText = encodeURIComponent(`הגדר מחדש ${resetGroupName}`);
+                    const waLink = `https://wa.me/${botPhone}?text=${prefilledText}`;
+                    reconfigMsg = lang === 'he'
+                        ? `\n\n🔗 להגדרה מחדש של הקבוצה מהשיחה הפרטית:\n${waLink}`
+                        : `\n\n🔗 To reconfigure this group from private chat:\n${waLink}`;
+                }
+            } catch { /* ignore */ }
+            return t('reset_completed', lang) + reconfigMsg;
         }
 
         // ── Quick Enforcement Update ────────────────────────────────

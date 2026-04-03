@@ -408,6 +408,7 @@ async function checkShabbatAndHolidayGroups(client) {
 
         const notifyMinutes = shabbatCfg.notifyMinutes || 0;
         const alreadyLocked = !!group.shabbatLocked;
+        let shabbatNotifiedThisCycle = false;
 
         // ── Pre-Shabbat notification ──────────────────────────────────────
         // Skip if group is already locked (adjacent holiday+Shabbat: no mid-closure notification)
@@ -434,15 +435,21 @@ async function checkShabbatAndHolidayGroups(client) {
                     logger.info(`Shabbat pre-notify sent to ${group.groupName}`);
                     shabbatNotifiedGroups[notifyKey] = true;
                     shabbatModified = true;
+                    shabbatNotifiedThisCycle = true;
                 } catch (e) {
                     logger.warn(`Shabbat notify failed for ${group.groupName}`, e.message);
                 }
+            } else if (shabbatNotifiedGroups[notifyKey]) {
+                // Already notified for this Shabbat — treat as notified this cycle too
+                shabbatNotifiedThisCycle = true;
             }
         }
 
         // ── Pre-holiday notification ──────────────────────────────────────
         // Skip if group is already locked (adjacent Shabbat+holiday: no mid-closure notification)
-        if (notifyMinutes > 0 && !alreadyLocked) {
+        // Also skip if a Shabbat notification was already sent this cycle (prevents double notification
+        // when a holiday coincides with Shabbat and both notification windows overlap).
+        if (notifyMinutes > 0 && !alreadyLocked && !shabbatNotifiedThisCycle) {
             const upcomingHolidayWindow = holidays.find((w) => {
                 const lockTime = w.entryMs - LOCK_OFFSET_MS;
                 const notifyTime = lockTime - notifyMinutes * 60 * 1000;
