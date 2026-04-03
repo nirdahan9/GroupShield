@@ -5,7 +5,7 @@ const config = require('./config');
 const logger = require('./logger');
 const database = require('./database');
 const { t } = require('./i18n');
-const { extractNumber, parsePhoneNumber, getNormalizedJid } = require('./utils');
+const { extractNumber, parsePhoneNumber, getNormalizedJid, buildGroupRulesSummary } = require('./utils');
 const setupFlow = require('./setupFlow');
 const backup = require('./backup');
 const health = require('./health');
@@ -182,6 +182,23 @@ async function executeCommand(client, senderJid, command, lang, overrideGroupCon
         if (cmdLower === 'חוקי הקבוצה' || cmdLower === 'group rules') {
             if (!groupConfig) return t('no_group_linked', lang);
             return buildGroupRulesMessage(groupConfig, lang);
+        }
+
+        // ── Update group description ──────────────────────────────────
+        if (cmdLower === 'עדכן תיאור' || cmdLower === 'update description') {
+            if (!groupConfig) return t('no_group_linked', lang);
+            if (!groupConfig.rulesInDescription) return t('update_description_disabled', lang);
+            try {
+                const rules = await database.getRules(groupConfig.groupId);
+                const enf = await database.getEnforcement(groupConfig.groupId);
+                const summary = buildGroupRulesSummary(groupConfig, rules, enf, t, lang);
+                const chat = await client.getChatById(groupConfig.groupId);
+                await chat.setDescription(summary.slice(0, 500));
+                return t('update_description_success', lang);
+            } catch (e) {
+                logger.warn('Failed to update group description via command', e);
+                return t('update_description_failed', lang);
+            }
         }
 
         if (cmdLower === 'ריסטארט' || cmdLower === 'restart') {

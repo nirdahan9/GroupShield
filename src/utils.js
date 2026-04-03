@@ -168,7 +168,12 @@ function buildGroupRulesSummary(groupConfig, rules, enforceConfig, t, lang) {
     // Content rules (Allowed vs Forbidden)
     const allowedRules = rules.find(r => r.ruleType === 'allowed_messages');
     if (allowedRules) {
-        text += `• ${t('rules_summary_allowed_only', lang)}\n`;
+        const messages = allowedRules.ruleData.messages || [];
+        const MAX_SHOW = 8;
+        const shown = messages.slice(0, MAX_SHOW).join(', ');
+        const extra = messages.length > MAX_SHOW ? ` (ועוד ${messages.length - MAX_SHOW})` : '';
+        const words = shown + extra;
+        text += `• ${t('rules_summary_allowed_only', lang, { words })}\n`;
     }
 
     const forbiddenRules = rules.find(r => r.ruleType === 'forbidden_messages');
@@ -176,8 +181,12 @@ function buildGroupRulesSummary(groupConfig, rules, enforceConfig, t, lang) {
         if (forbiddenRules.ruleData.isCursesPreset) {
             text += `• ${t('rules_summary_no_curses', lang)}\n`;
         } else {
-            const messageCount = (forbiddenRules.ruleData.messages || []).length;
-            text += `• ${t('rules_summary_forbidden', lang, { count: messageCount })}\n`;
+            const messages = forbiddenRules.ruleData.messages || [];
+            const MAX_SHOW = 8;
+            const shown = messages.slice(0, MAX_SHOW).join(', ');
+            const extra = messages.length > MAX_SHOW ? ` (ועוד ${messages.length - MAX_SHOW})` : '';
+            const words = shown + extra;
+            text += `• ${t('rules_summary_forbidden', lang, { words })}\n`;
         }
     }
 
