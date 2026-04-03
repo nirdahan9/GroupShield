@@ -429,6 +429,7 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
             mgmtCommand === 'רשימת חסינים' || mgmtCommand === 'exempt list' ||
             mgmtCommand.startsWith('אפס אזהרות ') || mgmtCommand.startsWith('warnings reset ') ||
             mgmtCommand === 'עדכן אכיפה' || mgmtCommand === 'update enforcement' ||
+            mgmtCommand === 'עדכן תיאור' || mgmtCommand === 'update description' ||
             mgmtCommand === 'איפוס' || mgmtCommand === 'reset';
 
         if (isGeneralMultiGroupCommand) {

@@ -475,8 +475,8 @@ async function buildGroupRulesMessage(groupConfig, lang) {
             case 'forbidden_messages': {
                 if (rd.isCursesPreset) {
                     lines.push(lang === 'he'
-                        ? '🤬 *שפה פוגענית:* אסורה שפה בוטה, אלימה ומינית (זיהוי חכם + עקיפות)'
-                        : '🤬 *Offensive language:* vulgar, violent and sexual language is not allowed (smart detection)');
+                        ? '🤬 *שפה פוגענית:* אסורה שפה בוטה, אלימה ומינית'
+                        : '🤬 *Offensive language:* vulgar, violent and sexual language is not allowed');
                 } else {
                     const count = Array.isArray(rd.messages) ? rd.messages.length : 0;
                     lines.push(lang === 'he'
