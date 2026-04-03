@@ -10,7 +10,7 @@ const config = require('./src/config');
 const logger = require('./src/logger');
 const database = require('./src/database');
 const { setRestartReason, getRestartReason, formatRestartMessage } = require('./src/restartTracker');
-const { RateLimiter, buildGroupRulesSummary } = require('./src/utils');
+const { RateLimiter, buildGroupRulesSummary, setGroupDescriptionSafe } = require('./src/utils');
 const { t } = require('./src/i18n');
 const handlers = require('./src/handlers');
 const { buildFullGroupsStatus } = require('./src/commands');
@@ -466,10 +466,9 @@ function schedulePeriodicReminders(client) {
                     // Update group description if enabled
                     if (groupConfig.rulesInDescription) {
                         try {
-                            const chat = await client.getChatById(groupConfig.groupId);
-                            await chat.setDescription(rulesSummary.slice(0, 500));
+                            await setGroupDescriptionSafe(client, groupConfig.groupId, rulesSummary.slice(0, 500));
                         } catch (e) {
-                            logger.warn(`Failed to update description for ${groupConfig.groupName}`, e);
+                            logger.warn(`Failed to update description for ${groupConfig.groupName}: ${e.message}`);
                         }
                     }
                 } catch (e) {

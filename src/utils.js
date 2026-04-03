@@ -222,6 +222,36 @@ function buildGroupRulesSummary(groupConfig, rules, enforceConfig, t, lang) {
     return text.trim();
 }
 
+/**
+ * Set a WhatsApp group description safely across WA Web versions.
+ * Handles the renamed store key (GroupMetadata → WAWebGroupMetadataCollection).
+ * Returns true on success, false if the operation failed or was denied.
+ */
+async function setGroupDescriptionSafe(client, groupId, description) {
+    return client.pupPage.evaluate(async (chatId, desc) => {
+        const chatWid = window.Store.WidFactory.createWid(chatId);
+        const groupMetadata = window.Store.GroupMetadata || window.Store.WAWebGroupMetadataCollection;
+        if (!groupMetadata) return false;
+
+        let meta = groupMetadata.get(chatWid);
+        if (!meta && window.Store.GroupQueryAndUpdate) {
+            await window.Store.GroupQueryAndUpdate(chatWid);
+            meta = groupMetadata.get(chatWid);
+        }
+        if (!meta) return false;
+
+        const descId = meta.descId;
+        const newId = await window.Store.MsgKey.newId();
+        try {
+            await window.Store.GroupUtils.setGroupDescription(chatWid, desc, newId, descId);
+            return true;
+        } catch (err) {
+            if (err.name === 'ServerStatusCodeError') return false;
+            throw err;
+        }
+    }, groupId, description);
+}
+
 module.exports = {
     getNormalizedJid,
     extractNumber,
@@ -230,5 +260,6 @@ module.exports = {
     RateLimiter,
     resolveContactToPhone,
     withRetry,
-    buildGroupRulesSummary
+    buildGroupRulesSummary,
+    setGroupDescriptionSafe
 };

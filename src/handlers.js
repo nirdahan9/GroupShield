@@ -428,8 +428,10 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
             mgmtCommand.startsWith('הסר חסין ') || mgmtCommand.startsWith('exempt remove ') ||
             mgmtCommand === 'רשימת חסינים' || mgmtCommand === 'exempt list' ||
             mgmtCommand.startsWith('אפס אזהרות ') || mgmtCommand.startsWith('warnings reset ') ||
+            mgmtCommand.startsWith('בטל אזהרה ') || mgmtCommand.startsWith('undo warning ') ||
             mgmtCommand === 'עדכן אכיפה' || mgmtCommand === 'update enforcement' ||
             mgmtCommand === 'עדכן תיאור' || mgmtCommand === 'update description' ||
+            mgmtCommand === 'שפה' || mgmtCommand === 'language' ||
             mgmtCommand === 'איפוס' || mgmtCommand === 'reset';
 
         if (isGeneralMultiGroupCommand) {

@@ -2,7 +2,7 @@
 const database = require('./database');
 const logger = require('./logger');
 const { t } = require('./i18n');
-const { parsePhoneNumber, getNormalizedJid, extractNumber, buildGroupRulesSummary } = require('./utils');
+const { parsePhoneNumber, getNormalizedJid, extractNumber, buildGroupRulesSummary, setGroupDescriptionSafe } = require('./utils');
 const config = require('./config');
 
 const { CURSE_WORDS } = require('./cursesList');
@@ -1523,8 +1523,7 @@ async function handleSummary(client, jid, content, state, lang) {
                     const freshRules = await database.getRules(groupId);
                     const freshEnf = await database.getEnforcement(groupId);
                     const descSummary = buildGroupRulesSummary(groupConfig, freshRules, freshEnf, t, lang);
-                    const chat = await client.getChatById(groupId);
-                    await chat.setDescription(descSummary.slice(0, 500));
+                    await setGroupDescriptionSafe(client, groupId, descSummary.slice(0, 500));
                 } catch (e) {
                     logger.warn('Failed to set group description on setup complete', e);
                 }

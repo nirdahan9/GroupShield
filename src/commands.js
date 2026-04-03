@@ -5,7 +5,7 @@ const config = require('./config');
 const logger = require('./logger');
 const database = require('./database');
 const { t } = require('./i18n');
-const { extractNumber, parsePhoneNumber, getNormalizedJid, buildGroupRulesSummary } = require('./utils');
+const { extractNumber, parsePhoneNumber, getNormalizedJid, buildGroupRulesSummary, setGroupDescriptionSafe } = require('./utils');
 const setupFlow = require('./setupFlow');
 const backup = require('./backup');
 const health = require('./health');
@@ -191,11 +191,11 @@ async function executeCommand(client, senderJid, command, lang, overrideGroupCon
                 const rules = await database.getRules(groupConfig.groupId);
                 const enf = await database.getEnforcement(groupConfig.groupId);
                 const summary = buildGroupRulesSummary(groupConfig, rules, enf, t, lang);
-                const chat = await client.getChatById(groupConfig.groupId);
-                await chat.setDescription(summary.slice(0, 500));
+                const ok = await setGroupDescriptionSafe(client, groupConfig.groupId, summary.slice(0, 500));
+                if (!ok) return t('update_description_failed', lang);
                 return t('update_description_success', lang);
             } catch (e) {
-                logger.warn('Failed to update group description via command', e);
+                logger.warn(`Failed to update group description via command: ${e.message}`, e);
                 return t('update_description_failed', lang);
             }
         }
@@ -805,5 +805,6 @@ module.exports = {
     stopEnforcement,
     approveGroupNameChange,
     stopEnforcementOnNameRejection,
-    buildFullGroupsStatus
+    buildFullGroupsStatus,
+    setGroupDescriptionSafe
 };
