@@ -1320,7 +1320,7 @@ async function buildSummary(state, reportTarget, mgmtGroupId, lang) {
         'allowed':  lang === 'he' ? 'הודעות מותרות בלבד' : 'Allowed messages only',
         'forbidden': lang === 'he' ? 'הודעות אסורות' : 'Forbidden messages',
         'none':     lang === 'he' ? 'ללא חוקי תוכן' : 'No content rules',
-        'curses':   lang === 'he' ? 'חסימת קללות (רשימה מוכנה)' : 'Curse blocking (preset list)',
+        'curses':   lang === 'he' ? 'שפה פוגענית (רשימה מוכנה)' : 'Offensive language (preset list)',
         'shabbat':  lang === 'he' ? 'שמירת שבת וחג 🕯️' : 'Shabbat & Holiday mode 🕯️',
         'clone':    lang === 'he' ? 'הועתק מקבוצה אחרת' : 'Cloned from another group'
     };

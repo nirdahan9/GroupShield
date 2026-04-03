@@ -73,16 +73,16 @@ const strings = {
 
     // ── Rules Setup ──────────────────────────────────────────────────────
     'ask_rules_type': {
-        he: '📏 *שלב 2: הגדרת חוקים*\n\nאיזה סוג חוקי תוכן תרצה?\n\n1️⃣ *חסימת קללות* — חסום קללות נפוצות בעברית ובאנגלית אוטומטית\n2️⃣ *שמירת שבת וחג* 🕯️ — סגור הקבוצה אוטומטית לפני כניסת שבת וחגים ופתח אחרי יציאתם (לפי שעון ישראל)\n3️⃣ *ללא חוקי תוכן* — ללא הגבלת תוכן\n4️⃣ *חוקים בהתאמה אישית* — הגדרת הודעות מותרות/אסורות\n5️⃣ *העתק כללים מקבוצה אחרת* — הדבק לינק הצטרפות לקבוצת מקור',
-        en: '📏 *Step 2: Set Rules*\n\nWhat type of content rules do you want?\n\n1️⃣ *Block curses* — automatically block common Hebrew and English profanity\n2️⃣ *Shabbat & Holiday mode* 🕯️ — automatically lock the group before Shabbat and Jewish holidays and unlock after they end (Israel time)\n3️⃣ *No content rules* — no content restrictions\n4️⃣ *Custom rules* — define allowed or forbidden messages\n5️⃣ *Clone rules from another group* — paste an invite link from the source group'
+        he: '📏 *שלב 2: הגדרת חוקים*\n\nאיזה סוג חוקי תוכן תרצה?\n\n1️⃣ *שפה פוגענית* — חסום אוטומטית שפה בוטה, אלימה ומינית בעברית ובאנגלית\n2️⃣ *שמירת שבת וחג* 🕯️ — סגור הקבוצה אוטומטית לפני כניסת שבת וחגים ופתח אחרי יציאתם (לפי שעון ישראל)\n3️⃣ *ללא חוקי תוכן* — ללא הגבלת תוכן\n4️⃣ *חוקים בהתאמה אישית* — הגדרת הודעות מותרות/אסורות\n5️⃣ *העתק כללים מקבוצה אחרת* — הדבק לינק הצטרפות לקבוצת מקור',
+        en: '📏 *Step 2: Set Rules*\n\nWhat type of content rules do you want?\n\n1️⃣ *Offensive language* — automatically block vulgar, violent and sexual language in Hebrew and English\n2️⃣ *Shabbat & Holiday mode* 🕯️ — automatically lock the group before Shabbat and Jewish holidays and unlock after they end (Israel time)\n3️⃣ *No content rules* — no content restrictions\n4️⃣ *Custom rules* — define allowed or forbidden messages\n5️⃣ *Clone rules from another group* — paste an invite link from the source group'
     },
     'ask_rules_custom_type': {
         he: '⚙️ *חוקים בהתאמה אישית*\n\nבחר סוג:\n\n1️⃣ *הודעות מותרות בלבד* — רק הודעות ספציפיות מותרות\n2️⃣ *הודעות אסורות* — הודעות ספציפיות אסורות, השאר מותר',
         en: '⚙️ *Custom Rules*\n\nChoose type:\n\n1️⃣ *Allowed messages only* — only specific messages allowed\n2️⃣ *Forbidden messages* — specific messages blocked, rest allowed'
     },
     'curses_preset_selected': {
-        he: '✅ חסימת קללות הופעלה.\nהבוט יחסום קללות נפוצות בעברית ובאנגלית עם זיהוי חכם של עקיפות.',
-        en: '✅ Curse blocking enabled.\nThe bot will block common Hebrew and English profanity using smart bypass detection.'
+        he: '✅ חסימת שפה פוגענית הופעלה.\nהבוט יזהה ויחסום שפה פוגענית, בוטה ואלימה בעברית ובאנגלית עם זיהוי חכם של עקיפות.',
+        en: '✅ Offensive language blocking enabled.\nThe bot will detect and block offensive, vulgar and violent language in Hebrew and English using smart bypass detection.'
     },
     'shabbat_preset_selected': {
         he: '🕯️ *שמירת שבת וחג הופעלה!*\nהבוט יסגור את הקבוצה 5 דקות לפני כניסת השבת והחגים ויפתח אותה 5 דקות לאחר יציאתם.\nחגים: ר"ה (2 ימים), יוה"כ, סוכות א\', שמיני עצרת, פסח א\' ושביעי, שבועות.\nהשעות לפי שעון ישראל.\n\n⚠️ *שים לב:* גם כשהקבוצה נעולה, *למנהלים תמיד יש אפשרות לשלוח הודעות* בקבוצה. אם אתה רוצה למנוע זאת, תצטרך להסיר הרשאות מנהל בזמן השבת ידנית.',
@@ -130,7 +130,7 @@ const strings = {
     },
     'ask_rules_match_mode': {
         he: '🧠 איך להתאים את הודעות הכלל?\n\n1️⃣ זהה בדיוק — ההודעה חייבת להיות בדיוק הטקסט שציינת\n2️⃣ מכיל ביטוי — מספיק שהטקסט שציינת מופיע בתוך ההודעה\n3️⃣ חכם 🧠 — עמיד לעקיפות: רווחים בין אותיות, תווים מיוחדים, הטיות דקדוקיות ושגיאות כתיב\n\n✳️ לדוגמה: אם המילה "קללה" אסורה במצב חכם — גם "ק ל ל ה", "ק.ל.ל.ה", "הקללה" ו-"קלללה" יחשבו הפרה.',
-        en: '🧠 How should message matching work for this rule?\n\n1️⃣ Exact match — message must exactly equal your configured text\n2️⃣ Contains phrase — configured text can appear inside a larger message\n3️⃣ Smart 🧠 — bypass-resistant: handles spaces between letters, special characters, inflections and typos\n\n✳️ Example: if "curse" is forbidden in smart mode, then "c u r s e", "c.u.r.s.e" and "cursee" also count as violations.'
+        en: '🧠 How should message matching work for this rule?\n\n1️⃣ Exact match — message must exactly equal your configured text\n2️⃣ Contains phrase — configured text can appear inside a larger message\n3️⃣ Smart 🧠 — bypass-resistant: handles spaces between letters, special characters, inflections and typos\n\n✳️ Example: if "idiot" is forbidden in smart mode, then "i d i o t", "i.d.i.o.t" and "idiott" also count as violations.'
     },
     'rules_match_mode_saved': {
         he: '✅ מצב התאמת הודעות נשמר: {{mode}}',

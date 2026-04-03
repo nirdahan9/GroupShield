@@ -187,7 +187,6 @@ async function executeCommand(client, senderJid, command, lang, overrideGroupCon
         // ── Update group description ──────────────────────────────────
         if (cmdLower === 'עדכן תיאור' || cmdLower === 'update description') {
             if (!groupConfig) return t('no_group_linked', lang);
-            if (!groupConfig.rulesInDescription) return t('update_description_disabled', lang);
             try {
                 const rules = await database.getRules(groupConfig.groupId);
                 const enf = await database.getEnforcement(groupConfig.groupId);
@@ -243,8 +242,8 @@ async function executeCommand(client, senderJid, command, lang, overrideGroupCon
             const phrase = curseMatch[1].trim();
             const added = addToLiveList(phrase, 'forbidden', true);
             return added
-                ? `✅ "${phrase}" נוסף לרשימת הקללות (${CURSE_WORDS.length} סה"כ)`
-                : `ℹ️ "${phrase}" כבר קיים ברשימת הקללות`;
+                ? `✅ "${phrase}" נוסף לרשימת שפה פוגענית (${CURSE_WORDS.length} סה"כ)`
+                : `ℹ️ "${phrase}" כבר קיים ברשימת שפה פוגענית`;
         }
 
         if (cmdLower === 'allowed list' || cmdLower === 'רשימה מותרת') {
@@ -476,8 +475,8 @@ async function buildGroupRulesMessage(groupConfig, lang) {
             case 'forbidden_messages': {
                 if (rd.isCursesPreset) {
                     lines.push(lang === 'he'
-                        ? '🤬 *קללות:* אסור לקלל (זיהוי חכם + עקיפות)'
-                        : '🤬 *Swearing:* no swearing allowed (smart detection)');
+                        ? '🤬 *שפה פוגענית:* אסורה שפה בוטה, אלימה ומינית (זיהוי חכם + עקיפות)'
+                        : '🤬 *Offensive language:* vulgar, violent and sexual language is not allowed (smart detection)');
                 } else {
                     const count = Array.isArray(rd.messages) ? rd.messages.length : 0;
                     lines.push(lang === 'he'
