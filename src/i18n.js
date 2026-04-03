@@ -362,6 +362,10 @@ const strings = {
         he: '🚫 *הוסרת מהקבוצה "{{groupName}}"*\n\n📝 *סיבה:* {{reason}}\n💬 *הודעה:* {{content}}\n📅 *זמן:* {{time}}',
         en: '🚫 *You were removed from "{{groupName}}"*\n\n📝 *Reason:* {{reason}}\n💬 *Message:* {{content}}\n📅 *Time:* {{time}}'
     },
+    'warning_report': {
+        he: '⚠️ *אזהרה ({{current}}/{{max}})*\n\n🏷️ *קבוצה:* {{groupName}}\n👤 *שם:* {{pushname}}\n📱 *מספר:* {{number}}\n📝 *סיבה:* {{reason}}\n💬 *תוכן:* {{content}}',
+        en: '⚠️ *Warning ({{current}}/{{max}})*\n\n🏷️ *Group:* {{groupName}}\n👤 *Name:* {{pushname}}\n📱 *Number:* {{number}}\n📝 *Reason:* {{reason}}\n💬 *Content:* {{content}}'
+    },
     'violation_report': {
         he: '🛡️ *דו"ח GroupShield*\n\n🏷️ *קבוצה:* {{groupName}}\n🆔 *מזהה:* {{violationId}}\n🧾 *מזהה קבוצה:* {{groupId}}\n👤 *שם:* {{pushname}}\n📱 *מספר:* {{number}}\n📝 *סיבה:* {{reason}}\n📝 *תוכן:* "{{content}}"\n📩 *הודעה פרטית:* {{privateStatus}}\n🚫 *הסרה:* {{removeStatus}}\n🕒 *זמן:* {{time}}',
         en: '🛡️ *GroupShield Report*\n\n🏷️ *Group:* {{groupName}}\n🆔 *ID:* {{violationId}}\n🧾 *Group ID:* {{groupId}}\n👤 *Name:* {{pushname}}\n📱 *Number:* {{number}}\n📝 *Reason:* {{reason}}\n📝 *Content:* "{{content}}"\n📩 *Private msg:* {{privateStatus}}\n🚫 *Removal:* {{removeStatus}}\n🕒 *Time:* {{time}}'

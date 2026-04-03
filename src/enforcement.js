@@ -92,6 +92,13 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
         status: 'started'
     });
 
+    // Fetch pushname once — used in both warning and removal reports
+    let pushname = number;
+    try {
+        const contact = await client.getContactById(senderJid);
+        pushname = contact.pushname || contact.name || number;
+    } catch (e) { }
+
     // Check if we should warn or enforce
     // Warning phase: counts violations up to maxWarnings regardless of warnPrivateDm.
     // warnPrivateDm only controls whether a DM is sent for each warning.
@@ -135,7 +142,15 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
 
             // Report warning if reporting is enabled
             if (enforcementConfig.sendReport) {
-                const warningReport = `⚠️ *${lang === 'he' ? 'אזהרה' : 'Warning'}* (${newCount}/${maxWarnings})\n🏷️ ${groupConfig.groupName}\n👤 ${number}\n📝 ${reason}\n💬 ${formatContent(content, msgType, lang)}`;
+                const warningReport = t('warning_report', lang, {
+                    current: newCount.toString(),
+                    max: maxWarnings.toString(),
+                    groupName: groupConfig.groupName,
+                    pushname,
+                    number,
+                    reason,
+                    content: formatContent(content, msgType, lang)
+                });
                 const reportSent = await sendReport(client, groupConfig, warningReport, lang);
                 await database.updateEnforcementActionStep(actionId, 'reportStatus', reportSent ? 'success' : 'failed');
             } else {
@@ -217,12 +232,6 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
 
         // STEP 4: Send report
         if (enforcementConfig.sendReport) {
-            let pushname = 'Unknown';
-            try {
-                const contact = await client.getContactById(senderJid);
-                pushname = contact.pushname || contact.name || 'Unknown';
-            } catch (e) { }
-
             const report = t('violation_report', lang, {
                 groupName: groupConfig.groupName,
                 groupId: groupConfig.groupId,
