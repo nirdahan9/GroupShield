@@ -108,8 +108,8 @@ async function handleDM(client, msg, senderJid, content) {
     // Reconfiguration deep-link trigger: "הגדר מחדש [groupName]"
     const reconfigGroupName = setupFlow.getReconfigGroupName(content);
     if (reconfigGroupName) {
-        await setupFlow.startSetup(senderJid, lang);
-        // Pre-fill the group name step by processing it immediately
+        // Skip language step — go straight to group_name, then immediately process the group name
+        await setupFlow.startReconfigSetup(senderJid, lang);
         const response = await setupFlow.processSetupMessage(client, senderJid, reconfigGroupName);
         if (response) await client.sendMessage(msg.from, response, { linkPreview: false });
         return;

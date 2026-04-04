@@ -1621,6 +1621,20 @@ async function startSetup(jid, preferredLang = 'he') {
     return t('welcome', user.language || preferredLang);
 }
 
+/**
+ * Start setup for reconfiguration: skip language step, go straight to group_name.
+ * Returns the ask_group_name prompt so the caller can immediately process the group name.
+ */
+async function startReconfigSetup(jid, preferredLang = 'he') {
+    let user = await database.getUser(jid);
+    if (!user) {
+        user = await database.createUser(jid, preferredLang);
+    }
+    const lang = user.language || preferredLang;
+    await saveState(jid, { step: 'group_name' });
+    return lang; // Return lang so caller knows which language to use
+}
+
 async function startQuickEnforcementUpdate(jid) {
     const user = await database.getUser(jid);
     if (!user || !user.groupId) {
@@ -1639,6 +1653,7 @@ module.exports = {
     resetSetup,
     isSetupTrigger,
     startSetup,
+    startReconfigSetup,
     startQuickEnforcementUpdate,
     getReconfigGroupName
 };
