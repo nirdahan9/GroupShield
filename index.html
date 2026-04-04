@@ -77,13 +77,47 @@
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">🤬</span>
-                <h3 data-i18n="f7-title">AI Curse Detection</h3>
-                <p data-i18n="f7-desc">A two-layer filter: a local curselist catches known violations, then an LLM catches leet-speak, special-character substitutions, and creative bypass attempts that regex alone can't detect.</p>
+                <h3 data-i18n="f7-title">AI Offensive Language Detection</h3>
+                <p data-i18n="f7-desc">A two-layer filter: a local wordlist catches known violations, then a Groq/Llama LLM catches leet-speak, special-character substitutions, and creative bypass attempts. Prompt injection attempts are blocked before they reach the model. Zero false positives — fails silently on infra errors.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">🕯️</span>
-                <h3 data-i18n="f8-title">Shabbat Mode</h3>
-                <p data-i18n="f8-desc">Automatically locks the group before Shabbat and reopens it after. Accurate weekly entry/exit times are fetched live and the group re-locks if someone manually opens it during Shabbat.</p>
+                <h3 data-i18n="f8-title">Shabbat &amp; Holiday Mode</h3>
+                <p data-i18n="f8-desc">Locks the group before Shabbat and all major Jewish holidays, reopens after. Times are fetched weekly from HebCal API. The group re-locks if someone manually overrides it during Shabbat. If the API fails, a guided recovery flow lets the admin enter times manually.</p>
+            </div>
+            <div class="card glass detail-card" style="text-align: center;">
+                <span class="icon">📝</span>
+                <h3 data-i18n="f9-title">Group Description Sync</h3>
+                <p data-i18n="f9-desc">The bot writes the active group rules directly into the WhatsApp group description — automatically on setup, and on demand with a single command. Always in sync with the configured policy.</p>
+            </div>
+            <div class="card glass detail-card" style="text-align: center;">
+                <span class="icon">👥</span>
+                <h3 data-i18n="f10-title">Management Groups</h3>
+                <p data-i18n="f10-desc">Link a dedicated WhatsApp group as the management hub. Multiple admins can run commands, receive violation reports, and undo enforcement actions — all without accessing the bot directly.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="container" style="padding: 2rem 0 6rem;">
+        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="stats-title">Live Stats</h2>
+        <p style="text-align: center; color: var(--text-dim); margin-bottom: 3rem;" data-i18n="stats-desc">Real data from the running production instance.</p>
+        <div class="feature-list" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-top: 0; gap: 1.5rem;">
+            <div class="card glass detail-card" style="text-align: center; padding: 2.5rem 1rem;">
+                <div id="stat-groups" style="font-size: 3rem; font-weight: 800; color: var(--secondary);">—</div>
+                <div style="margin-top: 0.5rem; color: var(--text-dim);" data-i18n="stat-groups-label">Groups Managed</div>
+            </div>
+            <div class="card glass detail-card" style="text-align: center; padding: 2.5rem 1rem;">
+                <div id="stat-violations" style="font-size: 3rem; font-weight: 800; color: var(--secondary);">—</div>
+                <div style="margin-top: 0.5rem; color: var(--text-dim);" data-i18n="stat-violations-label">Violations Handled</div>
+            </div>
+            <div class="card glass detail-card" style="text-align: center; padding: 2.5rem 1rem;">
+                <div id="stat-removals" style="font-size: 3rem; font-weight: 800; color: var(--secondary);">—</div>
+                <div style="margin-top: 0.5rem; color: var(--text-dim);" data-i18n="stat-removals-label">Users Removed</div>
+            </div>
+            <div class="card glass detail-card" style="text-align: center; padding: 2.5rem 1rem;">
+                <div id="stat-uptime" style="font-size: 3rem; font-weight: 800; color: var(--secondary);">—</div>
+                <div style="margin-top: 0.5rem; color: var(--text-dim);" data-i18n="stat-uptime-label">Days Running</div>
             </div>
         </div>
     </section>
@@ -375,6 +409,31 @@ graph TD
             <div class="card glass detail-card" style="text-align: center;">
                 <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-6-q">Do I need technical knowledge?</h3>
                 <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-6-a">Not at all. The entire setup process is done through an intuitive chat interface directly in WhatsApp.</p>
+            </div>
+
+            <div class="card glass detail-card" style="text-align: center;">
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-7-q">How does offensive language detection work?</h3>
+                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-7-a">It uses a two-layer approach. First, a local wordlist detects known offensive words instantly with no API call. Then, a suspicion scorer decides whether a message is worth escalating. Suspicious messages are passed to a Groq-hosted Llama 3.1 model that catches bypass attempts like letter substitutions (e.g. א replaced by @) and leet-speak. Prompt injection attempts are blocked before they reach the model.</p>
+            </div>
+
+            <div class="card glass detail-card" style="text-align: center;">
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-8-q">Can I add or remove words from the offensive language list?</h3>
+                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-8-a">Yes. Admins can add custom forbidden phrases or mark specific words as allowed (overriding the default list) using simple commands directly in WhatsApp — no code changes needed.</p>
+            </div>
+
+            <div class="card glass detail-card" style="text-align: center;">
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-9-q">Does the bot work during Shabbat?</h3>
+                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-9-a">Yes. GroupShield itself runs 24/7 on a VPS — Shabbat mode locks the WhatsApp group, not the bot. The bot stays active and re-locks the group automatically if an admin manually reopens it during Shabbat.</p>
+            </div>
+
+            <div class="card glass detail-card" style="text-align: center;">
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-10-q">What happens when a user is warned?</h3>
+                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-10-a">Each violation increments the user's warning counter. If warnings are enabled, the bot sends a private DM to the user explaining the violation. Once the warning threshold is reached, the full enforcement pipeline kicks in: delete the message, remove the user, and send a detailed report to the management group.</p>
+            </div>
+
+            <div class="card glass detail-card" style="text-align: center;">
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-11-q">Can an admin undo a removal?</h3>
+                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-11-a">Yes. Every removal report contains a unique action ID. Admins can reply to the report with "undo" to reverse the action — the bot cancels the removal, resets the user's warnings, and logs the reversal.</p>
             </div>
         </div>
     </section>
@@ -707,7 +766,42 @@ graph TD
         // Apply translations on initial load
         document.addEventListener('DOMContentLoaded', () => {
             applyTranslations();
+            loadStats();
         });
+
+        // ── Live Stats Loader ──────────────────────────────────────────────
+        function animateCount(el, target) {
+            const duration = 1400;
+            const start = performance.now();
+            const from = 0;
+            function step(now) {
+                const progress = Math.min((now - start) / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                el.textContent = Math.round(from + (target - from) * eased).toLocaleString();
+                if (progress < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+
+        function loadStats() {
+            fetch('./stats.json?t=' + Date.now())
+                .then(r => r.json())
+                .then(data => {
+                    const map = {
+                        'stat-groups':     data.groups,
+                        'stat-violations': data.violations,
+                        'stat-removals':   data.removals,
+                        'stat-uptime':     data.uptime_days
+                    };
+                    for (const [id, val] of Object.entries(map)) {
+                        const el = document.getElementById(id);
+                        if (el && typeof val === 'number') animateCount(el, val);
+                    }
+                })
+                .catch(() => {
+                    // stats.json not available — leave dashes
+                });
+        }
     </script>
 </body>
 
