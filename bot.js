@@ -166,6 +166,10 @@ async function startBot() {
         }, 5 * 60 * 1000);
         runtime.intervals.push(pauseExpiryHandle);
 
+        // Generate landing stats on startup and schedule daily refresh
+        generateLandingStats();
+        runtime.cronTasks.push(scheduleLandingStatsRefresh());
+
         // Send startup notification to developer
         handleStartupNotification(client);
 
@@ -228,6 +232,19 @@ async function startBot() {
     client.initialize();
 }
 
+// ── Landing Stats Generator ──────────────────────────────────────────────
+
+async function generateLandingStats() {
+    try {
+        const stats = await database.getLandingStats();
+        const statsPath = path.join(__dirname, 'landing', 'stats.json');
+        fs.writeFileSync(statsPath, JSON.stringify(stats, null, 2));
+        logger.info(`Landing stats updated: ${JSON.stringify(stats)}`);
+    } catch (e) {
+        logger.warn('Failed to generate landing stats', e.message);
+    }
+}
+
 // ── Pause Expiry Check ───────────────────────────────────────────────────
 
 async function checkExpiredPauses(client) {
@@ -266,6 +283,13 @@ async function checkExpiredPauses(client) {
 }
 
 // ── Scheduling ───────────────────────────────────────────────────────────
+
+function scheduleLandingStatsRefresh() {
+    // Refresh stats.json every day at 03:00 Israel time
+    return cron.schedule('0 3 * * *', async () => {
+        await generateLandingStats();
+    }, { timezone: 'Asia/Jerusalem' });
+}
 
 function scheduleRestarts() {
     const schedule = getValidCronOrDefault('scheduling.dailyRestart', '0 6 * * *');

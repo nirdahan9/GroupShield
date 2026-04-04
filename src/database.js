@@ -616,6 +616,23 @@ class Database {
         return this._all("SELECT * FROM groups WHERE active = 1 AND verified = 1");
     }
 
+    async getLandingStats() {
+        const groups = await this._get("SELECT COUNT(*) AS cnt FROM groups WHERE active = 1 AND verified = 1");
+        const violations = await this._get("SELECT COUNT(*) AS cnt FROM enforcement_actions");
+        const removals = await this._get("SELECT COUNT(*) AS cnt FROM enforcement_actions WHERE status = 'completed'");
+        const oldest = await this._get("SELECT MIN(createdAt) AS ts FROM groups WHERE active = 1 AND verified = 1");
+        let uptime_days = 0;
+        if (oldest && oldest.ts) {
+            uptime_days = Math.floor((Date.now() - new Date(oldest.ts).getTime()) / (1000 * 60 * 60 * 24));
+        }
+        return {
+            groups: groups ? groups.cnt : 0,
+            violations: violations ? violations.cnt : 0,
+            removals: removals ? removals.cnt : 0,
+            uptime_days
+        };
+    }
+
     async getAllManagedGroupsForNameRefresh() {
         return this._all("SELECT * FROM groups WHERE active = 1 AND verified = 1");
     }
