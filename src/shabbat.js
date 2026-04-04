@@ -551,21 +551,21 @@ async function checkShabbatAndHolidayGroups(client) {
             // ── Unlock (only when BOTH Shabbat and holiday windows are inactive) ──
             if (group.shabbatLocked) {
                 let unlockOk = true;
-                if (isActuallyLocked) {
-                    try {
-                        await chat.setMessagesAdminsOnly(false);
+                try {
+                    await chat.setMessagesAdminsOnly(false);
+                    if (isActuallyLocked) {
                         logger.info(`Shabbat/holiday unlocked: ${group.groupName}`);
-                    } catch (e) {
-                        logger.warn(`Shabbat/holiday unlock failed for ${group.groupName}`, e.message);
-                        await alertOwner(client, group.ownerJid,
-                            `⚠️ *GroupShield — שמירת שבת וחג*\n` +
-                            `הבוט לא הצליח לפתוח את הקבוצה "${group.groupName}" אחרי שבת/חג.\n` +
-                            `שגיאה: ${e.message}`
-                        );
-                        unlockOk = false; // keep shabbatLocked=1 so we retry next minute
+                    } else {
+                        logger.info(`Shabbat/holiday: ${group.groupName} already unlocked — syncing DB`);
                     }
-                } else {
-                    logger.info(`Shabbat/holiday: ${group.groupName} already unlocked — syncing DB`);
+                } catch (e) {
+                    logger.warn(`Shabbat/holiday unlock failed for ${group.groupName}`, e.message);
+                    await alertOwner(client, group.ownerJid,
+                        `⚠️ *GroupShield — שמירת שבת וחג*\n` +
+                        `הבוט לא הצליח לפתוח את הקבוצה "${group.groupName}" אחרי שבת/חג.\n` +
+                        `שגיאה: ${e.message}`
+                    );
+                    unlockOk = false; // keep shabbatLocked=1 so we retry next minute
                 }
                 if (unlockOk) {
                     await database.setShabbatLocked(group.groupId, false);
