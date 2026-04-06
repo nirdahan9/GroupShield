@@ -285,8 +285,8 @@ async function checkExpiredPauses(client) {
 // ── Scheduling ───────────────────────────────────────────────────────────
 
 function scheduleLandingStatsRefresh() {
-    // Refresh stats.json every day at 03:00 Israel time
-    return cron.schedule('0 3 * * *', async () => {
+    // Refresh stats.json every hour
+    return cron.schedule('0 * * * *', async () => {
         await generateLandingStats();
     }, { timezone: 'Asia/Jerusalem' });
 }
