@@ -234,14 +234,31 @@ async function startBot() {
 
 // ── Landing Stats Generator ──────────────────────────────────────────────
 
+const FIREBASE_DB_URL = 'https://groupshield-default-rtdb.europe-west1.firebasedatabase.app';
+
 async function generateLandingStats() {
     try {
         const stats = await database.getLandingStats();
-        const statsPath = path.join(__dirname, 'landing', 'stats.json');
-        fs.writeFileSync(statsPath, JSON.stringify(stats, null, 2));
-        logger.info(`Landing stats updated: ${JSON.stringify(stats)}`);
+        const body = JSON.stringify(stats);
+        await new Promise((resolve, reject) => {
+            const https = require('https');
+            const url = new URL(`${FIREBASE_DB_URL}/stats.json`);
+            const req = https.request({
+                hostname: url.hostname,
+                path: url.pathname,
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
+            }, res => {
+                res.resume();
+                res.on('end', resolve);
+            });
+            req.on('error', reject);
+            req.write(body);
+            req.end();
+        });
+        logger.info(`Landing stats pushed to Firebase: ${body}`);
     } catch (e) {
-        logger.warn('Failed to generate landing stats', e.message);
+        logger.warn('Failed to push landing stats to Firebase', e.message);
     }
 }
 
