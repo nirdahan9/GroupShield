@@ -784,7 +784,7 @@ graph TD
         }
 
         function loadStats() {
-            fetch('./stats.json?t=' + Date.now())
+            fetch('https://groupshield-default-rtdb.europe-west1.firebasedatabase.app/stats.json?t=' + Date.now())
                 .then(r => r.json())
                 .then(data => {
                     const map = {
