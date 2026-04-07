@@ -1545,7 +1545,30 @@ async function handleSummary(client, jid, content, state, lang) {
                         memberCount = chat.participants ? chat.participants.length : '?';
                     } catch (e) { /* ignore */ }
                     const now = new Date().toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' });
-                    const devMsg = `🛡️ *GroupShield — קבוצה חדשה הופעלה*\n\n📛 *שם קבוצה:* ${state.groupName}\n👤 *הוגדר על ידי:* ${extractNumber(jid)}\n👥 *משתתפים:* ${memberCount}\n📅 *תאריך:* ${now}`;
+
+                    const rulesTypeLabels = {
+                        curses:    'שפה פוגענית',
+                        shabbat:   'שמירת שבת וחג 🕯️',
+                        allowed:   'מותאם אישית (מותרות)',
+                        forbidden: 'מותאם אישית (אסורות)',
+                        clone:     'הועתק מקבוצה אחרת',
+                        none:      'ללא חוקי תוכן',
+                    };
+                    const rulesLabel = rulesTypeLabels[state.rulesType] || state.rulesType || 'לא ידוע';
+
+                    const rt = state.reportTarget || 'dm';
+                    let reportLabel;
+                    if (rt === 'dm') {
+                        reportLabel = `הודעה פרטית (למשתמש)`;
+                    } else if (rt.startsWith('phone:')) {
+                        reportLabel = `טלפון: ${rt.split(':')[1]}`;
+                    } else if (rt === 'mgmt_group') {
+                        reportLabel = 'קבוצת הנהלה';
+                    } else {
+                        reportLabel = rt;
+                    }
+
+                    const devMsg = `🛡️ *GroupShield — קבוצה חדשה הופעלה*\n\n📛 *שם קבוצה:* ${state.groupName}\n👥 *משתתפים:* ${memberCount}\n👤 *הוגדר על ידי:* ${extractNumber(jid)}\n📋 *יעד דיווח:* ${reportLabel}\n⚖️ *מצב חוקים:* ${rulesLabel}\n📅 *תאריך ושעה:* ${now}`;
                     await client.sendMessage(devJid, devMsg, { linkPreview: false });
                 }
             } catch (e) {
