@@ -222,22 +222,22 @@ async function executeCommand(client, senderJid, command, lang, overrideGroupCon
         }
 
         // ── Developer: manage allowed-words whitelist ─────────────────
-        const allowMatch = cmd.match(/^allow\s+(.+)$/i) || cmd.match(/^מותר\s+(.+)$/i);
-        if (allowMatch) {
+        const allowAddMatch = cmd.match(/^allowed\s+add\s+(.+)$/i) || cmd.match(/^מותר\s+הוסף\s+(.+)$/i);
+        if (allowAddMatch) {
             if (!isDeveloper) return t('developer_only_command', lang);
             const { addToLiveList, ALLOWED_WORDS } = require('./cursesList');
-            const phrase = allowMatch[1].trim();
+            const phrase = allowAddMatch[1].trim();
             const added = addToLiveList(phrase, 'allowed', true);
             return added
                 ? `✅ "${phrase}" נוסף לרשימת המילים המותרות (${ALLOWED_WORDS.length} סה"כ)`
                 : `ℹ️ "${phrase}" כבר קיים ברשימה המותרת`;
         }
 
-        const unallowMatch = cmd.match(/^unallow\s+(.+)$/i) || cmd.match(/^בטל.?מותר\s+(.+)$/i);
-        if (unallowMatch) {
+        const allowRemoveMatch = cmd.match(/^allowed\s+remove\s+(.+)$/i) || cmd.match(/^מותר\s+הסר\s+(.+)$/i);
+        if (allowRemoveMatch) {
             if (!isDeveloper) return t('developer_only_command', lang);
             const { ALLOWED_WORDS } = require('./cursesList');
-            const phrase = unallowMatch[1].trim();
+            const phrase = allowRemoveMatch[1].trim();
             const idx = ALLOWED_WORDS.findIndex(w => w.toLowerCase() === phrase.toLowerCase());
             if (idx !== -1) {
                 ALLOWED_WORDS.splice(idx, 1);
@@ -247,23 +247,44 @@ async function executeCommand(client, senderJid, command, lang, overrideGroupCon
             return `ℹ️ "${phrase}" לא נמצא ברשימה המותרת`;
         }
 
-        // ── Developer: add word to curse list ─────────────────────────
-        const curseMatch = cmd.match(/^curse\s+(.+)$/i) || cmd.match(/^קללה\s+(.+)$/i);
-        if (curseMatch) {
+        if (cmdLower === 'allowed list' || cmdLower === 'רשימת מותרות') {
+            if (!isDeveloper) return t('developer_only_command', lang);
+            const { ALLOWED_WORDS } = require('./cursesList');
+            if (ALLOWED_WORDS.length === 0) return '📋 רשימת המילים המותרות ריקה';
+            return `📋 *מילים מותרות (${ALLOWED_WORDS.length}):*\n${ALLOWED_WORDS.map((w, i) => `${i + 1}. ${w}`).join('\n')}`;
+        }
+
+        // ── Developer: manage forbidden-words list ────────────────────
+        const forbiddenAddMatch = cmd.match(/^forbidden\s+add\s+(.+)$/i) || cmd.match(/^אסור\s+הוסף\s+(.+)$/i);
+        if (forbiddenAddMatch) {
             if (!isDeveloper) return t('developer_only_command', lang);
             const { addToLiveList, CURSE_WORDS } = require('./cursesList');
-            const phrase = curseMatch[1].trim();
+            const phrase = forbiddenAddMatch[1].trim();
             const added = addToLiveList(phrase, 'forbidden', true);
             return added
                 ? `✅ "${phrase}" נוסף לרשימת שפה פוגענית (${CURSE_WORDS.length} סה"כ)`
                 : `ℹ️ "${phrase}" כבר קיים ברשימת שפה פוגענית`;
         }
 
-        if (cmdLower === 'allowed list' || cmdLower === 'רשימה מותרת') {
+        const forbiddenRemoveMatch = cmd.match(/^forbidden\s+remove\s+(.+)$/i) || cmd.match(/^אסור\s+הסר\s+(.+)$/i);
+        if (forbiddenRemoveMatch) {
             if (!isDeveloper) return t('developer_only_command', lang);
-            const { ALLOWED_WORDS } = require('./cursesList');
-            if (ALLOWED_WORDS.length === 0) return '📋 רשימת המילים המותרות ריקה';
-            return `📋 *מילים מותרות (${ALLOWED_WORDS.length}):*\n${ALLOWED_WORDS.map((w, i) => `${i + 1}. ${w}`).join('\n')}`;
+            const { CURSE_WORDS } = require('./cursesList');
+            const phrase = forbiddenRemoveMatch[1].trim();
+            const idx = CURSE_WORDS.findIndex(w => w.toLowerCase() === phrase.toLowerCase());
+            if (idx !== -1) {
+                CURSE_WORDS.splice(idx, 1);
+                await database.removeCursePhrase(phrase);
+                return `✅ "${phrase}" הוסר מרשימת שפה פוגענית`;
+            }
+            return `ℹ️ "${phrase}" לא נמצא ברשימת שפה פוגענית`;
+        }
+
+        if (cmdLower === 'forbidden list' || cmdLower === 'רשימת אסורות') {
+            if (!isDeveloper) return t('developer_only_command', lang);
+            const { CURSE_WORDS } = require('./cursesList');
+            if (CURSE_WORDS.length === 0) return '📋 רשימת שפה פוגענית ריקה';
+            return `📋 *שפה פוגענית (${CURSE_WORDS.length}):*\n${CURSE_WORDS.map((w, i) => `${i + 1}. ${w}`).join('\n')}`;
         }
 
         // ── Developer: manage context-dependent words ─────────────────
