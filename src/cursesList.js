@@ -235,6 +235,7 @@ const CONTEXT_WORDS = [
     // Hebrew — adjectives used innocently in everyday speech
     'דפוק', 'דפוקה', 'דפוקים',       // broken/messed-up → also crude insult
     'קורע', 'קריעה',                 // funny vs ripping
+    'זבל',                           // literal trash/garbage → also insult ("אתה זבל")
     // English — words with clear innocent meanings
     'cock',       // rooster → vulgar
     'bitch',      // female dog → insult
