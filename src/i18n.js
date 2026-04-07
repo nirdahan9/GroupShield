@@ -81,8 +81,8 @@ const strings = {
         en: '⚙️ *Custom Rules*\n\nChoose type:\n\n1️⃣ *Allowed messages only* — only specific messages allowed\n2️⃣ *Forbidden messages* — specific messages blocked, rest allowed'
     },
     'curses_preset_selected': {
-        he: '✅ חסימת שפה פוגענית הופעלה.\nהבוט יזהה ויחסום שפה פוגענית, בוטה ואלימה בעברית ובאנגלית עם זיהוי חכם של עקיפות.',
-        en: '✅ Offensive language blocking enabled.\nThe bot will detect and block offensive, vulgar and violent language in Hebrew and English using smart bypass detection.'
+        he: '✅ חסימת שפה פוגענית הופעלה.\nהבוט יזהה ויחסום שפה פוגענית, בוטה ואלימה בעברית ובאנגלית עם זיהוי חכם של עקיפות.\n\n💡 *טיפ:* בכל עת תוכל לתייג את *@GroupShield* בתשובה להודעה חשודה — הבוט יבצע בדיקת AI נוספת על אותה הודעה.',
+        en: '✅ Offensive language blocking enabled.\nThe bot will detect and block offensive, vulgar and violent language in Hebrew and English using smart bypass detection.\n\n💡 *Tip:* At any time you can mention *@GroupShield* in a reply to a suspicious message — the bot will run an additional AI check on it.'
     },
     'shabbat_preset_selected': {
         he: '🕯️ *שמירת שבת וחג הופעלה!*\nהבוט יסגור את הקבוצה 5 דקות לפני כניסת השבת והחגים ויפתח אותה 5 דקות לאחר יציאתם.\nהשעות לפי שעון ישראל.\n\n⚠️ *שים לב:* גם כשהקבוצה נעולה, *למנהלים תמיד יש אפשרות לשלוח הודעות* בקבוצה. אם אתה רוצה למנוע זאת, תצטרך להסיר הרשאות מנהל בזמן השבת ידנית.',
