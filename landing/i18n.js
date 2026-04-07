@@ -1,7 +1,7 @@
 const translations = {
     en: {
         "hero-desc": "A robust, self-healing WhatsApp automation engine built with Node.js and Puppeteer. GroupShield leverages a multitenant SQLite architecture and an event-driven enforcement pipeline to manage thousands of communities at scale.",
-        "btn-start": "🚀 Start Setup on WhatsApp",
+        "btn-start": "🚀 Try it yourself",
         "btn-features": "Discover Features",
         "btn-demo": "Experience GroupShield",
         "features-title": "Generic & Powerful",
@@ -138,7 +138,7 @@ const translations = {
     },
     he: {
         "hero-desc": "מערכת אוטומציה מבוססת Node.js ו-Puppeteer בעלת מנגנון התאוששות עצמית (Self-Healing). הפרויקט מציג ארכיטקטורת Multitenant מבוססת SQLite ויכולת מתקדמת לעיבוד אירועים (Event-Driven) בקנה מידה רחב.",
-        "btn-start": "🚀 התחל הגדרה בוואטסאפ",
+        "btn-start": "🚀 נסו בעצמכם",
         "btn-features": "גלה את הפיצ'רים",
         "btn-demo": "חווה את GroupShield",
         "features-title": "גנרי ועוצמתי",
