@@ -1121,6 +1121,10 @@ class Database {
         await this._run('DELETE FROM learned_phrases WHERE phrase = ? AND list_type = ?', [phrase.trim(), 'forbidden']);
     }
 
+    async removeLearnedPhrase(phrase, listType) {
+        await this._run('DELETE FROM learned_phrases WHERE phrase = ? AND list_type = ?', [phrase.trim(), listType]);
+    }
+
     // ── Pending learned phrases (awaiting approval) ───────────────────────
 
     async addPendingLearnedPhrase(phrase, listType, sourceMessage = null) {

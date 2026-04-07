@@ -266,6 +266,39 @@ async function executeCommand(client, senderJid, command, lang, overrideGroupCon
             return `📋 *מילים מותרות (${ALLOWED_WORDS.length}):*\n${ALLOWED_WORDS.map((w, i) => `${i + 1}. ${w}`).join('\n')}`;
         }
 
+        // ── Developer: manage context-dependent words ─────────────────
+        const contextAddMatch = cmd.match(/^context\s+add\s+(.+)$/i) || cmd.match(/^הקשר\s+הוסף\s+(.+)$/i);
+        if (contextAddMatch) {
+            if (!isDeveloper) return t('developer_only_command', lang);
+            const { addToLiveList, CONTEXT_WORDS } = require('./cursesList');
+            const phrase = contextAddMatch[1].trim();
+            const added = addToLiveList(phrase, 'context', true);
+            return added
+                ? `✅ "${phrase}" נוסף לרשימת מילים תלויות הקשר (${CONTEXT_WORDS.length} סה"כ)`
+                : `ℹ️ "${phrase}" כבר קיים ברשימת מילים תלויות הקשר`;
+        }
+
+        const contextRemoveMatch = cmd.match(/^context\s+remove\s+(.+)$/i) || cmd.match(/^הקשר\s+הסר\s+(.+)$/i);
+        if (contextRemoveMatch) {
+            if (!isDeveloper) return t('developer_only_command', lang);
+            const { CONTEXT_WORDS } = require('./cursesList');
+            const phrase = contextRemoveMatch[1].trim();
+            const idx = CONTEXT_WORDS.findIndex(w => w.toLowerCase() === phrase.toLowerCase());
+            if (idx !== -1) {
+                CONTEXT_WORDS.splice(idx, 1);
+                await require('./database').removeLearnedPhrase(phrase, 'context');
+                return `✅ "${phrase}" הוסר מרשימת מילים תלויות הקשר`;
+            }
+            return `ℹ️ "${phrase}" לא נמצא ברשימת מילים תלויות הקשר`;
+        }
+
+        if (cmdLower === 'context list' || cmdLower === 'רשימת הקשר') {
+            if (!isDeveloper) return t('developer_only_command', lang);
+            const { CONTEXT_WORDS } = require('./cursesList');
+            if (CONTEXT_WORDS.length === 0) return '📋 רשימת מילים תלויות הקשר ריקה';
+            return `📋 *מילים תלויות הקשר (${CONTEXT_WORDS.length}):*\n${CONTEXT_WORDS.map((w, i) => `${i + 1}. ${w}`).join('\n')}`;
+        }
+
         // ── Group Name Change Approvals ─────────────────────────────
         if (cmdLower.startsWith('אימות שם ') || cmdLower.startsWith('verify name ')) {
             const requestId = cmd.split(/\s+/).slice(2).join(' ').trim();
