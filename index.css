@@ -101,6 +101,17 @@ body {
   box-shadow: 0 15px 40px -10px rgba(0, 229, 255, 0.6);
 }
 
+.btn-whatsapp {
+  background: linear-gradient(135deg, #25D366, #128C7E);
+  color: #fff;
+  box-shadow: 0 10px 30px -10px rgba(37, 211, 102, 0.5);
+}
+
+.btn-whatsapp:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 15px 40px -10px rgba(37, 211, 102, 0.7);
+}
+
 /* grid */
 .grid {
   display: grid;
