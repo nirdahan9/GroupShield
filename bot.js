@@ -110,6 +110,9 @@ async function startBot() {
         // Load previously learned phrases from DB into the live curse/context lists
         require('./src/cursesList').initLearnedPhrases();
 
+        // Notify developer of any unapproved pending learned phrases
+        require('./src/llm').notifyDeveloperPendingPhrasesList(client);
+
         // Schedule restarts and status messages
         runtime.cronTasks.push(scheduleRestarts());
         runtime.cronTasks.push(scheduleStatusMessages(client));

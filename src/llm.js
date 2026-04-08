@@ -364,22 +364,52 @@ async function learnFromViolation(content) {
 // Instead of adding learned phrases directly, send them to the group owner for
 // approval. They reply "אשר N" or "דחה N" (handled in handlers.js).
 
-async function enqueueLearningForReview(client, ownerJid, phrase, type, sourceMessage) {
+async function sendPendingPhraseNotification(client, targetJid, id, phrase, type, sourceMessage) {
+    const listName = type === 'forbidden' ? 'חסימה מיידית (rule engine)' : 'בדיקת הקשר (LLM)';
+    const msgText =
+        `📚 *GroupShield — ביטוי חדש נגלה*\n\n` +
+        `ביטוי: 「${phrase}」\n` +
+        `סוג: ${listName}\n` +
+        `מקור: "${(sourceMessage || '').slice(0, 60)}"\n\n` +
+        `לאישור: *אשר ${id}*\n` +
+        `לדחייה: *דחה ${id}*`;
+    await client.sendMessage(targetJid, msgText, { linkPreview: false });
+}
+
+async function enqueueLearningForReview(client, phrase, type, sourceMessage) {
     try {
         const database = require('./database');
+        const config = require('./config');
+        const developerJid = config.getDeveloperJid();
+        if (!developerJid) {
+            logger.warn('No developer JID configured, cannot queue phrase for review');
+            return;
+        }
+
         const id = await database.addPendingLearnedPhrase(phrase, type, sourceMessage);
-        const listName = type === 'forbidden' ? 'חסימה מיידית (rule engine)' : 'בדיקת הקשר (LLM)';
-        const msgText =
-            `📚 *GroupShield — ביטוי חדש נגלה*\n\n` +
-            `ביטוי: 「${phrase}」\n` +
-            `סוג: ${listName}\n` +
-            `מקור: "${(sourceMessage || '').slice(0, 60)}"\n\n` +
-            `לאישור: *אשר ${id}*\n` +
-            `לדחייה: *דחה ${id}*`;
-        await client.sendMessage(ownerJid, msgText, { linkPreview: false });
-        logger.info(`Queued phrase for review (id=${id}): "${phrase}" [${type}] → ${ownerJid}`);
+        await sendPendingPhraseNotification(client, developerJid, id, phrase, type, sourceMessage);
+        logger.info(`Queued phrase for review (id=${id}): "${phrase}" [${type}] → Developer (${developerJid})`);
     } catch (e) {
         logger.warn('enqueueLearningForReview failed', e.message);
+    }
+}
+
+async function notifyDeveloperPendingPhrasesList(client) {
+    try {
+        const database = require('./database');
+        const config = require('./config');
+        const developerJid = config.getDeveloperJid();
+        if (!developerJid) return;
+
+        const pending = await database.getAllPendingLearnedPhrases();
+        if (!pending || pending.length === 0) return;
+
+        for (const p of pending) {
+            await sendPendingPhraseNotification(client, developerJid, p.id, p.phrase, p.list_type, p.source_message);
+            await new Promise(r => setTimeout(r, 500)); // Avoid flooding WhatsApp
+        }
+    } catch (e) {
+        logger.warn('notifyDeveloperPendingPhrasesList failed', e.message);
     }
 }
 
@@ -458,11 +488,11 @@ async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfi
         // Only when a human explicitly flagged (forceCheck = mention-triggered).
         // Phrases are QUEUED for owner approval instead of going live immediately.
         // Fire-and-forget: does not block enforcement path.
-        if (forceCheck && groupConfig.ownerJid) {
+        if (forceCheck) {
             learnFromViolation(content).then(phrases => {
                 for (const { text, type } of phrases) {
                     if (text && text.length >= 2 && (type === 'forbidden' || type === 'context')) {
-                        enqueueLearningForReview(client, groupConfig.ownerJid, text, type, content);
+                        enqueueLearningForReview(client, text, type, content);
                     }
                 }
             }).catch(e => logger.warn('learnFromViolation failed', e.message));
@@ -472,4 +502,4 @@ async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfi
     }
 }
 
-module.exports = { checkWithLLM, getGroqStats };
+module.exports = { checkWithLLM, notifyDeveloperPendingPhrasesList, getGroqStats };
