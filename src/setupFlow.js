@@ -122,6 +122,8 @@ async function processSetupMessage(client, senderJid, content) {
             return await handleReportTarget(client, senderJid, content, state, lang);
         case 'report_phone':
             return await handleReportPhone(client, senderJid, content, state, lang);
+        case 'borderline_review':
+            return await handleBorderlineReview(client, senderJid, content, state, lang);
         case 'mgmt_group_name':
             return await handleMgmtGroupName(client, senderJid, content, state, lang);
         case 'mgmt_group_confirm':
@@ -206,6 +208,7 @@ function getStepPrompt(step, lang, state) {
         case 'exempt':          return t('ask_exempt', lang);
         case 'report_target':   return t('ask_report_target', lang);
         case 'report_phone':    return t('ask_report_phone', lang);
+        case 'borderline_review': return t('ask_borderline_review', lang);
         case 'mgmt_group_name': return t('ask_mgmt_group_name', lang);
         case 'mgmt_group_confirm': return state.mgmtGroupName
             ? t('mgmt_group_confirm', lang, { name: state.mgmtGroupName, count: '...' })
@@ -888,8 +891,9 @@ async function handleExempt(client, jid, content, state, lang) {
     const text = content.trim();
     const skipWords = ['דלג', 'skip', 'לא', 'no'];
     if (skipWords.includes(text.toLowerCase())) {
-        await advance(jid, state, { step: 'grace_period', exemptNumbers: [] });
-        return t('exempt_skipped', lang) + '\n\n' + t('ask_grace_period', lang);
+        const nextStep = state.rulesType === 'clone' ? 'report_target' : 'grace_period';
+        await advance(jid, state, { step: nextStep, exemptNumbers: [] });
+        return t('exempt_skipped', lang) + '\n\n' + t(nextStep === 'report_target' ? 'ask_report_target' : 'ask_grace_period', lang);
     }
 
     const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
@@ -903,15 +907,16 @@ async function handleExempt(client, jid, content, state, lang) {
         return t('invalid_input', lang) + '\n\n' + t('ask_exempt', lang);
     }
 
-    await advance(jid, state, { step: 'grace_period', exemptNumbers: numbers });
-    return t('exempt_saved', lang, { count: numbers.length.toString() }) + '\n\n' + t('ask_grace_period', lang);
+    const nextStep = state.rulesType === 'clone' ? 'report_target' : 'grace_period';
+    await advance(jid, state, { step: nextStep, exemptNumbers: numbers });
+    return t('exempt_saved', lang, { count: numbers.length.toString() }) + '\n\n' + t(nextStep === 'report_target' ? 'ask_report_target' : 'ask_grace_period', lang);
 }
 
 async function handleReportTarget(client, jid, content, state, lang) {
     const choice = content.trim();
     if (choice === '1') {
-        await advance(jid, state, { step: 'welcome_msg', reportTarget: 'dm' });
-        return t('ask_welcome_msg', lang);
+        await advance(jid, state, { step: 'borderline_review', reportTarget: 'dm' });
+        return t('ask_borderline_review', lang);
     } else if (choice === '2') {
         await advance(jid, state, { step: 'report_phone' });
         return t('ask_report_phone', lang);
@@ -928,8 +933,27 @@ async function handleReportPhone(client, jid, content, state, lang) {
         return t('invalid_input', lang) + '\n\n' + t('ask_report_phone', lang);
     }
     const reportTarget = `phone:${parsed}`;
-    await advance(jid, state, { step: 'welcome_msg', reportTarget });
-    return t('ask_welcome_msg', lang);
+    await advance(jid, state, { step: 'borderline_review', reportTarget });
+    return t('ask_borderline_review', lang);
+}
+
+async function handleBorderlineReview(client, jid, content, state, lang) {
+    const choice = content.trim();
+    const isCloneFlow = state.rulesType === 'clone';
+    if (choice === '1' || choice.includes('כן') || choice.toLowerCase() === 'yes') {
+        const nextStep = isCloneFlow ? 'summary' : 'welcome_msg';
+        const nextState = { ...state, borderlineReviewEnabled: true };
+        await advance(jid, state, { step: nextStep, borderlineReviewEnabled: true });
+        return t('borderline_review_saved', lang, { status: lang === 'he' ? 'מופעל' : 'Enabled' }) + '\n\n' +
+            (isCloneFlow ? await buildSummary(nextState, nextState.reportTarget || 'dm', nextState.mgmtGroupId, lang) : t('ask_welcome_msg', lang));
+    } else if (choice === '2' || choice.includes('לא') || choice.toLowerCase() === 'no') {
+        const nextStep = isCloneFlow ? 'summary' : 'welcome_msg';
+        const nextState = { ...state, borderlineReviewEnabled: false };
+        await advance(jid, state, { step: nextStep, borderlineReviewEnabled: false });
+        return t('borderline_review_saved', lang, { status: lang === 'he' ? 'כבוי' : 'Disabled' }) + '\n\n' +
+            (isCloneFlow ? await buildSummary(nextState, nextState.reportTarget || 'dm', nextState.mgmtGroupId, lang) : t('ask_welcome_msg', lang));
+    }
+    return t('ask_borderline_review', lang);
 }
 
 async function handleMgmtGroupName(client, jid, content, state, lang) {
@@ -951,8 +975,8 @@ async function handleMgmtGroupName(client, jid, content, state, lang) {
             const existingManaged = await database.getGroup(groupId);
             if (existingManaged) return t('mgmt_group_cannot_be_enforced', lang);
 
-            await advance(jid, state, { step: 'welcome_msg', reportTarget: 'mgmt_group', mgmtGroupId: groupId, mgmtGroupName: name, mgmtGroupConfirmed: true });
-            return t('invite_link_joined_admin', lang, { name }) + '\n\n' + t('ask_welcome_msg', lang);
+            await advance(jid, state, { step: 'borderline_review', reportTarget: 'mgmt_group', mgmtGroupId: groupId, mgmtGroupName: name, mgmtGroupConfirmed: true });
+            return t('invite_link_joined_admin', lang, { name }) + '\n\n' + t('ask_borderline_review', lang);
         } catch (e) {
             logger.error('Failed to join mgmt group via invite link', e);
             return t('invite_link_failed', lang, { error: e.message });
@@ -986,8 +1010,8 @@ async function handleMgmtGroupName(client, jid, content, state, lang) {
 async function handleMgmtGroupConfirm(client, jid, content, state, lang) {
     const choice = content.trim();
     if (choice === '1' || choice.includes('כן') || choice.toLowerCase() === 'yes') {
-        await advance(jid, state, { step: 'welcome_msg', reportTarget: 'mgmt_group', mgmtGroupConfirmed: true });
-        return t('ask_welcome_msg', lang);
+        await advance(jid, state, { step: 'borderline_review', reportTarget: 'mgmt_group', mgmtGroupConfirmed: true });
+        return t('ask_borderline_review', lang);
     } else {
         await advance(jid, state, { step: 'mgmt_group_name' });
         return t('ask_mgmt_group_name', lang);
@@ -1011,8 +1035,8 @@ async function handleMgmtGroupVerifyCount(client, jid, content, state, lang) {
         }
 
         const reportTarget = 'mgmt_group';
-        await advance(jid, state, { step: 'welcome_msg', reportTarget, mgmtGroupConfirmed: true });
-        return t('mgmt_group_verify_count_success', lang) + '\n\n' + t('ask_welcome_msg', lang);
+        await advance(jid, state, { step: 'borderline_review', reportTarget, mgmtGroupConfirmed: true });
+        return t('mgmt_group_verify_count_success', lang) + '\n\n' + t('ask_borderline_review', lang);
     } catch (e) {
         logger.error('Failed to verify management group count', e);
         return t('error_generic', lang, { error: e.message });
@@ -1131,19 +1155,47 @@ async function handleCloneSourceLink(client, jid, content, state, lang) {
 async function handleCloneSourceConfirm(client, jid, content, state, lang) {
     const choice = content.trim();
     if (choice === '1' || choice.includes('כן') || choice.toLowerCase() === 'yes') {
-        // Rules will be copied during handleSummary
+        const sourceGroup = await database.getGroup(state.cloneSourceGroupId);
+        const sourceRules = await database.getRules(state.cloneSourceGroupId);
+        const sourceEnforcement = await database.getEnforcement(state.cloneSourceGroupId);
+        const nonTextRule = sourceRules.find(r => r.ruleType === 'block_non_text');
+        const timeRule = sourceRules.find(r => r.ruleType === 'time_window');
+        const antiSpamRule = sourceRules.find(r => r.ruleType === 'anti_spam');
+        const clonedTimeWindows = Array.isArray(timeRule && timeRule.ruleData && timeRule.ruleData.windows)
+            ? timeRule.ruleData.windows
+            : [];
+
         await advance(jid, state, {
-            step: 'non_text_rule',
+            step: 'exempt',
             rulesType: 'clone',
-            blockNonText: false,
-            blockedNonTextTypes: [],
-            timeWindows: [],
-            antiSpam: null
+            blockNonText: !!nonTextRule,
+            blockedNonTextTypes: nonTextRule && Array.isArray(nonTextRule.ruleData && nonTextRule.ruleData.blockedTypes)
+                ? nonTextRule.ruleData.blockedTypes
+                : [],
+            timeWindows: clonedTimeWindows,
+            timeWindow: clonedTimeWindows[0] || null,
+            windowMode: timeRule && timeRule.ruleData ? (timeRule.ruleData.windowMode || 'allow_in_window') : 'allow_in_window',
+            antiSpam: antiSpamRule ? antiSpamRule.ruleData : null,
+            enforcementConfig: sourceEnforcement,
+            warningCount: sourceGroup && sourceGroup.warningCount ? sourceGroup.warningCount : 0,
+            welcomeMessageEnabled: !!(sourceGroup && sourceGroup.welcomeMessageEnabled),
+            welcomeMessageCustom: sourceGroup ? (sourceGroup.welcomeMessageCustom || null) : null,
+            gracePeriodMinutes: sourceGroup && sourceGroup.gracePeriodMinutes ? sourceGroup.gracePeriodMinutes : 0,
+            periodicReminderEnabled: !!(sourceGroup && sourceGroup.periodicReminderEnabled),
+            periodicReminderIntervalHours: sourceGroup ? (sourceGroup.periodicReminderIntervalHours || null) : null,
+            periodicReminderFrequency: sourceGroup ? (sourceGroup.periodicReminderFrequency || null) : null,
+            periodicReminderTime: sourceGroup ? (sourceGroup.periodicReminderTime || null) : null,
+            periodicReminderDayOfWeek: sourceGroup ? sourceGroup.periodicReminderDayOfWeek : null,
+            periodicReminderDayOfMonth: sourceGroup ? sourceGroup.periodicReminderDayOfMonth : null,
+            periodicReminderDateOfYear: sourceGroup ? (sourceGroup.periodicReminderDateOfYear || null) : null,
+            rulesInDescription: !!(sourceGroup && sourceGroup.rulesInDescription),
+            borderlineReviewEnabled: !!(sourceGroup && sourceGroup.borderlineReviewEnabled),
+            clonePolicyPreview: true
         });
         return t('clone_rules_copied', lang, {
             count: '...',
             name: state.cloneSourceName
-        }) + '\n\n' + t('ask_non_text_rule', lang);
+        }) + '\n\n' + t('ask_exempt', lang);
     } else {
         await advance(jid, state, { step: 'clone_source_link' });
         return t('ask_clone_source_link', lang);
@@ -1377,6 +1429,9 @@ async function buildSummary(state, reportTarget, mgmtGroupId, lang) {
     const welcomeStr = state.welcomeMessageEnabled
         ? (lang === 'he' ? 'מופעל (דורש אישור משתמש)' : 'Enabled (requires agreement)')
         : (lang === 'he' ? 'כבוי' : 'Disabled');
+    const borderlineReviewStr = state.borderlineReviewEnabled
+        ? (lang === 'he' ? 'מופעל' : 'Enabled')
+        : (lang === 'he' ? 'כבוי' : 'Disabled');
 
     return t('setup_summary', lang, {
         groupName: state.groupName,
@@ -1389,6 +1444,7 @@ async function buildSummary(state, reportTarget, mgmtGroupId, lang) {
         warnings: (state.warningCount || 0).toString(),
         exempt: exemptStr,
         report: reportStr,
+        borderlineReview: borderlineReviewStr,
         welcome: welcomeStr
     });
 }
@@ -1428,6 +1484,7 @@ async function handleSummary(client, jid, content, state, lang) {
             await database.clearRules(groupId);
             if (state.rulesType === 'clone' && state.cloneSourceGroupId) {
                 await database.copyRulesFromGroup(state.cloneSourceGroupId, groupId);
+                await database.copyPolicySettingsFromGroup(state.cloneSourceGroupId, groupId);
             } else if (state.rulesType === 'allowed' && state.rulesMessages) {
                 await database.addRule(groupId, 'allowed_messages', {
                     messages: state.rulesMessages,
@@ -1503,6 +1560,9 @@ async function handleSummary(client, jid, content, state, lang) {
                 await database.updateGroupGracePeriod(groupId, state.gracePeriodMinutes);
             }
 
+            // 9b. Save borderline review flag
+            await database.updateGroupBorderlineReview(groupId, !!state.borderlineReviewEnabled);
+
             // 10. Save periodic reminder
             if (state.periodicReminderEnabled) {
                 await database.updateGroupPeriodicReminder(groupId, true, {
@@ -1533,7 +1593,15 @@ async function handleSummary(client, jid, content, state, lang) {
             await saveState(jid, { step: 'done' });
 
             logger.info(`Setup completed for group ${state.groupName} by ${extractNumber(jid)}`);
-            logger.auditLog(jid, 'SETUP_COMPLETE', `Group: ${state.groupName} (${groupId})`, true);
+            logger.auditLog(jid, 'SETUP_COMPLETE', {
+                message: `Group: ${state.groupName} (${groupId})`,
+                groupId,
+                groupName: state.groupName,
+                rulesType: state.rulesType,
+                reportTarget: state.reportTarget || 'dm',
+                borderlineReviewEnabled: !!state.borderlineReviewEnabled,
+                cloneSourceGroupId: state.cloneSourceGroupId || null
+            }, true);
 
             // Notify developer
             try {

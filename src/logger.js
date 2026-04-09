@@ -81,7 +81,15 @@ function auditLog(adminJid, action, details, success = true) {
     const time = new Date().toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' });
     const status = success ? 'SUCCESS' : 'FAILED';
     const adminNumber = adminJid ? adminJid.split('@')[0] : 'system';
-    const logLine = `[${time}] [${adminNumber}] [${action}] ${details} - ${status}`;
+    const normalized = typeof details === 'object' && details !== null
+        ? details
+        : { message: String(details || '') };
+    const message = normalized.message || normalized.details || '';
+    const meta = { ...normalized };
+    delete meta.message;
+    delete meta.details;
+    const metaStr = Object.keys(meta).length > 0 ? ` | meta=${JSON.stringify(meta)}` : '';
+    const logLine = `[${time}] [${adminNumber}] [${action}] [${status}] ${message}${metaStr}`;
     fs.appendFile(auditFile, logLine + '\n', 'utf8', (err) => {
         if (err) {
             logger.error(`Failed to append audit log: ${err.message}`);

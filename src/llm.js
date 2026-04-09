@@ -423,7 +423,7 @@ async function notifyDeveloperPendingPhrasesList(client) {
  * On any error or timeout → silently allows (no false positives from infra failures).
  */
 async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfig, enforcementConfig, rateLimiter, lang, forceCheck = false) {
-    const { executeEnforcement } = require('./enforcement');
+    const { executeEnforcement, sendReport } = require('./enforcement');
     const { t } = require('./i18n');
 
     // Layer 1: prompt injection detection — enforce immediately, no LLM call
@@ -459,9 +459,15 @@ async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfi
 
     // Streak detection — user sent 3+ near-misses in 60s → force LLM check
     const streakForce = _isStreakUser(groupConfig.groupId, senderJid);
+    const triggerReasons = [];
+    if (forceCheck) triggerReasons.push(lang === 'he' ? 'בדיקה ידנית' : 'manual review');
+    if (streakForce) triggerReasons.push(lang === 'he' ? 'רצף כמעט-הפרות' : 'near-miss streak');
+    if (isSuspicious(content)) triggerReasons.push(lang === 'he' ? 'טקסט חשוד' : 'suspicious text');
+    if (containsContextWord(content)) triggerReasons.push(lang === 'he' ? 'מילת הקשר' : 'context word');
+    if (cosineResult.isSuspicious) triggerReasons.push(lang === 'he' ? 'דמיון ביניים' : 'medium cosine match');
 
     // Layer 2: route to LLM if suspicious / context-word / cosine medium / or streak
-    if (!forceCheck && !streakForce && !isSuspicious(content) && !containsContextWord(content) && !cosineResult.isSuspicious) return;
+    if (!forceCheck && !streakForce && triggerReasons.length === 0) return;
 
     const apiKey = config.get('groq.apiKey');
     if (!apiKey) return;
@@ -473,6 +479,32 @@ async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfi
             // LLM said clean — record near-miss for streak detection, log
             _recordNearMiss(groupConfig.groupId, senderJid);
             messageLog.logEnforcement(groupConfig.groupId, groupConfig.groupName, senderJid, content, 'LLM: passed', 'llm_pass');
+
+            if (groupConfig.borderlineReviewEnabled) {
+                let pushname = senderJid.replace(/@.*/, '');
+                try {
+                    const contact = await client.getContactById(senderJid);
+                    pushname = contact.pushname || contact.name || pushname;
+                } catch {}
+
+                const report = t('borderline_review_report', lang, {
+                    groupName: groupConfig.groupName,
+                    groupId: groupConfig.groupId,
+                    pushname,
+                    number: senderJid.replace(/@.*/, ''),
+                    trigger: triggerReasons.join(lang === 'he' ? ' + ' : ' + ') || (lang === 'he' ? 'בדיקת AI' : 'AI review'),
+                    content,
+                    time: new Date().toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' })
+                });
+                const sent = await sendReport(client, groupConfig, report, lang);
+                logger.auditLog(groupConfig.ownerJid, 'BORDERLINE_REVIEW', {
+                    message: `Borderline review for ${groupConfig.groupName}`,
+                    groupId: groupConfig.groupId,
+                    groupName: groupConfig.groupName,
+                    targetUser: senderJid.replace(/@.*/, ''),
+                    triggerReasons
+                }, sent);
+            }
             return;
         }
 

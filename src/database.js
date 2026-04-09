@@ -335,6 +335,11 @@ class Database {
                         this.db.run("ALTER TABLE groups ADD COLUMN periodicReminderDateOfYear TEXT DEFAULT NULL");
                         logger.info("Migrated schema: Added periodicReminderDateOfYear to groups");
                     }
+                    const hasBorderlineReviewEnabled = rows2.some(r => r.name === 'borderlineReviewEnabled');
+                    if (!hasBorderlineReviewEnabled) {
+                        this.db.run("ALTER TABLE groups ADD COLUMN borderlineReviewEnabled INTEGER DEFAULT 0");
+                        logger.info("Migrated schema: Added borderlineReviewEnabled to groups");
+                    }
                 }
             });
 
@@ -1231,6 +1236,10 @@ class Database {
         await this._run('UPDATE groups SET rulesInDescription = ? WHERE groupId = ?', [enabled ? 1 : 0, groupId]);
     }
 
+    async updateGroupBorderlineReview(groupId, enabled) {
+        await this._run('UPDATE groups SET borderlineReviewEnabled = ? WHERE groupId = ?', [enabled ? 1 : 0, groupId]);
+    }
+
     async updateGroupLastReminderAt(groupId) {
         await this._run('UPDATE groups SET lastReminderAt = ? WHERE groupId = ?', [new Date().toISOString(), groupId]);
     }
@@ -1260,6 +1269,61 @@ class Database {
             );
         }
         return rules.length;
+    }
+
+    async copyPolicySettingsFromGroup(sourceGroupId, targetGroupId) {
+        const sourceGroup = await this.getGroup(sourceGroupId);
+        if (!sourceGroup) return null;
+
+        const enforcement = await this.getEnforcement(sourceGroupId);
+        await this.setEnforcement(targetGroupId, enforcement);
+
+        await this._run(
+            `UPDATE groups SET
+             warningCount = ?,
+             welcomeMessageEnabled = ?,
+             gracePeriodMinutes = ?,
+             periodicReminderEnabled = ?,
+             periodicReminderIntervalHours = ?,
+             periodicReminderFrequency = ?,
+             periodicReminderTime = ?,
+             periodicReminderDayOfWeek = ?,
+             periodicReminderDayOfMonth = ?,
+             periodicReminderDateOfYear = ?,
+             rulesInDescription = ?,
+             welcomeMessageCustom = ?,
+             shabbatConfig = ?,
+             borderlineReviewEnabled = ?
+             WHERE groupId = ?`,
+            [
+                sourceGroup.warningCount || 0,
+                sourceGroup.welcomeMessageEnabled ? 1 : 0,
+                sourceGroup.gracePeriodMinutes || 0,
+                sourceGroup.periodicReminderEnabled ? 1 : 0,
+                sourceGroup.periodicReminderIntervalHours || null,
+                sourceGroup.periodicReminderFrequency || null,
+                sourceGroup.periodicReminderTime || null,
+                sourceGroup.periodicReminderDayOfWeek ?? null,
+                sourceGroup.periodicReminderDayOfMonth ?? null,
+                sourceGroup.periodicReminderDateOfYear || null,
+                sourceGroup.rulesInDescription ? 1 : 0,
+                sourceGroup.welcomeMessageCustom || null,
+                sourceGroup.shabbatConfig || null,
+                sourceGroup.borderlineReviewEnabled ? 1 : 0,
+                targetGroupId
+            ]
+        );
+
+        return {
+            warningCount: sourceGroup.warningCount || 0,
+            welcomeMessageEnabled: !!sourceGroup.welcomeMessageEnabled,
+            gracePeriodMinutes: sourceGroup.gracePeriodMinutes || 0,
+            periodicReminderEnabled: !!sourceGroup.periodicReminderEnabled,
+            rulesInDescription: !!sourceGroup.rulesInDescription,
+            borderlineReviewEnabled: !!sourceGroup.borderlineReviewEnabled,
+            hasShabbatConfig: !!sourceGroup.shabbatConfig,
+            enforcement
+        };
     }
 
     // ── Lifecycle ────────────────────────────────────────────────────────

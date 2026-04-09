@@ -19,6 +19,66 @@ async function sendBotReply(client, to, text) {
     await client.sendMessage(to, text, { linkPreview: false });
 }
 
+async function getQuotedBotReportData(msg) {
+    if (!msg.hasQuotedMsg) return null;
+    try {
+        const quotedMsg = await msg.getQuotedMessage();
+        const quotedContent = quotedMsg.body || '';
+        if (!quotedMsg.fromMe) return null;
+        if (!quotedContent.includes('GroupShield') && !quotedContent.includes('דו"ח') && !quotedContent.includes('אזהרה')) return null;
+
+        const numberMatch = quotedContent.match(/(?:מספר|Number):\s*(\d+)/i);
+        const groupIdMatch = quotedContent.match(/(?:Group ID|מזהה קבוצה):\s*([^\s\n]+)/i);
+        const actionIdMatch = quotedContent.match(/(?:ID|מזהה):\s*(ENF-[\w-]+)/i);
+
+        return {
+            number: numberMatch ? numberMatch[1] : null,
+            groupId: groupIdMatch ? groupIdMatch[1] : null,
+            actionId: actionIdMatch ? actionIdMatch[1] : null,
+            content: quotedContent
+        };
+    } catch (e) {
+        logger.warn('Failed to parse quoted bot report', e.message);
+        return null;
+    }
+}
+
+async function rewriteReplyCommandFromReport(msg, content, senderJid) {
+    const report = await getQuotedBotReportData(msg);
+    if (!report || !report.number) return { content, report: null, rewritten: false };
+
+    const raw = (content || '').trim();
+    const lower = raw.toLowerCase();
+    let rewritten = null;
+
+    if (lower === 'החרג' || lower === 'הוסף חסין') {
+        rewritten = `הוסף חסין ${report.number}`;
+    } else if (lower === 'exempt' || lower === 'exempt add') {
+        rewritten = `exempt add ${report.number}`;
+    } else if (lower === 'אפס אזהרות') {
+        rewritten = `אפס אזהרות ${report.number}`;
+    } else if (lower === 'warnings reset') {
+        rewritten = `warnings reset ${report.number}`;
+    } else if (lower === 'בטל אזהרה') {
+        rewritten = `בטל אזהרה ${report.number}`;
+    } else if (lower === 'undo warning') {
+        rewritten = `undo warning ${report.number}`;
+    }
+
+    if (!rewritten) return { content, report, rewritten: false };
+
+    logger.auditLog(senderJid, 'REPORT_REPLY_COMMAND', {
+        message: `Reply command rewritten from quoted report`,
+        originalCommand: raw,
+        rewrittenCommand: rewritten,
+        targetUser: report.number,
+        targetGroupId: report.groupId || null,
+        actionId: report.actionId || null
+    }, true);
+
+    return { content: rewritten, report, rewritten: true };
+}
+
 /**
  * Process incoming message
  */
@@ -258,7 +318,8 @@ async function handleDM(client, msg, senderJid, content) {
     }
 
     // User has completed setup — handle commands
-    const response = await commands.executeCommand(client, senderJid, content, lang);
+    const rewritten = await rewriteReplyCommandFromReport(msg, content, senderJid);
+    const response = await commands.executeCommand(client, senderJid, rewritten.content, lang);
     if (response) {
         await sendBotReply(client, msg.from, response);
         return;
@@ -303,6 +364,9 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
 
     // Check if this is the management group — handle undo and pending actions
     if (isMgmtGroup) {
+        const rewritten = await rewriteReplyCommandFromReport(msg, content, senderJid);
+        content = rewritten.content;
+
         // Handle pending group actions (multi-group target selection)
         const possibleChoice = parseInt(content.trim(), 10);
         if (!isNaN(possibleChoice)) {

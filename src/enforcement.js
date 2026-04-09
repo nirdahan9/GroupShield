@@ -146,6 +146,7 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
                     current: newCount.toString(),
                     max: maxWarnings.toString(),
                     groupName: groupConfig.groupName,
+                    groupId: groupConfig.groupId,
                     pushname,
                     number,
                     reason,

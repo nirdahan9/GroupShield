@@ -294,6 +294,14 @@ const strings = {
         he: '✅ יעד דיווח נשמר.',
         en: '✅ Report target saved.'
     },
+    'ask_borderline_review': {
+        he: '🧐 *הודעות גבוליות לבדיקה*\n\nכאשר זיהוי ה-AI מזהה הודעה כחשודה אבל *לא בטוח מספיק כדי לאכוף*, האם לשלוח אותה לבדיקה ליעד הדיווח?\n\nזו *לא* אכיפה, רק התראה לבדיקה ידנית.\n\n1️⃣ כן — שלח לבדיקה ✅\n2️⃣ לא — אל תשלח ❌',
+        en: '🧐 *Borderline messages for review*\n\nWhen the AI flags a message as suspicious but *not confidently enough to enforce*, should it be sent to the report target for manual review?\n\nThis is *not* enforcement, only a review notice.\n\n1️⃣ Yes — send for review ✅\n2️⃣ No — do not send ❌'
+    },
+    'borderline_review_saved': {
+        he: '✅ דיווח הודעות גבוליות: {{status}}',
+        en: '✅ Borderline review reports: {{status}}'
+    },
 
     // ── Welcome Message (Onboarding) ─────────────────────────────────────
     'ask_welcome_msg': {
@@ -349,8 +357,8 @@ const strings = {
 
     // ── Summary & Completion ─────────────────────────────────────────────
     'setup_summary': {
-        he: '📋 *סיכום הגדרות GroupShield*\n\n🏷️ *קבוצה:* {{groupName}}\n📏 *חוקי תוכן:* {{rulesType}}\n🧠 *התאמת תוכן:* {{rulesMode}}\n🖼️ *הודעות לא-טקסט:* {{nonTextRule}}\n⏰ *חלון זמנים:* {{timeWindow}}\n🔁 *אנטי-ספאם:* {{antiSpam}}\n⚖️ *שלבי אכיפה:*\n{{enforcement}}\n⚠️ *אזהרות:* {{warnings}}\n🛡️ *חסינים:* {{exempt}}\n📨 *דיווח:* {{report}}\n👋 *הודעת קבלת פנים:* {{welcome}}\n\nלאשר ולהפעיל?\n\n1️⃣ אשר ✅\n2️⃣ התחל מחדש 🔄',
-        en: '📋 *GroupShield Configuration Summary*\n\n🏷️ *Group:* {{groupName}}\n📏 *Content rules:* {{rulesType}}\n🧠 *Match mode:* {{rulesMode}}\n🖼️ *Non-text messages:* {{nonTextRule}}\n⏰ *Time window:* {{timeWindow}}\n🔁 *Anti-spam:* {{antiSpam}}\n⚖️ *Enforcement:* {{enforcement}}\n⚠️ *Warnings:* {{warnings}}\n🛡️ *Exempt:* {{exempt}}\n📨 *Reports:* {{report}}\n👋 *Welcome Message:* {{welcome}}\n\nConfirm and activate?\n\n1️⃣ Confirm ✅\n2️⃣ Start over 🔄'
+        he: '📋 *סיכום הגדרות GroupShield*\n\n🏷️ *קבוצה:* {{groupName}}\n📏 *חוקי תוכן:* {{rulesType}}\n🧠 *התאמת תוכן:* {{rulesMode}}\n🖼️ *הודעות לא-טקסט:* {{nonTextRule}}\n⏰ *חלון זמנים:* {{timeWindow}}\n🔁 *אנטי-ספאם:* {{antiSpam}}\n⚖️ *שלבי אכיפה:*\n{{enforcement}}\n⚠️ *אזהרות:* {{warnings}}\n🛡️ *חסינים:* {{exempt}}\n📨 *דיווח:* {{report}}\n🧐 *הודעות גבוליות:* {{borderlineReview}}\n👋 *הודעת קבלת פנים:* {{welcome}}\n\nלאשר ולהפעיל?\n\n1️⃣ אשר ✅\n2️⃣ התחל מחדש 🔄',
+        en: '📋 *GroupShield Configuration Summary*\n\n🏷️ *Group:* {{groupName}}\n📏 *Content rules:* {{rulesType}}\n🧠 *Match mode:* {{rulesMode}}\n🖼️ *Non-text messages:* {{nonTextRule}}\n⏰ *Time window:* {{timeWindow}}\n🔁 *Anti-spam:* {{antiSpam}}\n⚖️ *Enforcement:* {{enforcement}}\n⚠️ *Warnings:* {{warnings}}\n🛡️ *Exempt:* {{exempt}}\n📨 *Reports:* {{report}}\n🧐 *Borderline review:* {{borderlineReview}}\n👋 *Welcome Message:* {{welcome}}\n\nConfirm and activate?\n\n1️⃣ Confirm ✅\n2️⃣ Start over 🔄'
     },
     'setup_complete': {
         he: '🛡️✅ *GroupShield פעיל!*\n\nהבוט אוכף כעת את החוקים בקבוצה *{{groupName}}*.\n\nשלח *"עזרה"* לרשימת פקודות.',
@@ -367,12 +375,16 @@ const strings = {
         en: '🚫 *You were removed from "{{groupName}}"*\n\n📝 *Reason:* {{reason}}\n💬 *Message:* {{content}}\n📅 *Time:* {{time}}'
     },
     'warning_report': {
-        he: '⚠️ *אזהרה ({{current}}/{{max}})*\n\n🏷️ *קבוצה:* {{groupName}}\n👤 *שם:* {{pushname}}\n📱 *מספר:* {{number}}\n📝 *סיבה:* {{reason}}\n💬 *תוכן:* {{content}}',
-        en: '⚠️ *Warning ({{current}}/{{max}})*\n\n🏷️ *Group:* {{groupName}}\n👤 *Name:* {{pushname}}\n📱 *Number:* {{number}}\n📝 *Reason:* {{reason}}\n💬 *Content:* {{content}}'
+        he: '⚠️ *אזהרה ({{current}}/{{max}})*\n\n🏷️ *קבוצה:* {{groupName}}\n🧾 *מזהה קבוצה:* {{groupId}}\n👤 *שם:* {{pushname}}\n📱 *מספר:* {{number}}\n📝 *סיבה:* {{reason}}\n💬 *תוכן:* {{content}}',
+        en: '⚠️ *Warning ({{current}}/{{max}})*\n\n🏷️ *Group:* {{groupName}}\n🧾 *Group ID:* {{groupId}}\n👤 *Name:* {{pushname}}\n📱 *Number:* {{number}}\n📝 *Reason:* {{reason}}\n💬 *Content:* {{content}}'
     },
     'violation_report': {
         he: '🛡️ *דו"ח GroupShield*\n\n🏷️ *קבוצה:* {{groupName}}\n🆔 *מזהה:* {{violationId}}\n🧾 *מזהה קבוצה:* {{groupId}}\n👤 *שם:* {{pushname}}\n📱 *מספר:* {{number}}\n📝 *סיבה:* {{reason}}\n📝 *תוכן:* "{{content}}"\n📩 *הודעה פרטית:* {{privateStatus}}\n🚫 *הסרה:* {{removeStatus}}\n🕒 *זמן:* {{time}}',
         en: '🛡️ *GroupShield Report*\n\n🏷️ *Group:* {{groupName}}\n🆔 *ID:* {{violationId}}\n🧾 *Group ID:* {{groupId}}\n👤 *Name:* {{pushname}}\n📱 *Number:* {{number}}\n📝 *Reason:* {{reason}}\n📝 *Content:* "{{content}}"\n📩 *Private msg:* {{privateStatus}}\n🚫 *Removal:* {{removeStatus}}\n🕒 *Time:* {{time}}'
+    },
+    'borderline_review_report': {
+        he: '🧐 *דו"ח בדיקה — GroupShield*\n\n🏷️ *קבוצה:* {{groupName}}\n🧾 *מזהה קבוצה:* {{groupId}}\n👤 *שם:* {{pushname}}\n📱 *מספר:* {{number}}\n🔎 *סיבת בדיקה:* {{trigger}}\n📝 *תוכן:* "{{content}}"\n⚠️ *סטטוס:* לבדיקה ידנית בלבד — לא בוצעה אכיפה\n🕒 *זמן:* {{time}}',
+        en: '🧐 *GroupShield Review Report*\n\n🏷️ *Group:* {{groupName}}\n🧾 *Group ID:* {{groupId}}\n👤 *Name:* {{pushname}}\n📱 *Number:* {{number}}\n🔎 *Review trigger:* {{trigger}}\n📝 *Content:* "{{content}}"\n⚠️ *Status:* Manual review only — no enforcement taken\n🕒 *Time:* {{time}}'
     },
 
     // ── Welcome Flow & Rules Summary ─────────────────────────────────────
@@ -454,6 +466,10 @@ const strings = {
     'undo_expired': {
         he: '❌ לא ניתן לבצע ביטול לפעולה שבוצעה לפני יותר מ-24 שעות.',
         en: '❌ Undo is not available for actions older than 24 hours.'
+    },
+    'reply_command_applied': {
+        he: '✅ הפעולה יושמה על המשתמש *{{number}}* מתוך הדו"ח.',
+        en: '✅ The action was applied to *{{number}}* from the report.'
     },
 
     // ── Commands ─────────────────────────────────────────────────────────
@@ -710,8 +726,8 @@ const strings = {
         en: '✅ Found group: *{{name}}* ({{count}} participants)\n\nCopy rules from it?\n\n1️⃣ Yes, copy ✅\n2️⃣ No, choose another ❌'
     },
     'clone_rules_copied': {
-        he: '✅ הועתקו {{count}} כללים מהקבוצה *{{name}}*.',
-        en: '✅ Copied {{count}} rules from *{{name}}*.'
+        he: '✅ הועתקה מדיניות הקבוצה *{{name}}* (חוקים והגדרות אכיפה).',
+        en: '✅ Copied the policy from *{{name}}* (rules and enforcement settings).'
     },
     'clone_source_not_managed': {
         he: '❌ הבוט אינו מנהל בקבוצה שציינת, ולכן לא ניתן להעתיק ממנה כללים.\n\nנסה לינק אחר, או בחר אפשרות אחרת:',
