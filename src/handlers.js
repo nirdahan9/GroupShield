@@ -8,6 +8,7 @@ const { evaluateMessage, checkAntiSpam } = require('./ruleEngine');
 const { executeEnforcement, handleUndo, isPendingRemoval } = require('./enforcement');
 const { checkWithLLM } = require('./llm');
 const messageLog = require('./messageLog');
+const cursesTrainingLog = require('./cursesTrainingLog');
 const setupFlow = require('./setupFlow');
 const commands = require('./commands');
 const shabbat = require('./shabbat');
@@ -741,8 +742,17 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
     // Check content and time rules
     const contentRules = rules.filter(r => r.ruleType !== 'anti_spam');
     if (contentRules.length > 0) {
+        // Detect curses preset before evaluation so we can log regardless of outcome
+        const hasCursesPreset = contentRules.some(
+            r => r.ruleType === 'forbidden_messages' && r.ruleData?.isCursesPreset
+        );
+
         const result = evaluateMessage(contentRules, { content, msgType, senderJid }, lang);
         if (!result.allowed) {
+            if (hasCursesPreset) {
+                cursesTrainingLog.logMessage(groupJid, groupConfig.groupName, senderJid, content, msgType);
+                cursesTrainingLog.logEnforcement(groupJid, groupConfig.groupName, senderJid, content, result.violations.join(' | '), 'rule_engine');
+            }
             await executeEnforcement(
                 client, msg, senderJid,
                 result.violations,
@@ -752,11 +762,10 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
         }
 
         // Message passed the rule engine — LLM fallback for curses-preset groups
-        const hasCursesPreset = contentRules.some(
-            r => r.ruleType === 'forbidden_messages' && r.ruleData?.isCursesPreset
-        );
-
         if (hasCursesPreset) {
+            // Log the raw message; LLM will add an "enforced" entry if it finds a violation
+            cursesTrainingLog.logMessage(groupJid, groupConfig.groupName, senderJid, content, msgType);
+
             // Repeat offenders (≥2 warnings) get force-checked by LLM even for non-suspicious messages
             const warnCount = await database.getWarningCount(groupJid, senderJid).catch(() => 0);
             const maxWarnings = groupConfig.warningCount || 3;

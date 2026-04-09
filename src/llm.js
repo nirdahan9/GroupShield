@@ -10,6 +10,7 @@ const config = require('./config');
 const logger = require('./logger');
 const { CONTEXT_WORDS } = require('./cursesList');
 const messageLog = require('./messageLog');
+const cursesTrainingLog = require('./cursesTrainingLog');
 const { checkCosineSimilarity } = require('./cosine');
 
 const MODEL = 'llama-3.1-8b-instant';
@@ -429,6 +430,7 @@ async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfi
     // Layer 1: prompt injection detection — enforce immediately, no LLM call
     if (detectsInjection(content)) {
         logger.info(`Prompt injection attempt in ${groupConfig.groupName} from ${senderJid}: "${content.slice(0, 80)}"`);
+        cursesTrainingLog.logEnforcement(groupConfig.groupId, groupConfig.groupName, senderJid, content, t('reason_llm_violation', lang), 'injection');
         try {
             await executeEnforcement(
                 client, msg, senderJid,
@@ -445,6 +447,7 @@ async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfi
     const cosineResult = checkCosineSimilarity(content);
     if (cosineResult.isHardBlock) {
         logger.info(`Cosine hard-block in ${groupConfig.groupName} from ${senderJid} (score=${cosineResult.score.toFixed(2)}, ~"${cosineResult.matchedWord}"): "${content.slice(0, 60)}"`);
+        cursesTrainingLog.logEnforcement(groupConfig.groupId, groupConfig.groupName, senderJid, content, t('reason_forbidden_content', lang), 'cosine');
         try {
             await executeEnforcement(
                 client, msg, senderJid,
@@ -510,6 +513,7 @@ async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfi
 
         logger.info(`LLM flagged message in ${groupConfig.groupName} from ${senderJid}: "${content.slice(0, 60)}"`);
 
+        cursesTrainingLog.logEnforcement(groupConfig.groupId, groupConfig.groupName, senderJid, content, t('reason_llm_violation', lang), 'llm');
         await executeEnforcement(
             client, msg, senderJid,
             [t('reason_llm_violation', lang)],

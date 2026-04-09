@@ -84,6 +84,10 @@ const strings = {
         he: '✅ חסימת שפה פוגענית הופעלה.\nהבוט יזהה ויחסום שפה פוגענית, בוטה ואלימה בעברית ובאנגלית עם זיהוי חכם של עקיפות.\n\n💡 *טיפ:* בכל עת תוכל לתייג את *@GroupShield* בתשובה להודעה חשודה — הבוט יבצע בדיקת AI נוספת על אותה הודעה.',
         en: '✅ Offensive language blocking enabled.\nThe bot will detect and block offensive, vulgar and violent language in Hebrew and English using smart bypass detection.\n\n💡 *Tip:* At any time you can mention *@GroupShield* in a reply to a suspicious message — the bot will run an additional AI check on it.'
     },
+    'curses_training_notice': {
+        he: '📊 *הודעה לחברי הקבוצה:*\nהקבוצה הצטרפה למערכת GroupShield לחסימת שפה פוגענית.\nהודעות בקבוצה עשויות להישמר לצורך שיפור ואימון הבוט — ללא פרטים מזהים.',
+        en: '📊 *Notice to group members:*\nThis group has joined GroupShield offensive language protection.\nMessages in this group may be saved for bot improvement and training — without identifying details.'
+    },
     'shabbat_preset_selected': {
         he: '🕯️ *שמירת שבת וחג הופעלה!*\nהבוט יסגור את הקבוצה 5 דקות לפני כניסת השבת והחגים ויפתח אותה 5 דקות לאחר יציאתם.\nהשעות לפי שעון ישראל.\n\n⚠️ *שים לב:* גם כשהקבוצה נעולה, *למנהלים תמיד יש אפשרות לשלוח הודעות* בקבוצה. אם אתה רוצה למנוע זאת, תצטרך להסיר הרשאות מנהל בזמן השבת ידנית.',
         en: '🕯️ *Shabbat & Holiday mode enabled!*\nThe bot will lock the group 5 minutes before Shabbat and Jewish holidays begin and unlock it 5 minutes after they end.\nTimes based on Israel time.\n\n⚠️ *Note:* Even when the group is locked, *group admins can still send messages*. If you want to prevent that, you will need to remove admin permissions manually during Shabbat/holidays.'

@@ -1501,6 +1501,12 @@ async function handleSummary(client, jid, content, state, lang) {
                     matchMode: 'smart',
                     isCursesPreset: true
                 });
+                // Notify group members that messages may be saved for training
+                try {
+                    await client.sendMessage(groupId, t('curses_training_notice', lang), { linkPreview: false });
+                } catch (e) {
+                    logger.warn('Failed to send curses training notice to group', e);
+                }
             } else if (state.rulesType === 'shabbat') {
                 await database.updateGroupShabbatConfig(groupId, {
                     enabled: true,

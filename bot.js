@@ -122,6 +122,7 @@ async function startBot() {
         runtime.cronTasks.push(schedulePeriodicReminders(client));
         runtime.cronTasks.push(scheduleShabbatFetch(client));
         runtime.cronTasks.push(scheduleHolidayFetch(client));
+        runtime.cronTasks.push(scheduleCursesTrainingReminder(client));
 
         // Fetch holiday times for current year on startup (non-blocking)
         shabbat.fetchAndSaveHolidayTimes().then(h => {
@@ -377,6 +378,23 @@ function scheduleHolidayFetch(client) {
             );
         } catch (e) {
             logger.warn('Failed to send holiday fetch notification', e.message);
+        }
+    }, { timezone: 'Asia/Jerusalem' });
+}
+
+function scheduleCursesTrainingReminder(client) {
+    // Every Saturday at 12:00 Israel time — remind developer to save the curses training file
+    return cron.schedule('0 12 * * 6', async () => {
+        if (!DEVELOPER_JID) return;
+        try {
+            await client.sendMessage(DEVELOPER_JID,
+                '📊 *GroupShield — תזכורת שבועית*\n\n' +
+                'אל תשכח לשמור את קובץ האימון של הבוט מהשרת:\n' +
+                '`/root/groupshield-bot/logs/curses_training.jsonl`\n\n' +
+                'הקובץ מכיל את כל ההודעות מקבוצות אכיפת שפה פוגענית לטובת למידה ואימון.'
+            );
+        } catch (e) {
+            logger.warn('Failed to send curses training reminder to developer', e.message);
         }
     }, { timezone: 'Asia/Jerusalem' });
 }
