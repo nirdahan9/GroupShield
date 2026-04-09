@@ -16,23 +16,30 @@
         mermaid.initialize({ startOnLoad: true, theme: 'dark' });
     </script>
     <script src="i18n.js"></script>
+    <script defer src="/_vercel/insights/script.js"></script>
 </head>
 
 <body>
 
     <nav style="position: fixed; top: 1.5rem; right: 2rem; z-index: 999;">
-        <button id="lang-toggle" onclick="toggleLanguage()" style="background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); padding: 0.5rem 1rem; border-radius: 20px; color: white; cursor: pointer; font-family: var(--font-sans); font-weight: 600; backdrop-filter: blur(10px);">EN | 🌐</button>
+        <button id="lang-toggle" onclick="toggleLanguage()"
+            style="background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); padding: 0.5rem 1rem; border-radius: 20px; color: white; cursor: pointer; font-family: var(--font-sans); font-weight: 600; backdrop-filter: blur(10px);">EN
+            | 🌐</button>
     </nav>
     <section class="hero" style="padding: 6rem 0 3rem; position: relative;">
         <!-- Glowing Background Orbs -->
         <div class="container hero-content animate">
-            <h1 style="display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; direction: ltr;">
-                <img src="hero.png" alt="GroupShield Logo" style="width: 65px; height: 65px; border-radius: 50%; object-fit: cover; border: 2px solid var(--secondary); box-shadow: 0 0 15px rgba(0, 255, 163, 0.4);">
+            <h1
+                style="display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; direction: ltr;">
+                <img src="hero.png" alt="GroupShield Logo"
+                    style="width: 65px; height: 65px; border-radius: 50%; object-fit: cover; border: 2px solid var(--secondary); box-shadow: 0 0 15px rgba(0, 255, 163, 0.4);">
                 GroupShield
             </h1>
-            <p data-i18n="hero-desc">Moderating large WhatsApp groups is a nightmare. GroupShield automates it with custom rules, bilingual support, and a self-healing architecture.</p>
+            <p data-i18n="hero-desc">Moderating large WhatsApp groups is a nightmare. GroupShield automates it with
+                custom rules, bilingual support, and a self-healing architecture.</p>
             <div class="cta" style="display: flex; flex-direction: column; gap: 1.2rem; align-items: center;">
-                <a id="btn-start-wa" href="https://wa.me/972559216919?text=%D7%94%D7%AA%D7%97%D7%9C" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp" data-i18n="btn-start">🚀 נסו בעצמכם</a>
+                <a id="btn-start-wa" href="https://wa.me/972559216919?text=%D7%94%D7%AA%D7%97%D7%9C" target="_blank"
+                    rel="noopener noreferrer" class="btn btn-whatsapp" data-i18n="btn-start">🚀 נסו בעצמכם</a>
                 <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
                     <a href="#features" class="btn btn-primary" data-i18n="btn-features">Discover Features</a>
                     <a href="#demo-chat-window" class="btn btn-primary" data-i18n="btn-demo">Experience GroupShield</a>
@@ -44,59 +51,76 @@
     </section>
 
     <section id="features" class="container" style="padding: 8rem 0 4rem;">
-        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="features-title">Generic & Powerful</h2>
-        <p style="text-align: center; color: var(--text-dim); margin-bottom: 4rem;" data-i18n="features-desc">One bot to rule them all. Simple for admins, transparent for users.</p>
+        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="features-title">Generic &
+            Powerful</h2>
+        <p style="text-align: center; color: var(--text-dim); margin-bottom: 4rem;" data-i18n="features-desc">One bot to
+            rule them all. Simple for admins, transparent for users.</p>
 
         <div class="feature-list">
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">🤖</span>
                 <h3 data-i18n="f1-title">Interactive Setup</h3>
-                <p data-i18n="f1-desc">No complex dashboards. Configure rules, languages, and enforcement steps through a natural DM conversation.</p>
+                <p data-i18n="f1-desc">No complex dashboards. Configure rules, languages, and enforcement steps through
+                    a natural DM conversation.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">⏰</span>
                 <h3 data-i18n="f2-title">Time Windows</h3>
-                <p data-i18n="f2-desc">Define precise hours when messages are allowed. Perfect for forum-style groups.</p>
+                <p data-i18n="f2-desc">Define precise hours when messages are allowed. Perfect for forum-style groups.
+                </p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">🚫</span>
                 <h3 data-i18n="f3-title">Content Filter</h3>
-                <p data-i18n="f3-desc">Block forbidden phrases or enforce "Allowed Only" lists. Supports exact matches and regex containment.</p>
+                <p data-i18n="f3-desc">Block forbidden phrases or enforce "Allowed Only" lists. Supports exact matches
+                    and regex containment.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">🔄</span>
                 <h3 data-i18n="f4-title">Anti-Spam</h3>
-                <p data-i18n="f4-desc">Prevent flood attacks with configurable limits for consecutive identical messages and daily volume.</p>
+                <p data-i18n="f4-desc">Prevent flood attacks with configurable limits for consecutive identical messages
+                    and daily volume.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">⚖️</span>
                 <h3 data-i18n="f5-title">Gradual Enforcement</h3>
-                <p data-i18n="f5-desc">Warn, Delete, Remove, Block. You define the escalation path that fits your community culture.</p>
+                <p data-i18n="f5-desc">Warn, Delete, Remove, Block. You define the escalation path that fits your
+                    community culture.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">🌍</span>
                 <h3 data-i18n="f6-title">Bilingual Support</h3>
-                <p data-i18n="f6-desc">Full support for Hebrew and English out of the box, ensuring every user understands the rules.</p>
+                <p data-i18n="f6-desc">Full support for Hebrew and English out of the box, ensuring every user
+                    understands the rules.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">🤬</span>
                 <h3 data-i18n="f7-title">AI Offensive Language Detection</h3>
-                <p data-i18n="f7-desc">A two-layer filter: a local wordlist catches known violations, then a Groq/Llama LLM catches leet-speak, special-character substitutions, and creative bypass attempts. Prompt injection attempts are blocked before they reach the model. Zero false positives — fails silently on infra errors.</p>
+                <p data-i18n="f7-desc">A two-layer filter: a local wordlist catches known violations, then a Groq/Llama
+                    LLM catches leet-speak, special-character substitutions, and creative bypass attempts. Prompt
+                    injection attempts are blocked before they reach the model. Zero false positives — fails silently on
+                    infra errors.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">🕯️</span>
                 <h3 data-i18n="f8-title">Shabbat &amp; Holiday Mode</h3>
-                <p data-i18n="f8-desc">Locks the group before Shabbat and all major Jewish holidays, reopens after. Times are fetched weekly from HebCal API. The group re-locks if someone manually overrides it during Shabbat. If the API fails, a guided recovery flow lets the admin enter times manually.</p>
+                <p data-i18n="f8-desc">Locks the group before Shabbat and all major Jewish holidays, reopens after.
+                    Times are fetched weekly from HebCal API. The group re-locks if someone manually overrides it during
+                    Shabbat. If the API fails, a guided recovery flow lets the admin enter times manually.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">📝</span>
                 <h3 data-i18n="f9-title">Group Description Sync</h3>
-                <p data-i18n="f9-desc">The bot writes the active group rules directly into the WhatsApp group description — automatically on setup, and on demand with a single command. Always in sync with the configured policy.</p>
+                <p data-i18n="f9-desc">The bot writes the active group rules directly into the WhatsApp group
+                    description — automatically on setup, and on demand with a single command. Always in sync with the
+                    configured policy.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">👥</span>
                 <h3 data-i18n="f10-title">Management Groups</h3>
-                <p data-i18n="f10-desc">Link a dedicated WhatsApp group as the management hub. Multiple admins can run commands, receive violation reports, and undo enforcement actions — all without accessing the bot directly.</p>
+                <p data-i18n="f10-desc">Link a dedicated WhatsApp group as the management hub. Multiple admins can run
+                    commands, receive violation reports, and undo enforcement actions — all without accessing the bot
+                    directly.</p>
             </div>
         </div>
     </section>
@@ -104,31 +128,39 @@
     <!-- Stats Section -->
     <section class="container" style="padding: 2rem 0 6rem;">
         <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="stats-title">Live Stats</h2>
-        <p style="text-align: center; color: var(--text-dim); margin-bottom: 3rem;" data-i18n="stats-desc">Real data from the running production instance.</p>
-        <div class="feature-list" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-top: 0; gap: 1.5rem;">
+        <p style="text-align: center; color: var(--text-dim); margin-bottom: 3rem;" data-i18n="stats-desc">Real data
+            from the running production instance.</p>
+        <div class="feature-list"
+            style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-top: 0; gap: 1.5rem;">
             <div class="card glass detail-card" style="text-align: center; padding: 2.5rem 1rem;">
                 <div id="stat-groups" style="font-size: 3rem; font-weight: 800; color: var(--secondary);">—</div>
-                <div style="margin-top: 0.5rem; color: var(--text-dim);" data-i18n="stat-groups-label">Groups Managed</div>
+                <div style="margin-top: 0.5rem; color: var(--text-dim);" data-i18n="stat-groups-label">Groups Managed
+                </div>
             </div>
             <div class="card glass detail-card" style="text-align: center; padding: 2.5rem 1rem;">
                 <div id="stat-violations" style="font-size: 3rem; font-weight: 800; color: var(--secondary);">—</div>
-                <div style="margin-top: 0.5rem; color: var(--text-dim);" data-i18n="stat-violations-label">Violations Handled</div>
+                <div style="margin-top: 0.5rem; color: var(--text-dim);" data-i18n="stat-violations-label">Violations
+                    Handled</div>
             </div>
             <div class="card glass detail-card" style="text-align: center; padding: 2.5rem 1rem;">
                 <div id="stat-removals" style="font-size: 3rem; font-weight: 800; color: var(--secondary);">—</div>
-                <div style="margin-top: 0.5rem; color: var(--text-dim);" data-i18n="stat-removals-label">Users Removed</div>
+                <div style="margin-top: 0.5rem; color: var(--text-dim);" data-i18n="stat-removals-label">Users Removed
+                </div>
             </div>
             <div class="card glass detail-card" style="text-align: center; padding: 2.5rem 1rem;">
                 <div id="stat-uptime" style="font-size: 3rem; font-weight: 800; color: var(--secondary);">—</div>
-                <div style="margin-top: 0.5rem; color: var(--text-dim);" data-i18n="stat-uptime-label">Days Running</div>
+                <div style="margin-top: 0.5rem; color: var(--text-dim);" data-i18n="stat-uptime-label">Days Running
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Chat Simulation Engine -->
     <section class="container" style="padding: 4rem 0;">
-        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="demo-title">Experience GroupShield</h2>
-        <p style="text-align: center; color: var(--text-dim); margin-bottom: 3rem;" data-i18n="demo-desc">A visual simulation of how GroupShield transforms your community management.</p>
+        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="demo-title">Experience
+            GroupShield</h2>
+        <p style="text-align: center; color: var(--text-dim); margin-bottom: 3rem;" data-i18n="demo-desc">A visual
+            simulation of how GroupShield transforms your community management.</p>
 
         <div class="sim-grid" id="demo-chat-window">
             <div class="live-panel">
@@ -149,7 +181,8 @@
                             </div>
                         </div>
                         <button id="replay-setup-btn" data-i18n="btn-replay-setup"
-                            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-main); padding: 0.4rem 0.8rem; border-radius: 20px; cursor: pointer; font-size: 0.75rem; transition: background 0.2s, transform 0.2s; font-weight: 600;">↻ שחזר</button>
+                            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-main); padding: 0.4rem 0.8rem; border-radius: 20px; cursor: pointer; font-size: 0.75rem; transition: background 0.2s, transform 0.2s; font-weight: 600;">↻
+                            שחזר</button>
                     </div>
                     <div class="chat-messages" id="setup-container"></div>
                 </div>
@@ -164,12 +197,15 @@
                                 style="background: var(--secondary); width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#000; font-weight:800;">
                                 ש</div>
                             <div>
-                                <div style="font-weight: 600; font-size: 1.05rem;" id="demo-group-name" data-i18n="sim-g-name">שבת שלום</div>
-                                <div style="font-size: 0.75rem; color: var(--text-dim);" data-i18n="sim-g-members">243 חברים</div>
+                                <div style="font-weight: 600; font-size: 1.05rem;" id="demo-group-name"
+                                    data-i18n="sim-g-name">שבת שלום</div>
+                                <div style="font-size: 0.75rem; color: var(--text-dim);" data-i18n="sim-g-members">243
+                                    חברים</div>
                             </div>
                         </div>
                         <button id="replay-group-btn" data-i18n="btn-replay-group"
-                            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-main); padding: 0.4rem 0.8rem; border-radius: 20px; cursor: pointer; font-size: 0.75rem; transition: background 0.2s, transform 0.2s; font-weight: 600;">↻ שחזר שוב</button>
+                            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-main); padding: 0.4rem 0.8rem; border-radius: 20px; cursor: pointer; font-size: 0.75rem; transition: background 0.2s, transform 0.2s; font-weight: 600;">↻
+                            שחזר שוב</button>
                     </div>
                     <div class="chat-messages" id="group-container"></div>
                 </div>
@@ -184,8 +220,10 @@
                                 style="background: #10b981; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#000; font-weight:800;">
                                 ה</div>
                             <div>
-                                <div style="font-weight: 600; font-size: 1.05rem;" data-i18n="sim-m-name">הנהלה - שבת שלום</div>
-                                <div style="font-size: 0.75rem; color: var(--text-dim);" data-i18n="sim-m-members">3 מנהלים</div>
+                                <div style="font-weight: 600; font-size: 1.05rem;" data-i18n="sim-m-name">הנהלה - שבת
+                                    שלום</div>
+                                <div style="font-size: 0.75rem; color: var(--text-dim);" data-i18n="sim-m-members">3
+                                    מנהלים</div>
                             </div>
                         </div>
                     </div>
@@ -219,33 +257,38 @@
 
     <!-- Logic Engine & Footer -->
     <section class="container" style="padding: 4rem 0 0;">
-        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="logic-title">The Logic Engine</h2>
+        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="logic-title">The Logic Engine
+        </h2>
         <div class="sim-container glass" style="padding: 3rem 1rem;">
             <div class="pipeline-track" id="pipeline-simulator">
                 <div class="pipeline-node glass" id="node-in">
                     <span data-i18n="l1-title">📥 Message</span>
-                    <p class="node-desc" data-i18n="l1-desc">Incoming message is captured directly from the managed group.</p>
+                    <p class="node-desc" data-i18n="l1-desc">Incoming message is captured directly from the managed
+                        group.</p>
                 </div>
                 <div class="pipeline-connector">
                     <div class="pipeline-pulse"></div>
                 </div>
                 <div class="pipeline-node glass" id="node-rule">
                     <span data-i18n="l2-title">🧠 Rule Engine</span>
-                    <p class="node-desc" data-i18n="l2-desc">Cross-references content against regex logic and configured spam limits.</p>
+                    <p class="node-desc" data-i18n="l2-desc">Cross-references content against regex logic and configured
+                        spam limits.</p>
                 </div>
                 <div class="pipeline-connector">
                     <div class="pipeline-pulse"></div>
                 </div>
                 <div class="pipeline-node glass" id="node-action">
                     <span data-i18n="l3-title">⚖️ Action</span>
-                    <p class="node-desc" data-i18n="l3-desc">Executes strict enforcement: deletes violation, warns, blocks or removes.</p>
+                    <p class="node-desc" data-i18n="l3-desc">Executes strict enforcement: deletes violation, warns,
+                        blocks or removes.</p>
                 </div>
                 <div class="pipeline-connector">
                     <div class="pipeline-pulse"></div>
                 </div>
                 <div class="pipeline-node glass" id="node-report">
                     <span data-i18n="l4-title">📣 Report</span>
-                    <p class="node-desc" data-i18n="l4-desc">Delivers transparent logs to the admin group and a private DM to the user.</p>
+                    <p class="node-desc" data-i18n="l4-desc">Delivers transparent logs to the admin group and a private
+                        DM to the user.</p>
                 </div>
             </div>
         </div>
@@ -253,123 +296,216 @@
 
     <!-- Detection Flow Diagram -->
     <section id="detection-flow" class="container" style="padding: 8rem 0 4rem;">
-        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="flow-title">How We Catch the Uncatchable</h2>
-        <p style="text-align: center; color: var(--text-dim); margin-bottom: 3rem;" data-i18n="flow-desc">A real-time trace of a message engineered to slip through every filter.</p>
+        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="flow-title">How We Catch the
+            Uncatchable</h2>
+        <p style="text-align: center; color: var(--text-dim); margin-bottom: 3rem;" data-i18n="flow-desc">A real-time
+            trace of a message engineered to slip through every filter.</p>
 
-        <div class="sim-container glass" style="padding: 2.5rem 2rem; max-width: 780px; margin: 0 auto; position: relative;">
+        <div class="sim-container glass"
+            style="padding: 2.5rem 2rem; max-width: 780px; margin: 0 auto; position: relative;">
 
             <!-- Incoming message bubble -->
             <div style="text-align: center; margin-bottom: 2.5rem;">
-                <div style="display: inline-block; background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); border-radius: 14px; padding: 0.9rem 2rem;">
-                    <div style="font-size: 1.6rem; font-weight: 700; direction: rtl; letter-spacing: 2px; color: #fff;" dir="rtl">"יא ג'חש"</div>
+                <div
+                    style="display: inline-block; background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); border-radius: 14px; padding: 0.9rem 2rem;">
+                    <div style="font-size: 1.6rem; font-weight: 700; direction: rtl; letter-spacing: 2px; color: #fff;"
+                        dir="rtl">"יא ג'חש"</div>
                 </div>
-                <div style="color: var(--text-dim); font-size: 0.82rem; margin-top: 0.6rem;" data-i18n="flow-msg-label">Arabic-origin slur — not in the word list, no spaces or substitutions</div>
+                <div style="color: var(--text-dim); font-size: 0.82rem; margin-top: 0.6rem;" data-i18n="flow-msg-label">
+                    Arabic-origin slur — not in the word list, no spaces or substitutions</div>
             </div>
 
             <!-- Flow Steps -->
             <div id="flow-steps" style="display: flex; flex-direction: column; gap: 0;">
 
                 <!-- Step 1: Rule Engine -->
-                <div class="flow-step" id="fstep-1" style="opacity:0; transform:translateY(16px); transition: opacity 0.4s ease, transform 0.4s ease;">
+                <div class="flow-step" id="fstep-1"
+                    style="opacity:0; transform:translateY(16px); transition: opacity 0.4s ease, transform 0.4s ease;">
                     <div style="display:flex; align-items:stretch; gap: 1rem;">
-                        <div style="display:flex; flex-direction:column; align-items:center; width:2.5rem; flex-shrink:0;">
-                            <div style="width:2.2rem; height:2.2rem; border-radius:50%; background:rgba(239,68,68,0.15); border:2px solid #ef4444; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; color:#ef4444;">1</div>
-                            <div style="flex:1; width:2px; background:linear-gradient(to bottom, rgba(239,68,68,0.4), rgba(255,255,255,0.08)); margin-top:4px;"></div>
-                        </div>
-                        <div class="card glass" style="flex:1; padding:1rem 1.2rem; margin-bottom:0.8rem; border-left: 3px solid #ef4444;">
-                            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
-                                <span style="font-weight:700; font-size:1rem;">📚 <span data-i18n="flow-s1-title">Word List + Smart Match</span></span>
-                                <span style="background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#ef4444; font-size:0.72rem; font-weight:700; padding:0.2rem 0.6rem; border-radius:20px; letter-spacing:1px;" data-i18n="flow-badge-miss">MISS</span>
+                        <div
+                            style="display:flex; flex-direction:column; align-items:center; width:2.5rem; flex-shrink:0;">
+                            <div
+                                style="width:2.2rem; height:2.2rem; border-radius:50%; background:rgba(239,68,68,0.15); border:2px solid #ef4444; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; color:#ef4444;">
+                                1</div>
+                            <div
+                                style="flex:1; width:2px; background:linear-gradient(to bottom, rgba(239,68,68,0.4), rgba(255,255,255,0.08)); margin-top:4px;">
                             </div>
-                            <p style="color:var(--text-dim); font-size:0.85rem; margin-top:0.5rem; line-height:1.5;" data-i18n="flow-s1-desc">The forbidden-word list is checked with normalization, homoglyphs, morphological variants, and fuzzy matching. "ג'חש" is not in the list and no known variant matches it.</p>
+                        </div>
+                        <div class="card glass"
+                            style="flex:1; padding:1rem 1.2rem; margin-bottom:0.8rem; border-left: 3px solid #ef4444;">
+                            <div
+                                style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+                                <span style="font-weight:700; font-size:1rem;">📚 <span data-i18n="flow-s1-title">Word
+                                        List + Smart Match</span></span>
+                                <span
+                                    style="background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#ef4444; font-size:0.72rem; font-weight:700; padding:0.2rem 0.6rem; border-radius:20px; letter-spacing:1px;"
+                                    data-i18n="flow-badge-miss">MISS</span>
+                            </div>
+                            <p style="color:var(--text-dim); font-size:0.85rem; margin-top:0.5rem; line-height:1.5;"
+                                data-i18n="flow-s1-desc">The forbidden-word list is checked with normalization,
+                                homoglyphs, morphological variants, and fuzzy matching. "ג'חש" is not in the list and no
+                                known variant matches it.</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Step 2: Cosine Similarity -->
-                <div class="flow-step" id="fstep-2" style="opacity:0; transform:translateY(16px); transition: opacity 0.4s ease, transform 0.4s ease;">
+                <div class="flow-step" id="fstep-2"
+                    style="opacity:0; transform:translateY(16px); transition: opacity 0.4s ease, transform 0.4s ease;">
                     <div style="display:flex; align-items:stretch; gap: 1rem;">
-                        <div style="display:flex; flex-direction:column; align-items:center; width:2.5rem; flex-shrink:0;">
-                            <div style="width:2.2rem; height:2.2rem; border-radius:50%; background:rgba(239,68,68,0.15); border:2px solid #ef4444; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; color:#ef4444;">2</div>
-                            <div style="flex:1; width:2px; background:linear-gradient(to bottom, rgba(239,68,68,0.4), rgba(255,255,255,0.08)); margin-top:4px;"></div>
-                        </div>
-                        <div class="card glass" style="flex:1; padding:1rem 1.2rem; margin-bottom:0.8rem; border-left: 3px solid #ef4444;">
-                            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
-                                <span style="font-weight:700; font-size:1rem;">📐 <span data-i18n="flow-s2-title">Cosine Similarity</span></span>
-                                <span style="background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#ef4444; font-size:0.72rem; font-weight:700; padding:0.2rem 0.6rem; border-radius:20px; letter-spacing:1px;" data-i18n="flow-badge-miss">MISS</span>
+                        <div
+                            style="display:flex; flex-direction:column; align-items:center; width:2.5rem; flex-shrink:0;">
+                            <div
+                                style="width:2.2rem; height:2.2rem; border-radius:50%; background:rgba(239,68,68,0.15); border:2px solid #ef4444; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; color:#ef4444;">
+                                2</div>
+                            <div
+                                style="flex:1; width:2px; background:linear-gradient(to bottom, rgba(239,68,68,0.4), rgba(255,255,255,0.08)); margin-top:4px;">
                             </div>
-                            <p style="color:var(--text-dim); font-size:0.85rem; margin-top:0.5rem; line-height:1.5;" data-i18n="flow-s2-desc">The message is converted to a bigram vector and compared against all words in the list. Best score: 0.09 — well below the 0.65 suspicious threshold. No match.</p>
+                        </div>
+                        <div class="card glass"
+                            style="flex:1; padding:1rem 1.2rem; margin-bottom:0.8rem; border-left: 3px solid #ef4444;">
+                            <div
+                                style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+                                <span style="font-weight:700; font-size:1rem;">📐 <span data-i18n="flow-s2-title">Cosine
+                                        Similarity</span></span>
+                                <span
+                                    style="background:rgba(239,68,68,0.15); border:1px solid #ef4444; color:#ef4444; font-size:0.72rem; font-weight:700; padding:0.2rem 0.6rem; border-radius:20px; letter-spacing:1px;"
+                                    data-i18n="flow-badge-miss">MISS</span>
+                            </div>
+                            <p style="color:var(--text-dim); font-size:0.85rem; margin-top:0.5rem; line-height:1.5;"
+                                data-i18n="flow-s2-desc">The message is converted to a bigram vector and compared
+                                against all words in the list. Best score: 0.09 — well below the 0.65 suspicious
+                                threshold. No match.</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Step 3: Suspicion Score -->
-                <div class="flow-step" id="fstep-3" style="opacity:0; transform:translateY(16px); transition: opacity 0.4s ease, transform 0.4s ease;">
+                <div class="flow-step" id="fstep-3"
+                    style="opacity:0; transform:translateY(16px); transition: opacity 0.4s ease, transform 0.4s ease;">
                     <div style="display:flex; align-items:stretch; gap: 1rem;">
-                        <div style="display:flex; flex-direction:column; align-items:center; width:2.5rem; flex-shrink:0;">
-                            <div style="width:2.2rem; height:2.2rem; border-radius:50%; background:rgba(245,158,11,0.15); border:2px solid #f59e0b; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; color:#f59e0b;">3</div>
-                            <div style="flex:1; width:2px; background:linear-gradient(to bottom, rgba(245,158,11,0.5), rgba(168,85,247,0.3)); margin-top:4px;"></div>
-                        </div>
-                        <div class="card glass" style="flex:1; padding:1rem 1.2rem; margin-bottom:0.8rem; border-left: 3px solid #f59e0b;">
-                            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
-                                <span style="font-weight:700; font-size:1rem;">⚡ <span data-i18n="flow-s3-title">Suspicion Score</span></span>
-                                <span style="background:rgba(245,158,11,0.15); border:1px solid #f59e0b; color:#f59e0b; font-size:0.72rem; font-weight:700; padding:0.2rem 0.6rem; border-radius:20px; letter-spacing:1px;" data-i18n="flow-badge-hit">HIT →</span>
+                        <div
+                            style="display:flex; flex-direction:column; align-items:center; width:2.5rem; flex-shrink:0;">
+                            <div
+                                style="width:2.2rem; height:2.2rem; border-radius:50%; background:rgba(245,158,11,0.15); border:2px solid #f59e0b; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; color:#f59e0b;">
+                                3</div>
+                            <div
+                                style="flex:1; width:2px; background:linear-gradient(to bottom, rgba(245,158,11,0.5), rgba(168,85,247,0.3)); margin-top:4px;">
                             </div>
-                            <p style="color:var(--text-dim); font-size:0.85rem; margin-top:0.5rem; line-height:1.5;" data-i18n="flow-s3-desc">The scorer checks 9 heuristic patterns. Pattern 7 fires: "יא" vocative prefix followed by an unknown word — a classic Arabic-origin insult structure. Message is routed to the AI layer.</p>
+                        </div>
+                        <div class="card glass"
+                            style="flex:1; padding:1rem 1.2rem; margin-bottom:0.8rem; border-left: 3px solid #f59e0b;">
+                            <div
+                                style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+                                <span style="font-weight:700; font-size:1rem;">⚡ <span
+                                        data-i18n="flow-s3-title">Suspicion Score</span></span>
+                                <span
+                                    style="background:rgba(245,158,11,0.15); border:1px solid #f59e0b; color:#f59e0b; font-size:0.72rem; font-weight:700; padding:0.2rem 0.6rem; border-radius:20px; letter-spacing:1px;"
+                                    data-i18n="flow-badge-hit">HIT →</span>
+                            </div>
+                            <p style="color:var(--text-dim); font-size:0.85rem; margin-top:0.5rem; line-height:1.5;"
+                                data-i18n="flow-s3-desc">The scorer checks 9 heuristic patterns. Pattern 7 fires: "יא"
+                                vocative prefix followed by an unknown word — a classic Arabic-origin insult structure.
+                                Message is routed to the AI layer.</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Step 4: LLM -->
-                <div class="flow-step" id="fstep-4" style="opacity:0; transform:translateY(16px); transition: opacity 0.4s ease, transform 0.4s ease;">
+                <div class="flow-step" id="fstep-4"
+                    style="opacity:0; transform:translateY(16px); transition: opacity 0.4s ease, transform 0.4s ease;">
                     <div style="display:flex; align-items:stretch; gap: 1rem;">
-                        <div style="display:flex; flex-direction:column; align-items:center; width:2.5rem; flex-shrink:0;">
-                            <div style="width:2.2rem; height:2.2rem; border-radius:50%; background:rgba(168,85,247,0.15); border:2px solid #a855f7; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; color:#a855f7;">4</div>
-                            <div style="flex:1; width:2px; background:linear-gradient(to bottom, rgba(168,85,247,0.5), rgba(0,229,255,0.3)); margin-top:4px;"></div>
-                        </div>
-                        <div class="card glass" style="flex:1; padding:1rem 1.2rem; margin-bottom:0.8rem; border-left: 3px solid #a855f7;">
-                            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
-                                <span style="font-weight:700; font-size:1rem;">🤖 <span data-i18n="flow-s4-title">LLM — Groq / Llama 3.1</span></span>
-                                <span style="background:rgba(239,68,68,0.2); border:1px solid #ef4444; color:#ef4444; font-size:0.72rem; font-weight:700; padding:0.2rem 0.6rem; border-radius:20px; letter-spacing:1px;" data-i18n="flow-badge-violation">VIOLATION</span>
+                        <div
+                            style="display:flex; flex-direction:column; align-items:center; width:2.5rem; flex-shrink:0;">
+                            <div
+                                style="width:2.2rem; height:2.2rem; border-radius:50%; background:rgba(168,85,247,0.15); border:2px solid #a855f7; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; color:#a855f7;">
+                                4</div>
+                            <div
+                                style="flex:1; width:2px; background:linear-gradient(to bottom, rgba(168,85,247,0.5), rgba(0,229,255,0.3)); margin-top:4px;">
                             </div>
-                            <p style="color:var(--text-dim); font-size:0.85rem; margin-top:0.5rem; line-height:1.5;" data-i18n="flow-s4-desc">The model receives the message with a zero-tolerance system prompt. It returns <strong style="color:#ef4444;">YES</strong> in under 4 seconds — Arabic-origin insult confirmed. Result is cached to prevent duplicate API calls.</p>
+                        </div>
+                        <div class="card glass"
+                            style="flex:1; padding:1rem 1.2rem; margin-bottom:0.8rem; border-left: 3px solid #a855f7;">
+                            <div
+                                style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+                                <span style="font-weight:700; font-size:1rem;">🤖 <span data-i18n="flow-s4-title">LLM —
+                                        Groq / Llama 3.1</span></span>
+                                <span
+                                    style="background:rgba(239,68,68,0.2); border:1px solid #ef4444; color:#ef4444; font-size:0.72rem; font-weight:700; padding:0.2rem 0.6rem; border-radius:20px; letter-spacing:1px;"
+                                    data-i18n="flow-badge-violation">VIOLATION</span>
+                            </div>
+                            <p style="color:var(--text-dim); font-size:0.85rem; margin-top:0.5rem; line-height:1.5;"
+                                data-i18n="flow-s4-desc">The model receives the message with a zero-tolerance system
+                                prompt. It returns <strong style="color:#ef4444;">YES</strong> in under 4 seconds —
+                                Arabic-origin insult confirmed. Result is cached to prevent duplicate API calls.</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Step 5: Enforcement -->
-                <div class="flow-step" id="fstep-5" style="opacity:0; transform:translateY(16px); transition: opacity 0.4s ease, transform 0.4s ease;">
+                <div class="flow-step" id="fstep-5"
+                    style="opacity:0; transform:translateY(16px); transition: opacity 0.4s ease, transform 0.4s ease;">
                     <div style="display:flex; align-items:stretch; gap: 1rem;">
-                        <div style="display:flex; flex-direction:column; align-items:center; width:2.5rem; flex-shrink:0;">
-                            <div style="width:2.2rem; height:2.2rem; border-radius:50%; background:rgba(0,229,255,0.15); border:2px solid var(--secondary); display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; color:var(--secondary);">5</div>
-                            <div style="flex:1; width:2px; background:linear-gradient(to bottom, rgba(0,229,255,0.4), rgba(0,229,255,0.1)); margin-top:4px;"></div>
+                        <div
+                            style="display:flex; flex-direction:column; align-items:center; width:2.5rem; flex-shrink:0;">
+                            <div
+                                style="width:2.2rem; height:2.2rem; border-radius:50%; background:rgba(0,229,255,0.15); border:2px solid var(--secondary); display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; color:var(--secondary);">
+                                5</div>
+                            <div
+                                style="flex:1; width:2px; background:linear-gradient(to bottom, rgba(0,229,255,0.4), rgba(0,229,255,0.1)); margin-top:4px;">
+                            </div>
                         </div>
-                        <div class="card glass" style="flex:1; padding:1rem 1.2rem; margin-bottom:0.8rem; border-left: 3px solid var(--secondary);">
-                            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
-                                <span style="font-weight:700; font-size:1rem;">⚖️ <span data-i18n="flow-s5-title">Enforcement Pipeline</span></span>
+                        <div class="card glass"
+                            style="flex:1; padding:1rem 1.2rem; margin-bottom:0.8rem; border-left: 3px solid var(--secondary);">
+                            <div
+                                style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+                                <span style="font-weight:700; font-size:1rem;">⚖️ <span
+                                        data-i18n="flow-s5-title">Enforcement Pipeline</span></span>
                                 <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
-                                    <span style="background:rgba(0,229,255,0.1); border:1px solid var(--secondary); color:var(--secondary); font-size:0.7rem; padding:0.15rem 0.5rem; border-radius:20px;">🗑️ <span data-i18n="flow-badge-delete">Delete</span></span>
-                                    <span style="background:rgba(0,229,255,0.1); border:1px solid var(--secondary); color:var(--secondary); font-size:0.7rem; padding:0.15rem 0.5rem; border-radius:20px;">📩 <span data-i18n="flow-badge-warn">Warn</span></span>
-                                    <span style="background:rgba(0,229,255,0.1); border:1px solid var(--secondary); color:var(--secondary); font-size:0.7rem; padding:0.15rem 0.5rem; border-radius:20px;">🚫 <span data-i18n="flow-badge-remove">Remove</span></span>
+                                    <span
+                                        style="background:rgba(0,229,255,0.1); border:1px solid var(--secondary); color:var(--secondary); font-size:0.7rem; padding:0.15rem 0.5rem; border-radius:20px;">🗑️
+                                        <span data-i18n="flow-badge-delete">Delete</span></span>
+                                    <span
+                                        style="background:rgba(0,229,255,0.1); border:1px solid var(--secondary); color:var(--secondary); font-size:0.7rem; padding:0.15rem 0.5rem; border-radius:20px;">📩
+                                        <span data-i18n="flow-badge-warn">Warn</span></span>
+                                    <span
+                                        style="background:rgba(0,229,255,0.1); border:1px solid var(--secondary); color:var(--secondary); font-size:0.7rem; padding:0.15rem 0.5rem; border-radius:20px;">🚫
+                                        <span data-i18n="flow-badge-remove">Remove</span></span>
                                 </div>
                             </div>
-                            <p style="color:var(--text-dim); font-size:0.85rem; margin-top:0.5rem; line-height:1.5;" data-i18n="flow-s5-desc">The violation triggers the enforcement pipeline: message deleted from the group, private DM warning sent to the user, then removal. Each step is logged with a unique action ID for potential undo.</p>
+                            <p style="color:var(--text-dim); font-size:0.85rem; margin-top:0.5rem; line-height:1.5;"
+                                data-i18n="flow-s5-desc">The violation triggers the enforcement pipeline: message
+                                deleted from the group, private DM warning sent to the user, then removal. Each step is
+                                logged with a unique action ID for potential undo.</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Step 6: Developer Report -->
-                <div class="flow-step" id="fstep-6" style="opacity:0; transform:translateY(16px); transition: opacity 0.4s ease, transform 0.4s ease;">
+                <div class="flow-step" id="fstep-6"
+                    style="opacity:0; transform:translateY(16px); transition: opacity 0.4s ease, transform 0.4s ease;">
                     <div style="display:flex; align-items:stretch; gap: 1rem;">
-                        <div style="display:flex; flex-direction:column; align-items:center; width:2.5rem; flex-shrink:0;">
-                            <div style="width:2.2rem; height:2.2rem; border-radius:50%; background:rgba(0,229,255,0.15); border:2px solid var(--secondary); display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; color:var(--secondary);">6</div>
+                        <div
+                            style="display:flex; flex-direction:column; align-items:center; width:2.5rem; flex-shrink:0;">
+                            <div
+                                style="width:2.2rem; height:2.2rem; border-radius:50%; background:rgba(0,229,255,0.15); border:2px solid var(--secondary); display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; color:var(--secondary);">
+                                6</div>
                         </div>
-                        <div class="card glass" style="flex:1; padding:1rem 1.2rem; border-left: 3px solid var(--secondary);">
-                            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
-                                <span style="font-weight:700; font-size:1rem;">📬 <span data-i18n="flow-s6-title">Developer Report</span></span>
-                                <span style="background:rgba(0,229,255,0.1); border:1px solid var(--secondary); color:var(--secondary); font-size:0.72rem; font-weight:700; padding:0.2rem 0.6rem; border-radius:20px;" data-i18n="flow-badge-logged">LOGGED</span>
+                        <div class="card glass"
+                            style="flex:1; padding:1rem 1.2rem; border-left: 3px solid var(--secondary);">
+                            <div
+                                style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+                                <span style="font-weight:700; font-size:1rem;">📬 <span
+                                        data-i18n="flow-s6-title">Developer Report</span></span>
+                                <span
+                                    style="background:rgba(0,229,255,0.1); border:1px solid var(--secondary); color:var(--secondary); font-size:0.72rem; font-weight:700; padding:0.2rem 0.6rem; border-radius:20px;"
+                                    data-i18n="flow-badge-logged">LOGGED</span>
                             </div>
-                            <p style="color:var(--text-dim); font-size:0.85rem; margin-top:0.5rem; line-height:1.5;" data-i18n="flow-s6-desc">The full enforcement report is sent to the management group. The LLM catch is flagged — the developer reviews the pattern and decides whether to add "ג'חש" to the permanent word list so future instances are caught instantly, without needing the AI.</p>
+                            <p style="color:var(--text-dim); font-size:0.85rem; margin-top:0.5rem; line-height:1.5;"
+                                data-i18n="flow-s6-desc">The full enforcement report is sent to the management group.
+                                The LLM catch is flagged — the developer reviews the pattern and decides whether to add
+                                "ג'חש" to the permanent word list so future instances are caught instantly, without
+                                needing the AI.</p>
                         </div>
                     </div>
                 </div>
@@ -378,13 +514,15 @@
 
             <!-- Replay button -->
             <div style="text-align:center; margin-top:2rem;">
-                <button id="flow-replay-btn" onclick="replayDetectionFlow()" style="background: rgba(0,229,255,0.1); border: 1px solid var(--secondary); color: var(--secondary); padding: 0.6rem 1.8rem; border-radius: 24px; cursor: pointer; font-weight: 700; font-size: 0.9rem; transition: background 0.2s;" data-i18n="flow-replay-btn">▶ Trace the message</button>
+                <button id="flow-replay-btn" onclick="replayDetectionFlow()"
+                    style="background: rgba(0,229,255,0.1); border: 1px solid var(--secondary); color: var(--secondary); padding: 0.6rem 1.8rem; border-radius: 24px; cursor: pointer; font-weight: 700; font-size: 0.9rem; transition: background 0.2s;"
+                    data-i18n="flow-replay-btn">▶ Trace the message</button>
             </div>
         </div>
 
         <script>
             function replayDetectionFlow() {
-                const steps = [1,2,3,4,5,6];
+                const steps = [1, 2, 3, 4, 5, 6];
                 steps.forEach(n => {
                     const el = document.getElementById('fstep-' + n);
                     if (el) { el.style.opacity = '0'; el.style.transform = 'translateY(16px)'; }
@@ -397,7 +535,7 @@
                 });
             }
             // Auto-play on first view using IntersectionObserver
-            (function() {
+            (function () {
                 let played = false;
                 const section = document.getElementById('detection-flow');
                 if (!section) return;
@@ -414,56 +552,71 @@
 
     <!-- Technical Specs -->
     <section id="tech-stack" class="container" style="padding: 8rem 0 8rem;">
-        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="tech-title">Architecture & Tech Stack</h2>
-        <p style="text-align: center; color: var(--text-dim); margin-bottom: 4rem;" data-i18n="tech-desc">Built for high availability, massive scale, and zero-maintenance.</p>
+        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="tech-title">Architecture &
+            Tech Stack</h2>
+        <p style="text-align: center; color: var(--text-dim); margin-bottom: 4rem;" data-i18n="tech-desc">Built for high
+            availability, massive scale, and zero-maintenance.</p>
 
         <div class="feature-list" style="margin-top: 0;">
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">⚙️</span>
                 <h3 data-i18n="t1-title">Node.js & Puppeteer</h3>
-                <p data-i18n="t1-desc">Reliable WhatsApp Web automation utilizing persistent sessions and a self-healing crash recovery protocol.</p>
+                <p data-i18n="t1-desc">Reliable WhatsApp Web automation utilizing persistent sessions and a self-healing
+                    crash recovery protocol.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">🗄️</span>
                 <h3 data-i18n="t2-title">SQLite Multitenant</h3>
-                <p data-i18n="t2-desc">Local persistent database structured to handle configurations and warnings for thousands of groups efficiently.</p>
+                <p data-i18n="t2-desc">Local persistent database structured to handle configurations and warnings for
+                    thousands of groups efficiently.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">⚡</span>
                 <h3 data-i18n="t3-title">Strict Event Queue</h3>
-                <p data-i18n="t3-desc">Rate-limited message processing pipeline that prevents connection bans and ensures deterministic rule evaluation.</p>
+                <p data-i18n="t3-desc">Rate-limited message processing pipeline that prevents connection bans and
+                    ensures deterministic rule evaluation.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">🐳</span>
                 <h3 data-i18n="t4-title">Dockerized Architecture</h3>
-                <p data-i18n="t4-desc">Containerized setup for effortless deployment across any cloud provider with zero dependency conflicts.</p>
+                <p data-i18n="t4-desc">Containerized setup for effortless deployment across any cloud provider with zero
+                    dependency conflicts.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">🩹</span>
                 <h3 data-i18n="t5-title">Self-Healing Puppeteer</h3>
-                <p data-i18n="t5-desc">Advanced crash-recovery system that automatically restores the WhatsApp connection if the browser unexpectedly drops.</p>
+                <p data-i18n="t5-desc">Advanced crash-recovery system that automatically restores the WhatsApp
+                    connection if the browser unexpectedly drops.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">💻</span>
                 <h3 data-i18n="t6-title">No-Code Management</h3>
-                <p data-i18n="t6-desc">Configure complex rules, schedules, and immunity groups intuitively inside WhatsApp. No dashboard required.</p>
+                <p data-i18n="t6-desc">Configure complex rules, schedules, and immunity groups intuitively inside
+                    WhatsApp. No dashboard required.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">🧠</span>
                 <h3 data-i18n="t7-title">Groq API & Llama 3.1</h3>
-                <p data-i18n="t7-desc">The AI moderation layer runs Llama-3.1-8b-instant via Groq with a 4-second timeout and a monthly usage cap. A suspicion scorer pre-filters messages before any API call. Prompt injection attempts — in Hebrew or English — are blocked instantly without involving the LLM at all. Fails silently on infra errors: zero false positives.</p>
+                <p data-i18n="t7-desc">The AI moderation layer runs Llama-3.1-8b-instant via Groq with a 4-second
+                    timeout and a monthly usage cap. A suspicion scorer pre-filters messages before any API call. Prompt
+                    injection attempts — in Hebrew or English — are blocked instantly without involving the LLM at all.
+                    Fails silently on infra errors: zero false positives.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">📅</span>
                 <h3 data-i18n="t8-title">HebCal API & Shabbat Scheduler</h3>
-                <p data-i18n="t8-desc">Every Thursday a cron job fetches candle-lighting times (Jerusalem) and Havdalah times (Netanya) from the HebCal API. The bot locks groups 5 minutes before entry and unlocks 5 minutes after exit, re-locking on any manual override. If the fetch fails, a guided recovery flow lets the admin enter times manually.</p>
+                <p data-i18n="t8-desc">Every Thursday a cron job fetches candle-lighting times (Jerusalem) and Havdalah
+                    times (Netanya) from the HebCal API. The bot locks groups 5 minutes before entry and unlocks 5
+                    minutes after exit, re-locking on any manual override. If the fetch fails, a guided recovery flow
+                    lets the admin enter times manually.</p>
             </div>
         </div>
     </section>
 
     <!-- Architecture Diagram -->
     <section class="container" style="padding: 2rem 0 6rem;">
-        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="diagram-title">System Architecture Diagram</h2>
+        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="diagram-title">System
+            Architecture Diagram</h2>
         <div class="sim-container glass" style="padding: 2rem; overflow-x: auto; direction: ltr;">
             <pre class="mermaid" style="display: flex; justify-content: center;">
 graph TD
@@ -504,100 +657,143 @@ graph TD
 
     <!-- Deployment Stack -->
     <section class="container" style="padding: 2rem 0 8rem;">
-        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="deploy-title">Deployment Stack</h2>
-        <p style="text-align: center; color: var(--text-dim); margin-bottom: 4rem;" data-i18n="deploy-desc">The live production environment and orchestration pipeline.</p>
+        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="deploy-title">Deployment
+            Stack</h2>
+        <p style="text-align: center; color: var(--text-dim); margin-bottom: 4rem;" data-i18n="deploy-desc">The live
+            production environment and orchestration pipeline.</p>
         <div class="feature-list" style="margin-top: 0; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">🖥️</span>
                 <h3 data-i18n="d1-title">VPS Hosting</h3>
-                <p data-i18n="d1-desc">Deployed on a dedicated Linux VPS ensuring 24/7 uptime and stable network resources for Puppeteer.</p>
+                <p data-i18n="d1-desc">Deployed on a dedicated Linux VPS ensuring 24/7 uptime and stable network
+                    resources for Puppeteer.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">🔃</span>
                 <h3 data-i18n="d2-title">PM2 Process Manager</h3>
-                <p data-i18n="d2-desc">Daemonized via PM2 for background execution, automatic crash-restarts, and active log monitoring.</p>
+                <p data-i18n="d2-desc">Daemonized via PM2 for background execution, automatic crash-restarts, and active
+                    log monitoring.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">🚀</span>
                 <h3 data-i18n="d3-title">CI/CD Pipeline</h3>
-                <p data-i18n="d3-desc">Version-controlled deployments that seamlessly pull GitHub updates and smoothly reload the bot instances.</p>
+                <p data-i18n="d3-desc">Version-controlled deployments that seamlessly pull GitHub updates and smoothly
+                    reload the bot instances.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">🔐</span>
                 <h3 data-i18n="d4-title">Environment Secrets</h3>
-                <p data-i18n="d4-desc">Sensitive config variables (admin numbers, tokens) managed via .env files and excluded from version control via .gitignore.</p>
+                <p data-i18n="d4-desc">Sensitive config variables (admin numbers, tokens) managed via .env files and
+                    excluded from version control via .gitignore.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">💾</span>
                 <h3 data-i18n="d5-title">Automated DB Backups</h3>
-                <p data-i18n="d5-desc">Daily snapshots of the SQLite database to a remote location, ensuring zero data loss even on full server failure.</p>
+                <p data-i18n="d5-desc">Daily snapshots of the SQLite database to a remote location, ensuring zero data
+                    loss even on full server failure.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">❤️</span>
                 <h3 data-i18n="d6-title">Health Check System</h3>
-                <p data-i18n="d6-desc">Active heartbeat monitoring that detects when the bot process goes offline and sends an immediate WhatsApp alert to the admin.</p>
+                <p data-i18n="d6-desc">Active heartbeat monitoring that detects when the bot process goes offline and
+                    sends an immediate WhatsApp alert to the admin.</p>
             </div>
         </div>
     </section>
 
     <!-- FAQ Section -->
     <section id="faq" class="container" style="padding: 4rem 0 8rem; max-width: 1000px; margin: 0 auto;">
-        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 3rem;" data-i18n="faq-title">Frequently Asked Questions</h2>
-        
+        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 3rem;" data-i18n="faq-title">Frequently Asked
+            Questions</h2>
+
         <div class="feature-list" style="margin-top: 0;">
             <div class="card glass detail-card" style="text-align: center;">
                 <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-1-q">Is my privacy protected?</h3>
-                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-1-a">Yes. GroupShield does not save your messages. Message contents are strictly evaluated in memory and discarded immediately unless a violation occurs (for reporting purposes only).</p>
-            </div>
-            
-            <div class="card glass detail-card" style="text-align: center;">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-2-q">Can I use it on multiple groups?</h3>
-                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-2-a">Absolutely. A single GroupShield instance can seamlessly manage thousands of groups, each with its own independent rule configuration.</p>
-            </div>
-            
-            <div class="card glass detail-card" style="text-align: center;">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-3-q">What happens if the bot crashes?</h3>
-                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-3-a">GroupShield is built with a self-healing architecture. It automatically detects connection drops and safely restarts the browser session without missing any backend data.</p>
+                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-1-a">Yes. GroupShield does not save
+                    your messages. Message contents are strictly evaluated in memory and discarded immediately unless a
+                    violation occurs (for reporting purposes only).</p>
             </div>
 
             <div class="card glass detail-card" style="text-align: center;">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-4-q">Does it read images or files?</h3>
-                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-4-a">No. GroupShield currently only processes text messages. You can optionally configure it to automatically block all non-text media if you wish.</p>
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-2-q">Can I use it on multiple
+                    groups?</h3>
+                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-2-a">Absolutely. A single
+                    GroupShield instance can seamlessly manage thousands of groups, each with its own independent rule
+                    configuration.</p>
             </div>
 
             <div class="card glass detail-card" style="text-align: center;">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-5-q">What's the maximum group size?</h3>
-                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-5-a">GroupShield works flawlessly with WhatsApp's maximum group size (1024 members) and handles high-volume message traffic effortlessly.</p>
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-3-q">What happens if the bot
+                    crashes?</h3>
+                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-3-a">GroupShield is built with a
+                    self-healing architecture. It automatically detects connection drops and safely restarts the browser
+                    session without missing any backend data.</p>
             </div>
 
             <div class="card glass detail-card" style="text-align: center;">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-6-q">Do I need technical knowledge?</h3>
-                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-6-a">Not at all. The entire setup process is done through an intuitive chat interface directly in WhatsApp.</p>
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-4-q">Does it read images or files?
+                </h3>
+                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-4-a">No. GroupShield currently only
+                    processes text messages. You can optionally configure it to automatically block all non-text media
+                    if you wish.</p>
             </div>
 
             <div class="card glass detail-card" style="text-align: center;">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-7-q">How does offensive language detection work?</h3>
-                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-7-a">It uses a two-layer approach. First, a local wordlist detects known offensive words instantly with no API call. Then, a suspicion scorer decides whether a message is worth escalating. Suspicious messages are passed to a Groq-hosted Llama 3.1 model that catches bypass attempts like letter substitutions (e.g. א replaced by @) and leet-speak. Prompt injection attempts are blocked before they reach the model.</p>
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-5-q">What's the maximum group size?
+                </h3>
+                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-5-a">GroupShield works flawlessly
+                    with WhatsApp's maximum group size (1024 members) and handles high-volume message traffic
+                    effortlessly.</p>
             </div>
 
             <div class="card glass detail-card" style="text-align: center;">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-8-q">Can I add or remove words from the offensive language list?</h3>
-                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-8-a">Yes. Admins can add custom forbidden phrases or mark specific words as allowed (overriding the default list) using simple commands directly in WhatsApp — no code changes needed.</p>
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-6-q">Do I need technical knowledge?
+                </h3>
+                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-6-a">Not at all. The entire setup
+                    process is done through an intuitive chat interface directly in WhatsApp.</p>
             </div>
 
             <div class="card glass detail-card" style="text-align: center;">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-9-q">Does the bot work during Shabbat?</h3>
-                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-9-a">Yes. GroupShield itself runs 24/7 on a VPS — Shabbat mode locks the WhatsApp group, not the bot. The bot stays active and re-locks the group automatically if an admin manually reopens it during Shabbat.</p>
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-7-q">How does offensive language
+                    detection work?</h3>
+                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-7-a">It uses a two-layer approach.
+                    First, a local wordlist detects known offensive words instantly with no API call. Then, a suspicion
+                    scorer decides whether a message is worth escalating. Suspicious messages are passed to a
+                    Groq-hosted Llama 3.1 model that catches bypass attempts like letter substitutions (e.g. א replaced
+                    by @) and leet-speak. Prompt injection attempts are blocked before they reach the model.</p>
             </div>
 
             <div class="card glass detail-card" style="text-align: center;">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-10-q">What happens when a user is warned?</h3>
-                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-10-a">Each violation increments the user's warning counter. If warnings are enabled, the bot sends a private DM to the user explaining the violation. Once the warning threshold is reached, the full enforcement pipeline kicks in: delete the message, remove the user, and send a detailed report to the management group.</p>
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-8-q">Can I add or remove words from
+                    the offensive language list?</h3>
+                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-8-a">Yes. Admins can add custom
+                    forbidden phrases or mark specific words as allowed (overriding the default list) using simple
+                    commands directly in WhatsApp — no code changes needed.</p>
             </div>
 
             <div class="card glass detail-card" style="text-align: center;">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-11-q">Can an admin undo a removal?</h3>
-                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-11-a">Yes. Every removal report contains a unique action ID. Admins can reply to the report with "undo" to reverse the action — the bot cancels the removal, resets the user's warnings, and logs the reversal.</p>
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-9-q">Does the bot work during
+                    Shabbat?</h3>
+                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-9-a">Yes. GroupShield itself runs
+                    24/7 on a VPS — Shabbat mode locks the WhatsApp group, not the bot. The bot stays active and
+                    re-locks the group automatically if an admin manually reopens it during Shabbat.</p>
+            </div>
+
+            <div class="card glass detail-card" style="text-align: center;">
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-10-q">What happens when a user is
+                    warned?</h3>
+                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-10-a">Each violation increments the
+                    user's warning counter. If warnings are enabled, the bot sends a private DM to the user explaining
+                    the violation. Once the warning threshold is reached, the full enforcement pipeline kicks in: delete
+                    the message, remove the user, and send a detailed report to the management group.</p>
+            </div>
+
+            <div class="card glass detail-card" style="text-align: center;">
+                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-11-q">Can an admin undo a removal?
+                </h3>
+                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-11-a">Yes. Every removal report
+                    contains a unique action ID. Admins can reply to the report with "undo" to reverse the action — the
+                    bot cancels the removal, resets the user's warnings, and logs the reversal.</p>
             </div>
         </div>
     </section>
@@ -605,9 +801,13 @@ graph TD
     <footer
         style="text-align: center; padding: 4rem; color: var(--text-dim); border-top: 1px solid var(--glass-border);">
         <p data-i18n="footer-text">© 2026 GroupShield</p>
-        <a href="https://www.linkedin.com/in/nir-dahan01/" target="_blank" style="color: inherit; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); padding: 0.5rem 1.2rem; border-radius: 20px; text-decoration: none; font-size: 0.95rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 1.5rem; transition: all 0.3s ease; font-weight: 500;" onmouseover="this.style.background='rgba(10,102,194,0.2)'; this.style.borderColor='rgba(10,102,194,0.5)'; this.style.color='#60a5fa'" onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='inherit'">
+        <a href="https://www.linkedin.com/in/nir-dahan01/" target="_blank"
+            style="color: inherit; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); padding: 0.5rem 1.2rem; border-radius: 20px; text-decoration: none; font-size: 0.95rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 1.5rem; transition: all 0.3s ease; font-weight: 500;"
+            onmouseover="this.style.background='rgba(10,102,194,0.2)'; this.style.borderColor='rgba(10,102,194,0.5)'; this.style.color='#60a5fa'"
+            onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='inherit'">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"/>
+                <path
+                    d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z" />
             </svg>
             <span data-i18n="footer-linkedin">Nir Dahan</span>
         </a>
@@ -701,7 +901,7 @@ graph TD
                 this.isReplaying = true;
                 const currentPlayId = Symbol();
                 this._playId = currentPlayId;
-                
+
                 this.container.innerHTML = '';
 
                 // Add initial date badge
@@ -892,7 +1092,7 @@ graph TD
         });
 
         let currentLang = 'he'; // Default
-        
+
         function applyTranslations() {
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
@@ -904,11 +1104,11 @@ graph TD
 
         function toggleLanguage() {
             currentLang = currentLang === 'he' ? 'en' : 'he';
-            
+
             // Update Toggle Button Content
             const btn = document.getElementById('lang-toggle');
             btn.innerHTML = currentLang === 'he' ? 'EN | 🌐' : 'עברית | 🌐';
-            
+
             // Layout & text direction
             document.documentElement.lang = currentLang;
             document.documentElement.dir = currentLang === 'he' ? 'rtl' : 'ltr';
@@ -924,7 +1124,7 @@ graph TD
             }
 
             // Re-apply array logic
-            const useScripts = currentLang === 'he' 
+            const useScripts = currentLang === 'he'
                 ? { setup: setupScriptData, group: groupScriptData, mgmt: mgmtScriptData, dm: dmScriptData }
                 : window.appScriptsEn;
 
@@ -964,10 +1164,10 @@ graph TD
                 .then(r => r.json())
                 .then(data => {
                     const map = {
-                        'stat-groups':     data.groups,
+                        'stat-groups': data.groups,
                         'stat-violations': data.violations,
-                        'stat-removals':   data.removals,
-                        'stat-uptime':     data.uptime_days
+                        'stat-removals': data.removals,
+                        'stat-uptime': data.uptime_days
                     };
                     for (const [id, val] of Object.entries(map)) {
                         const el = document.getElementById(id);
