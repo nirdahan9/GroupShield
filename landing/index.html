@@ -15,8 +15,11 @@
         import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
         mermaid.initialize({ startOnLoad: true, theme: 'dark' });
     </script>
+    <script type="module">
+        import { inject } from 'https://cdn.jsdelivr.net/npm/@vercel/analytics@1/+esm';
+        inject();
+    </script>
     <script src="i18n.js"></script>
-    <script defer src="/_vercel/insights/script.js"></script>
 </head>
 
 <body>
@@ -964,8 +967,8 @@ graph TD
             { sender: 'bot', senderName: 'GroupShield', isOutgoing: false, text: "🔍 מחפש את הקבוצה...", typingDelay: 400, appearanceDelay: 500 },
             { sender: 'bot', senderName: 'GroupShield', isOutgoing: false, text: "✅ מצאתי קבוצה!\n\n📌 *שם:* שבת שלום\n👥 *משתתפים:* 243\n\nזו הקבוצה הנכונה?\n\n1️⃣ כן ✅\n2️⃣ לא, חפש שוב ❌", typingDelay: 800, appearanceDelay: 800 },
             { sender: 'user', isOutgoing: true, text: "1", appearanceDelay: 1000 },
-            { sender: 'bot', senderName: 'GroupShield', isOutgoing: false, text: "✅ מעולה! אני מנהל בקבוצה. נמשיך להגדרת החוקים.", typingDelay: 600, appearanceDelay: 800 },
-            { sender: 'bot', senderName: 'GroupShield', isOutgoing: false, text: "📏 *שלב 2: הגדרת חוקים*\n\nאיזה סוג חוקי תוכן תרצה?\n\n1️⃣ *הודעות מותרות בלבד* — רק הודעות ספציפיות מותרות\n2️⃣ *הודעות אסורות* — הודעות ספציפיות אסורות, השאר מותר\n3️⃣ *ללא חוקי תוכן* — ללא הגבלת תוכן", typingDelay: 1200, appearanceDelay: 800 },
+            { sender: 'bot', senderName: 'GroupShield', isOutgoing: false, text: "✅ מעולה! אני מנהל בקבוצה. נמשיך לה��דרת החוקים.", typingDelay: 600, appearanceDelay: 800 },
+            { sender: 'bot', senderName: 'GroupShield', isOutgoing: false, text: "📏 *שלב 2: הגדרת חוקים*\n\nאיזה סוג חוקי תוכן תרצה?\n\n1️⃣ *הודעות מותרות בלבד* — רק הודעות ספציפיות מותרות\n2️⃣ *הודעות אסורות* — הודעות ספציפיות אסו��ות, השאר מותר\n3️⃣ *ללא חוקי תוכן* — ללא הגבלת תוכן", typingDelay: 1200, appearanceDelay: 800 },
             { sender: 'user', isOutgoing: true, text: "1", appearanceDelay: 1000 },
             { sender: 'bot', senderName: 'GroupShield', isOutgoing: false, text: "🖼️ *חוק סוג הודעה*\n\nהאם לחסום הודעות שהן לא טקסט? (תמונה/וידאו/מסמך וכו׳)\n\n1️⃣ כן, לחסום\n2️⃣ לא, לאפשר (ברירת מחדל)", typingDelay: 800, appearanceDelay: 800 },
             { sender: 'user', isOutgoing: true, text: "1", appearanceDelay: 1000 },

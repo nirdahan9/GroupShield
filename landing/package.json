@@ -1,0 +1,17 @@
+{
+  "name": "groupshield-landing",
+  "version": "1.0.0",
+  "description": "GroupShield landing page with Vercel Web Analytics",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx serve .",
+    "preview": "npx serve ."
+  },
+  "dependencies": {
+    "@vercel/analytics": "^1.4.1"
+  },
+  "devDependencies": {
+    "serve": "^14.2.4"
+  }
+}
