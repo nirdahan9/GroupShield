@@ -515,7 +515,7 @@ body {
 .sim-grid {
     display: grid;
     gap: 2rem;
-    grid-template-columns: minmax(auto, 360px);
+    grid-template-columns: minmax(0, 360px);
     justify-content: center;
     margin-top: 2rem;
 }
@@ -678,6 +678,33 @@ html[dir="rtl"] .pipeline-pulse {
     background: linear-gradient(180deg, transparent, var(--primary), transparent);
     animation: pulse-vertical 2s infinite;
   }
+
+  /* 2. CTA buttons — 2-column grid + WhatsApp full width */
+  .cta > div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+  }
+  .cta .btn-whatsapp {
+    width: 100%;
+    text-align: center;
+    padding: 1rem 1.5rem;
+  }
+
+  /* 3. Stats cards — 2×2 grid on mobile */
+  .feature-list.stats-list > * {
+    flex: 0 1 calc(50% - 0.75rem);
+    min-width: 130px;
+  }
+
+  /* 4. Section headings — responsive font size */
+  section h2 { font-size: 1.8rem !important; }
+
+  /* 5. Hero padding reduction */
+  .hero { padding: 4rem 0 2rem !important; }
+
+  /* 7. Container padding on small screens */
+  .container { padding: 0 1rem; }
 }
 
 @keyframes pulse-vertical {
