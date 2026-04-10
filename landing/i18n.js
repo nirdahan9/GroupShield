@@ -1,6 +1,6 @@
 const translations = {
     en: {
-        "hero-desc": "Your WhatsApp group deserves a safe space. GroupShield automatically detects and removes offensive language — before it harms your community.",
+        "hero-desc": "Managing a WhatsApp group shouldn't be a constant battle. GroupShield enforces your rules for you — automatically.",
         "btn-start": "🚀 Try it yourself",
         "btn-features": "Discover Features",
         "btn-demo": "Experience GroupShield",
@@ -142,7 +142,7 @@ const translations = {
         "flow-replay-btn": "▶ Trace the message"
     },
     he: {
-        "hero-desc": "הקבוצה שלך ראויה לסביבה בטוחה. GroupShield מזהה ומסיר שפה פוגענית אוטומטית — לפני שהיא פוגעת בקהילה שלך.",
+        "hero-desc": "ניהול קבוצת ווטסאפ לא צריך להיות מלחמה. GroupShield אוכף את הכללים שלך בשבילך — אוטומטי לחלוטין.",
         "btn-start": "🚀 נסו בעצמכם",
         "btn-features": "גלה את הפיצ'רים",
         "btn-demo": "חווה את GroupShield",
