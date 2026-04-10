@@ -513,20 +513,14 @@ body {
 .sim-grid {
     display: grid;
     gap: 2rem;
-    grid-template-columns: minmax(auto, 380px);
+    grid-template-columns: minmax(auto, 360px);
     justify-content: center;
     margin-top: 2rem;
 }
 
 @media (min-width: 800px) {
     .sim-grid {
-        grid-template-columns: repeat(2, minmax(auto, 380px));
-    }
-}
-
-@media (min-width: 1600px) {
-    .sim-grid {
-        grid-template-columns: repeat(4, minmax(auto, 380px));
+        grid-template-columns: repeat(2, 360px);
     }
 }
 
