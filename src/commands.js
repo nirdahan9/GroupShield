@@ -10,6 +10,7 @@ const setupFlow = require('./setupFlow');
 const backup = require('./backup');
 const health = require('./health');
 const { getGroqStats } = require('./llm');
+const { sendReport } = require('./enforcement');
 
 /**
  * Parse and execute admin commands (from DM or management group)
@@ -713,15 +714,31 @@ async function buildFullGroupsStatus(lang) {
 async function stopEnforcement(client, senderJid, groupConfig, lang) {
     try {
         const mgmtGroupId = groupConfig.mgmtGroupId;
+        const stopMsg = t('stop_enforcement_done', lang, { groupName: groupConfig.groupName });
 
-        // Disable enforcement and cleanup DB config
+        // 1. Notify report target and developer BEFORE leaving groups
+        try {
+            await sendReport(client, groupConfig, stopMsg, lang);
+        } catch (e) {
+            logger.warn('Failed to send stop notification to report target', e.message);
+        }
+        try {
+            const devJid = config.getDeveloperJid();
+            if (devJid) {
+                await client.sendMessage(devJid, stopMsg, { linkPreview: false });
+            }
+        } catch (e) {
+            logger.warn('Failed to send stop notification to developer', e.message);
+        }
+
+        // 2. Disable enforcement and cleanup DB config
         await database.setGroupActive(groupConfig.groupId, false);
         await database.deleteGroup(groupConfig.groupId);
         // Always clear the owner's linked group and mark as stopped so no setup hint is sent
         await database.updateUserGroup(groupConfig.ownerJid, null);
         await database.updateUserSetupState(groupConfig.ownerJid, { step: 'stopped' });
 
-        // Leave managed group
+        // 3. Leave managed group
         try {
             const managedChat = await client.getChatById(groupConfig.groupId);
             await managedChat.leave();
@@ -729,7 +746,7 @@ async function stopEnforcement(client, senderJid, groupConfig, lang) {
             logger.warn(`Could not leave managed group ${groupConfig.groupId}`);
         }
 
-        // Leave management group only if no other active enforced groups still use it
+        // 4. Leave management group only if no other active enforced groups still use it
         if (mgmtGroupId) {
             const stillLinked = await database.getGroupsByMgmtGroup(mgmtGroupId);
             const stillUsedByOthers = stillLinked.some(g => g.groupId !== groupConfig.groupId);
@@ -747,7 +764,7 @@ async function stopEnforcement(client, senderJid, groupConfig, lang) {
         }
 
         logger.auditLog(senderJid || 'system_timeout', 'STOP_ENFORCEMENT', `Group: ${groupConfig.groupName}`, true);
-        return t('stop_enforcement_done', lang, { groupName: groupConfig.groupName });
+        return null; // Messages already sent above
     } catch (error) {
         logger.error('Failed to stop enforcement', error);
         return t('error_generic', lang, { error: error.message });
