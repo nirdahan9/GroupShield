@@ -682,3 +682,12 @@ html[dir="rtl"] .pipeline-pulse {
 @keyframes pulse-vertical {
   to { top: 100%; }
 }
+
+.section-subheading {
+  text-align: center;
+  font-size: 1.4rem;
+  color: var(--text-dim);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
