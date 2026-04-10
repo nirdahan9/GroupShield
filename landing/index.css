@@ -617,10 +617,15 @@ html[dir="rtl"] .pipeline-pulse {
 
 /* Detail Features */
 .feature-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 1.5rem;
   margin-top: 4rem;
+}
+
+.feature-list > * {
+  flex: 0 1 300px;
 }
 
 .detail-card {
