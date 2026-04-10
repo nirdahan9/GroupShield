@@ -86,6 +86,7 @@ spawn scp -o StrictHostKeyChecking=no \
   /Users/nirdahan/Documents/GroupShield/src/restartTracker.js \
   /Users/nirdahan/Documents/GroupShield/src/ruleEngine.js \
   /Users/nirdahan/Documents/GroupShield/src/setupFlow.js \
+  /Users/nirdahan/Documents/GroupShield/src/statsPublisher.js \
   /Users/nirdahan/Documents/GroupShield/src/utils.js \
   root@87.106.137.182:/root/groupshield-bot/src/
 expect {

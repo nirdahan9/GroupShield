@@ -248,15 +248,17 @@ async function generateLandingStats() {
         const body = JSON.stringify(stats);
         await new Promise((resolve, reject) => {
             const https = require('https');
-            const url = new URL(`${FIREBASE_DB_URL}/stats.json`);
+            const secret = process.env.FIREBASE_SECRET || '';
+            const path = secret ? `/stats.json?auth=${secret}` : '/stats.json';
             const req = https.request({
-                hostname: url.hostname,
-                path: url.pathname,
+                hostname: 'groupshield-default-rtdb.europe-west1.firebasedatabase.app',
+                path,
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
             }, res => {
                 res.resume();
-                res.on('end', resolve);
+                if (res.statusCode >= 200 && res.statusCode < 300) res.on('end', resolve);
+                else res.on('end', () => reject(new Error(`Firebase responded ${res.statusCode}`)));
             });
             req.on('error', reject);
             req.write(body);
