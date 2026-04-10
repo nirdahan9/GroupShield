@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GroupShield | Secure Your WhatsApp Groups</title>
+    <link rel="icon" type="image/png" href="favicon.png">
     <meta name="description"
         content="Generic WhatsApp Group Enforcement Bot - Enforce any rules on any group with ease.">
     <link rel="stylesheet" href="index.css">
@@ -71,53 +72,26 @@
                     community culture.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
-                <span class="icon">🚫</span>
-                <h3 data-i18n="f3-title">Content Filter</h3>
-                <p data-i18n="f3-desc">Block forbidden phrases or enforce "Allowed Only" lists. Supports exact matches
-                    and regex containment.</p>
-            </div>
-            <div class="card glass detail-card" style="text-align: center;">
-                <span class="icon">🔄</span>
-                <h3 data-i18n="f4-title">Anti-Spam</h3>
-                <p data-i18n="f4-desc">Prevent flood attacks with configurable limits for consecutive identical messages
-                    and daily volume.</p>
-            </div>
-            <div class="card glass detail-card" style="text-align: center;">
-                <span class="icon">⏰</span>
-                <h3 data-i18n="f2-title">Time Windows</h3>
-                <p data-i18n="f2-desc">Define precise hours when messages are allowed. Perfect for forum-style groups.
-                </p>
-            </div>
-            <div class="card glass detail-card" style="text-align: center;">
-                <span class="icon">🕯️</span>
-                <h3 data-i18n="f8-title">Shabbat &amp; Holiday Mode</h3>
-                <p data-i18n="f8-desc">The group locks automatically before Shabbat and every major Jewish holiday, and reopens when it's over — fully hands-free.</p>
-            </div>
-            <div class="card glass detail-card" style="text-align: center;">
-                <span class="icon">👥</span>
-                <h3 data-i18n="f10-title">Management Groups</h3>
-                <p data-i18n="f10-desc">Link a dedicated WhatsApp group as the management hub. Multiple admins can run
-                    commands, receive violation reports, and undo enforcement actions — all without accessing the bot
-                    directly.</p>
-            </div>
-            <div class="card glass detail-card" style="text-align: center;">
-                <span class="icon">🌍</span>
-                <h3 data-i18n="f6-title">Bilingual Support</h3>
-                <p data-i18n="f6-desc">Full support for Hebrew and English out of the box, ensuring every user
-                    understands the rules.</p>
-            </div>
-            <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">🤖</span>
                 <h3 data-i18n="f1-title">Interactive Setup</h3>
                 <p data-i18n="f1-desc">No complex dashboards. Configure rules, languages, and enforcement steps through
                     a natural DM conversation.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
-                <span class="icon">📝</span>
-                <h3 data-i18n="f9-title">Group Description Sync</h3>
-                <p data-i18n="f9-desc">The bot writes the active group rules directly into the WhatsApp group
-                    description — automatically on setup, and on demand with a single command. Always in sync with the
-                    configured policy.</p>
+                <span class="icon">🚫</span>
+                <h3 data-i18n="f3-title">Content Filter</h3>
+                <p data-i18n="f3-desc">Block forbidden phrases or enforce "Allowed Only" lists. Supports exact matches
+                    and regex containment.</p>
+            </div>
+            <div class="card glass detail-card" style="text-align: center;">
+                <span class="icon">⏰</span>
+                <h3 data-i18n="merged-time-shabbat-title">Active Hours & Shabbat Mode</h3>
+                <p data-i18n="merged-time-shabbat-desc">Define the hours your group is active. Combined with automatic Shabbat mode — the group locks before Shabbat and every Jewish holiday, and reopens automatically when they're over.</p>
+            </div>
+            <div class="card glass detail-card" style="text-align: center;">
+                <span class="icon">✨</span>
+                <h3 data-i18n="merged-extra-title">More Features</h3>
+                <p data-i18n="merged-extra-desc">Full Hebrew & English support, a dedicated management group for your admins, automatic group description sync, and a smart welcome message for new members.</p>
             </div>
         </div>
     </section>
@@ -648,47 +622,6 @@ graph TD
             </pre>
         </div>
 
-        <!-- Deployment Stack -->
-        <h3 class="section-subheading" style="margin: 5rem 0 1rem;" data-i18n="deploy-title">Deployment Stack</h3>
-        <p style="text-align: center; color: var(--text-dim); margin-bottom: 2.5rem;" data-i18n="deploy-desc">The live production environment and orchestration pipeline.</p>
-        <div class="feature-list" style="margin-top: 0; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
-            <div class="card glass detail-card" style="text-align: center;">
-                <span class="icon">🖥️</span>
-                <h3 data-i18n="d1-title">VPS Hosting</h3>
-                <p data-i18n="d1-desc">Deployed on a dedicated Linux VPS ensuring 24/7 uptime and stable network
-                    resources for Puppeteer.</p>
-            </div>
-            <div class="card glass detail-card" style="text-align: center;">
-                <span class="icon">🔃</span>
-                <h3 data-i18n="d2-title">PM2 Process Manager</h3>
-                <p data-i18n="d2-desc">Daemonized via PM2 for background execution, automatic crash-restarts, and active
-                    log monitoring.</p>
-            </div>
-            <div class="card glass detail-card" style="text-align: center;">
-                <span class="icon">🚀</span>
-                <h3 data-i18n="d3-title">CI/CD Pipeline</h3>
-                <p data-i18n="d3-desc">Version-controlled deployments that seamlessly pull GitHub updates and smoothly
-                    reload the bot instances.</p>
-            </div>
-            <div class="card glass detail-card" style="text-align: center;">
-                <span class="icon">🔐</span>
-                <h3 data-i18n="d4-title">Environment Secrets</h3>
-                <p data-i18n="d4-desc">Sensitive config variables (admin numbers, tokens) managed via .env files and
-                    excluded from version control via .gitignore.</p>
-            </div>
-            <div class="card glass detail-card" style="text-align: center;">
-                <span class="icon">💾</span>
-                <h3 data-i18n="d5-title">Automated DB Backups</h3>
-                <p data-i18n="d5-desc">Daily snapshots of the SQLite database to a remote location, ensuring zero data
-                    loss even on full server failure.</p>
-            </div>
-            <div class="card glass detail-card" style="text-align: center;">
-                <span class="icon">❤️</span>
-                <h3 data-i18n="d6-title">Health Check System</h3>
-                <p data-i18n="d6-desc">Active heartbeat monitoring that detects when the bot process goes offline and
-                    sends an immediate WhatsApp alert to the admin.</p>
-            </div>
-        </div>
     </section>
 
     <!-- FAQ Section -->

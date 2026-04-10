@@ -17,6 +17,7 @@ const { buildFullGroupsStatus } = require('./src/commands');
 const health = require('./src/health');
 const backup = require('./src/backup');
 const shabbat = require('./src/shabbat');
+const statsPublisher = require('./src/statsPublisher');
 
 const AUTH_DIR = path.join(__dirname, '.wwebjs_auth');
 const VERSION = config.get('bot.version', '1.0.0');
@@ -106,6 +107,7 @@ async function startBot() {
         // Initialize subsystems
         health.initialize(client);
         backup.initialize();
+        statsPublisher.start(database);
 
         // Load previously learned phrases from DB into the live curse/context lists
         require('./src/cursesList').initLearnedPhrases();
