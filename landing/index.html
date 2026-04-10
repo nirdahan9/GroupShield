@@ -27,12 +27,54 @@
 
 <body>
 
-    <nav style="position: fixed; top: 1.5rem; right: 2rem; z-index: 999;">
-        <button id="lang-toggle" onclick="toggleLanguage()"
-            style="background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); padding: 0.5rem 1rem; border-radius: 20px; color: white; cursor: pointer; font-family: var(--font-sans); font-weight: 600; backdrop-filter: blur(10px);">EN
-            | 🌐</button>
+    <nav class="navbar">
+        <div class="container navbar-inner">
+            <a href="#" class="nav-logo" onclick="window.scrollTo({top:0,behavior:'smooth'}); return false;">
+                <img src="hero.png" alt="GroupShield Logo">
+                <span>GroupShield</span>
+            </a>
+
+            <div class="nav-links">
+                <a href="#features" data-i18n="nav-features">פיצ'רים</a>
+                <a href="#demo-chat-window" data-i18n="nav-demo">דמו</a>
+                <a href="#faq" data-i18n="nav-faq">שאלות ותשובות</a>
+                <a href="#tech-stack" data-i18n="nav-tech-short">מאחורי הקלעים</a>
+            </div>
+
+            <div class="nav-actions">
+                <button id="lang-toggle" class="nav-lang-btn" onclick="toggleLanguage()">EN | 🌐</button>
+                <a href="https://wa.me/972559216919?text=%D7%94%D7%AA%D7%97%D7%9C" target="_blank"
+                    rel="noopener noreferrer" class="btn btn-whatsapp nav-cta" data-i18n="btn-start"
+                    onclick="if(window.va) window.va('try_bot_clicked');">🚀 נסו בעצמכם</a>
+            </div>
+
+            <button class="nav-hamburger" id="nav-hamburger" aria-label="תפריט" onclick="toggleMobileMenu()">☰</button>
+        </div>
+
+        <div class="nav-mobile-menu" id="nav-mobile-menu">
+            <a href="#features" data-i18n="nav-features" onclick="closeMobileMenu()">פיצ'רים</a>
+            <a href="#demo-chat-window" data-i18n="nav-demo" onclick="closeMobileMenu()">דמו</a>
+            <a href="#faq" data-i18n="nav-faq" onclick="closeMobileMenu()">שאלות ותשובות</a>
+            <a href="#tech-stack" data-i18n="nav-tech-short" onclick="closeMobileMenu()">מאחורי הקלעים</a>
+            <a href="https://wa.me/972559216919?text=%D7%94%D7%AA%D7%97%D7%9C" target="_blank"
+                rel="noopener noreferrer" class="btn btn-whatsapp" data-i18n="btn-start"
+                onclick="if(window.va) window.va('try_bot_clicked'); closeMobileMenu();">🚀 נסו בעצמכם</a>
+        </div>
     </nav>
-    <section class="hero" style="padding: 6rem 0 3rem; position: relative;">
+
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('nav-mobile-menu');
+            const btn = document.getElementById('nav-hamburger');
+            const isOpen = menu.classList.toggle('open');
+            btn.textContent = isOpen ? '✕' : '☰';
+        }
+        function closeMobileMenu() {
+            document.getElementById('nav-mobile-menu').classList.remove('open');
+            document.getElementById('nav-hamburger').textContent = '☰';
+        }
+    </script>
+    <section class="hero" style="padding: 7rem 0 3rem; position: relative;">
         <!-- Glowing Background Orbs -->
         <div class="container hero-content animate">
             <h1
