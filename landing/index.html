@@ -46,7 +46,6 @@
                 <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
                     <a href="#features" class="btn btn-primary" data-i18n="btn-features">Discover Features</a>
                     <a href="#demo-chat-window" class="btn btn-primary" data-i18n="btn-demo">Experience GroupShield</a>
-                    <a href="#tech-stack" class="btn btn-primary" data-i18n="nav-tech">Architecture</a>
                     <a href="#faq" class="btn btn-primary" data-i18n="nav-faq">FAQ</a>
                 </div>
             </div>
@@ -61,16 +60,15 @@
 
         <div class="feature-list">
             <div class="card glass detail-card" style="text-align: center;">
-                <span class="icon">🤖</span>
-                <h3 data-i18n="f1-title">Interactive Setup</h3>
-                <p data-i18n="f1-desc">No complex dashboards. Configure rules, languages, and enforcement steps through
-                    a natural DM conversation.</p>
+                <span class="icon">🤬</span>
+                <h3 data-i18n="f7-title">AI Offensive Language Detection</h3>
+                <p data-i18n="f7-desc">Smart two-layer detection catches offensive words even when users try to bypass filters with letter substitutions or creative misspellings. Zero false positives — the bot only acts when it's certain.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
-                <span class="icon">⏰</span>
-                <h3 data-i18n="f2-title">Time Windows</h3>
-                <p data-i18n="f2-desc">Define precise hours when messages are allowed. Perfect for forum-style groups.
-                </p>
+                <span class="icon">⚖️</span>
+                <h3 data-i18n="f5-title">Gradual Enforcement</h3>
+                <p data-i18n="f5-desc">Warn, Delete, Remove, Block. You define the escalation path that fits your
+                    community culture.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">🚫</span>
@@ -85,24 +83,10 @@
                     and daily volume.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
-                <span class="icon">⚖️</span>
-                <h3 data-i18n="f5-title">Gradual Enforcement</h3>
-                <p data-i18n="f5-desc">Warn, Delete, Remove, Block. You define the escalation path that fits your
-                    community culture.</p>
-            </div>
-            <div class="card glass detail-card" style="text-align: center;">
-                <span class="icon">🌍</span>
-                <h3 data-i18n="f6-title">Bilingual Support</h3>
-                <p data-i18n="f6-desc">Full support for Hebrew and English out of the box, ensuring every user
-                    understands the rules.</p>
-            </div>
-            <div class="card glass detail-card" style="text-align: center;">
-                <span class="icon">🤬</span>
-                <h3 data-i18n="f7-title">AI Offensive Language Detection</h3>
-                <p data-i18n="f7-desc">A two-layer filter: a local wordlist catches known violations, then a Groq/Llama
-                    LLM catches leet-speak, special-character substitutions, and creative bypass attempts. Prompt
-                    injection attempts are blocked before they reach the model. Zero false positives — fails silently on
-                    infra errors.</p>
+                <span class="icon">⏰</span>
+                <h3 data-i18n="f2-title">Time Windows</h3>
+                <p data-i18n="f2-desc">Define precise hours when messages are allowed. Perfect for forum-style groups.
+                </p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">🕯️</span>
@@ -112,18 +96,30 @@
                     Shabbat. If the API fails, a guided recovery flow lets the admin enter times manually.</p>
             </div>
             <div class="card glass detail-card" style="text-align: center;">
-                <span class="icon">📝</span>
-                <h3 data-i18n="f9-title">Group Description Sync</h3>
-                <p data-i18n="f9-desc">The bot writes the active group rules directly into the WhatsApp group
-                    description — automatically on setup, and on demand with a single command. Always in sync with the
-                    configured policy.</p>
-            </div>
-            <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">👥</span>
                 <h3 data-i18n="f10-title">Management Groups</h3>
                 <p data-i18n="f10-desc">Link a dedicated WhatsApp group as the management hub. Multiple admins can run
                     commands, receive violation reports, and undo enforcement actions — all without accessing the bot
                     directly.</p>
+            </div>
+            <div class="card glass detail-card" style="text-align: center;">
+                <span class="icon">🌍</span>
+                <h3 data-i18n="f6-title">Bilingual Support</h3>
+                <p data-i18n="f6-desc">Full support for Hebrew and English out of the box, ensuring every user
+                    understands the rules.</p>
+            </div>
+            <div class="card glass detail-card" style="text-align: center;">
+                <span class="icon">🤖</span>
+                <h3 data-i18n="f1-title">Interactive Setup</h3>
+                <p data-i18n="f1-desc">No complex dashboards. Configure rules, languages, and enforcement steps through
+                    a natural DM conversation.</p>
+            </div>
+            <div class="card glass detail-card" style="text-align: center;">
+                <span class="icon">📝</span>
+                <h3 data-i18n="f9-title">Group Description Sync</h3>
+                <p data-i18n="f9-desc">The bot writes the active group rules directly into the WhatsApp group
+                    description — automatically on setup, and on demand with a single command. Always in sync with the
+                    configured policy.</p>
             </div>
         </div>
     </section>
@@ -553,13 +549,13 @@
         </script>
     </section>
 
-    <!-- Technical Specs -->
+    <!-- Under the Hood (Technical) -->
     <section id="tech-stack" class="container" style="padding: 8rem 0 8rem;">
-        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="tech-title">Architecture &
-            Tech Stack</h2>
-        <p style="text-align: center; color: var(--text-dim); margin-bottom: 4rem;" data-i18n="tech-desc">Built for high
-            availability, massive scale, and zero-maintenance.</p>
+        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="tech-title">Under the Hood</h2>
+        <p style="text-align: center; color: var(--text-dim); margin-bottom: 5rem;" data-i18n="tech-desc">For the technically curious — the architecture powering GroupShield.</p>
 
+        <!-- Tech Stack -->
+        <h3 style="text-align: center; font-size: 1.4rem; color: var(--text-dim); margin-bottom: 2.5rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;" data-i18n="nav-tech">Architecture &amp; Stack</h3>
         <div class="feature-list" style="margin-top: 0;">
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">⚙️</span>
@@ -614,12 +610,9 @@
                     lets the admin enter times manually.</p>
             </div>
         </div>
-    </section>
 
-    <!-- Architecture Diagram -->
-    <section class="container" style="padding: 2rem 0 6rem;">
-        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="diagram-title">System
-            Architecture Diagram</h2>
+        <!-- Architecture Diagram -->
+        <h3 style="text-align: center; font-size: 1.4rem; color: var(--text-dim); margin: 5rem 0 2rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;" data-i18n="diagram-title">System Architecture Diagram</h3>
         <div class="sim-container glass" style="padding: 2rem; overflow-x: auto; direction: ltr;">
             <pre class="mermaid" style="display: flex; justify-content: center;">
 graph TD
@@ -656,14 +649,10 @@ graph TD
     style K fill:#1a1a2e,stroke:#00ffa3,color:#fff
             </pre>
         </div>
-    </section>
 
-    <!-- Deployment Stack -->
-    <section class="container" style="padding: 2rem 0 8rem;">
-        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="deploy-title">Deployment
-            Stack</h2>
-        <p style="text-align: center; color: var(--text-dim); margin-bottom: 4rem;" data-i18n="deploy-desc">The live
-            production environment and orchestration pipeline.</p>
+        <!-- Deployment Stack -->
+        <h3 style="text-align: center; font-size: 1.4rem; color: var(--text-dim); margin: 5rem 0 1rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;" data-i18n="deploy-title">Deployment Stack</h3>
+        <p style="text-align: center; color: var(--text-dim); margin-bottom: 2.5rem;" data-i18n="deploy-desc">The live production environment and orchestration pipeline.</p>
         <div class="feature-list" style="margin-top: 0; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
             <div class="card glass detail-card" style="text-align: center;">
                 <span class="icon">🖥️</span>
