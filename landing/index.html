@@ -283,7 +283,7 @@
                 <div
                     style="display: inline-block; background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); border-radius: 14px; padding: 0.9rem 2rem;">
                     <div style="font-size: 1.6rem; font-weight: 700; direction: rtl; letter-spacing: 2px; color: #fff;"
-                        dir="rtl">"יא ג'חש"</div>
+                        dir="rtl">"בן ז0נה"</div>
                 </div>
                 <div style="color: var(--text-dim); font-size: 0.82rem; margin-top: 0.6rem;" data-i18n="flow-msg-label">
                     Arabic-origin slur — not in the word list, no spaces or substitutions</div>
@@ -316,9 +316,7 @@
                                     data-i18n="flow-badge-miss">MISS</span>
                             </div>
                             <p style="color:var(--text-dim); font-size:0.85rem; margin-top:0.5rem; line-height:1.5;"
-                                data-i18n="flow-s1-desc">The forbidden-word list is checked with normalization,
-                                homoglyphs, morphological variants, and fuzzy matching. "ג'חש" is not in the list and no
-                                known variant matches it.</p>
+                                data-i18n="flow-s1-desc">The forbidden-word list is checked, including common variations and alternate spellings. "ז0נה" doesn't appear in the list — the digit '0' instead of 'ו' breaks the match.</p>
                         </div>
                     </div>
                 </div>
@@ -378,9 +376,7 @@
                                     data-i18n="flow-badge-hit">HIT →</span>
                             </div>
                             <p style="color:var(--text-dim); font-size:0.85rem; margin-top:0.5rem; line-height:1.5;"
-                                data-i18n="flow-s3-desc">The scorer checks 9 heuristic patterns. Pattern 7 fires: "יא"
-                                vocative prefix followed by an unknown word — a classic Arabic-origin insult structure.
-                                Message is routed to the AI layer.</p>
+                                data-i18n="flow-s3-desc">GroupShield scans for evasion patterns. Pattern 4 fires: digit substitution detected — '0' replacing 'ו' in a known offensive root. The message is flagged and routed to AI for review.</p>
                         </div>
                     </div>
                 </div>
@@ -478,7 +474,7 @@
                             <p style="color:var(--text-dim); font-size:0.85rem; margin-top:0.5rem; line-height:1.5;"
                                 data-i18n="flow-s6-desc">The full enforcement report is sent to the management group.
                                 The LLM catch is flagged — the developer reviews the pattern and decides whether to add
-                                "ג'חש" to the permanent word list so future instances are caught instantly, without
+                                "ז0נה" to the permanent word list so future instances are caught instantly, without
                                 needing the AI.</p>
                         </div>
                     </div>
