@@ -613,11 +613,7 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
                         checkMediaManualTag(
                             client, quotedMsg, quotedSenderJid, quotedMsg.type,
                             groupConfig, enforcementCfg, rateLimiter, lang
-                        ).then(async (wasViolation) => {
-                            if (!wasViolation) {
-                                try { await msg.react('✅'); } catch (e) { /* ignore */ }
-                            }
-                        }).catch(e => logger.warn('Manual vision check error', e.message));
+                        ).catch(e => logger.warn('Manual vision check error', e.message));
                     }
                 }
                 return; // Don't apply normal enforcement to the reporting message itself
