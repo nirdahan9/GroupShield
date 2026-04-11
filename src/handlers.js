@@ -154,6 +154,61 @@ async function handleLearningApproval(client, replyTo, senderJid, action, id, la
 }
 
 /**
+ * Beta: handle "אכוף"/"enforce" reply to a gs-enforce bot message.
+ * Only works when mediaBetaEnabled is active on the target group.
+ * Returns true if handled, false otherwise.
+ */
+async function handleBetaEnforceReply(client, msg, senderJid, lang) {
+    try {
+        const quoted = await msg.getQuotedMessage();
+        if (!quoted || !quoted.fromMe) return false;
+
+        // Parse [gs-enforce:<groupId>|<phone>|<msgId>] from the quoted message body or caption
+        const text = quoted.body || quoted.caption || '';
+        const match = text.match(/\[gs-enforce:([^|[\]]+)\|(\d+)\|([^\]]*)\]/);
+        if (!match) return false;
+
+        const groupId = match[1];
+        const phone   = match[2];
+        const msgId   = match[3];
+
+        const groupConfig = await database.getGroup(groupId);
+        if (!groupConfig || !groupConfig.mediaBetaEnabled) {
+            await client.sendMessage(msg.from,
+                lang === 'he' ? '❌ מצב הבטא אינו פעיל לקבוצה זו.' : '❌ Beta mode is not active for this group.',
+                { linkPreview: false });
+            return true;
+        }
+
+        // Try to fetch original group message so it can be deleted
+        let originalMsg = null;
+        if (msgId) {
+            try { originalMsg = await client.getMessageById(msgId); } catch { /* message may be gone */ }
+        }
+
+        const targetJid = phone + '@s.whatsapp.net';
+        const enfConfig = await database.getEnforcement(groupId);
+        const { executeEnforcement } = require('./enforcement');
+        const reason = lang === 'he' ? 'אכיפה ידנית ע"י מנהל (בטא)' : 'Manual enforcement by admin (beta)';
+        await executeEnforcement(
+            client, originalMsg, targetJid,
+            [reason], '', 'manual',
+            groupConfig, enfConfig,
+            { throttle: async (fn) => fn() },
+            lang, 'manual_enforce'
+        );
+        logger.auditLog(senderJid, 'BETA_MANUAL_ENFORCE', { targetUser: phone, groupId, groupName: groupConfig.groupName }, true);
+        await client.sendMessage(msg.from,
+            lang === 'he' ? `✅ בוצעה אכיפה על ${phone} בקבוצה "${groupConfig.groupName}".` : `✅ Enforcement executed for ${phone} in "${groupConfig.groupName}".`,
+            { linkPreview: false });
+        return true;
+    } catch (e) {
+        logger.warn('handleBetaEnforceReply failed', e.message);
+        return false;
+    }
+}
+
+/**
  * Handle DM (private) messages
  */
 async function handleDM(client, msg, senderJid, content) {
@@ -189,6 +244,13 @@ async function handleDM(client, msg, senderJid, content) {
     const learnMatch = content.trim().match(/^(אשר|דחה)\s+(\d+)$/);
     if (learnMatch) {
         const handled = await handleLearningApproval(client, msg.from, senderJid, learnMatch[1], parseInt(learnMatch[2], 10), lang);
+        if (handled) return;
+    }
+
+    // ── Beta: "אכוף" / "enforce" reply to a gs-enforce bot message ──────────
+    const isEnforceReply = /^(אכוף|enforce)$/i.test(content.trim()) && msg.hasQuotedMsg;
+    if (isEnforceReply) {
+        const handled = await handleBetaEnforceReply(client, msg, senderJid, lang);
         if (handled) return;
     }
 

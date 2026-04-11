@@ -604,9 +604,10 @@ async function checkMediaManualTag(client, msg, senderJid, msgType, groupConfig,
         const targetJid = _resolveReportTarget(groupConfig);
         const typeLabel = msgType === 'sticker' ? '🎭 סטיקר' : '📸 תמונה';
         const senderPhone = senderJid.replace(/@.*/, '');
+        const msgIdSerialized = msg.id?._serialized || '';
         const caption = lang === 'he'
-            ? `🔍 *GroupShield — תמונה מתויגת ידנית*\n\nקבוצה: *${groupConfig.groupName}*\nסוג: ${typeLabel}\nשולח: ${senderPhone}\n\nתויגתי על תמונה זו — בדקתי פעמיים עם AI ולא זוהתה הפרה ברורה.\n\n👉 לאכיפה ידנית על השולח, שלח:\n*אכוף ${senderPhone} ${groupConfig.groupName}*`
-            : `🔍 *GroupShield — Manually Flagged Image*\n\nGroup: *${groupConfig.groupName}*\nType: ${msgType}\nSender: ${senderPhone}\n\nTagged on this image — double-checked with AI, no clear violation detected.\n\n👉 To manually enforce, send:\n*enforce ${senderPhone} ${groupConfig.groupName}*`;
+            ? `🔍 *${typeLabel}* | *${groupConfig.groupName}*\nAI לא זיהה הפרה — השב *אכוף* לאכיפה ידנית.\n[gs-enforce:${groupConfig.groupId}|${senderPhone}|${msgIdSerialized}]`
+            : `🔍 *${typeLabel}* | *${groupConfig.groupName}*\nAI found no violation — reply *enforce* to manually enforce.\n[gs-enforce:${groupConfig.groupId}|${senderPhone}|${msgIdSerialized}]`;
 
         try {
             await msg.forward(targetJid);

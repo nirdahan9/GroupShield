@@ -222,7 +222,7 @@ async function executeCommand(client, senderJid, command, lang, overrideGroupCon
             return t('restart_message', lang);
         }
 
-        // ── Manual enforcement (admin + developer) ───────────────────
+        // ── Manual enforcement — beta mode only ──────────────────────
         const enforceMatch = cmd.match(/^אכוף\s+(\d+)(?:\s+(.+))?$/i) || cmd.match(/^enforce\s+(\d+)(?:\s+(.+))?$/i);
         if (enforceMatch) {
             const phone = enforceMatch[1].trim();
@@ -244,18 +244,24 @@ async function executeCommand(client, senderJid, command, lang, overrideGroupCon
             }
             if (!targetGroup) return t('no_group_linked', lang);
 
+            if (!targetGroup.mediaBetaEnabled) {
+                return lang === 'he'
+                    ? `❌ אכיפה ידנית זמינה רק כשמצב הבטא פעיל בקבוצה.`
+                    : `❌ Manual enforcement is only available when beta mode is active for the group.`;
+            }
+
             const targetJid = phone + '@s.whatsapp.net';
             const enfConfig = await database.getEnforcement(targetGroup.groupId);
             const { executeEnforcement } = require('./enforcement');
-            const reason = lang === 'he' ? 'אכיפה ידנית ע"י מנהל' : 'Manual enforcement by admin';
-            // null msg → deleteMessage step is skipped safely (deleteMessage checks if(msg))
-            const mockRateLimiter = { throttle: async (fn) => fn() };
+            const reason = lang === 'he' ? 'אכיפה ידנית ע"י מנהל (בטא)' : 'Manual enforcement by admin (beta)';
             await executeEnforcement(
                 client, null, targetJid,
                 [reason], '', 'manual',
-                targetGroup, enfConfig, mockRateLimiter, lang, 'manual_enforce'
+                targetGroup, enfConfig,
+                { throttle: async (fn) => fn() },
+                lang, 'manual_enforce'
             );
-            logger.auditLog(senderJid, 'MANUAL_ENFORCE', { targetUser: phone, groupId: targetGroup.groupId, groupName: targetGroup.groupName }, true);
+            logger.auditLog(senderJid, 'BETA_MANUAL_ENFORCE', { targetUser: phone, groupId: targetGroup.groupId, groupName: targetGroup.groupName }, true);
             return lang === 'he'
                 ? `✅ בוצעה אכיפה ידנית על ${phone} בקבוצה "${targetGroup.groupName}".`
                 : `✅ Manual enforcement executed for ${phone} in "${targetGroup.groupName}".`;
