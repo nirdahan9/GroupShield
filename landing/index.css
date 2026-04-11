@@ -784,6 +784,11 @@ html[dir="rtl"] .pipeline-pulse {
   flex: 0 1 300px;
 }
 
+.feature-list.stats-list > * {
+  flex: 1 1 0;
+  min-width: 150px;
+}
+
 .detail-card {
   padding: 2rem;
   text-align: left;
