@@ -185,9 +185,19 @@ async function handleBetaEnforceReply(client, msg, senderJid, lang) {
         if (msgId) {
             try {
                 originalMsg = await client.getMessageById(msgId);
-                if (!originalMsg) logger.warn(`[beta-enforce] getMessageById returned null for msgId: ${msgId}`);
-            } catch (e) {
-                logger.warn(`[beta-enforce] getMessageById failed: ${e.message} | msgId: ${msgId}`);
+            } catch { /* may not be in cache */ }
+
+            // Fallback: search recent group messages if not found via direct lookup
+            if (!originalMsg) {
+                try {
+                    const chat = await client.getChatById(groupId);
+                    const recent = await chat.fetchMessages({ limit: 50 });
+                    originalMsg = recent.find(m => m.id._serialized === msgId) || null;
+                    if (originalMsg) logger.info('[beta-enforce] Found original msg via fetchMessages fallback');
+                    else logger.warn(`[beta-enforce] Message not found in recent 50 msgs | msgId: ${msgId}`);
+                } catch (e2) {
+                    logger.warn(`[beta-enforce] fetchMessages fallback failed: ${e2.message}`);
+                }
             }
         }
 
@@ -203,9 +213,6 @@ async function handleBetaEnforceReply(client, msg, senderJid, lang) {
             lang, 'manual_enforce'
         );
         logger.auditLog(senderJid, 'BETA_MANUAL_ENFORCE', { targetUser: phone, groupId, groupName: groupConfig.groupName }, true);
-        await client.sendMessage(msg.from,
-            lang === 'he' ? `✅ בוצעה אכיפה על ${phone} בקבוצה "${groupConfig.groupName}".` : `✅ Enforcement executed for ${phone} in "${groupConfig.groupName}".`,
-            { linkPreview: false });
         return true;
     } catch (e) {
         logger.warn('handleBetaEnforceReply failed', e.message);
