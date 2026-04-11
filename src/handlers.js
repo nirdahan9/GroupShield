@@ -609,8 +609,8 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
                         // Image/sticker in beta mode — vision check
                         logger.info(`Manual vision report by ${extractNumber(senderJid)} in ${groupConfig.groupName} for ${quotedMsg.type} from ${extractNumber(quotedSenderJid)}`);
                         try { await msg.react('🔍'); } catch (e) { /* ignore */ }
-                        const { checkMediaWithLLM } = require('./llm');
-                        checkMediaWithLLM(
+                        const { checkMediaManualTag } = require('./llm');
+                        checkMediaManualTag(
                             client, quotedMsg, quotedSenderJid, quotedMsg.type,
                             groupConfig, enforcementCfg, rateLimiter, lang
                         ).then(async (wasViolation) => {

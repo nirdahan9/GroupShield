@@ -420,18 +420,21 @@ async function notifyDeveloperPendingPhrasesList(client) {
 const VISION_MODEL   = 'meta-llama/llama-4-scout-17b-16e-instruct';
 const VISION_TIMEOUT = 8000;
 
-function callGroqVision(base64Data, mimeType) {
+function callGroqVision(base64Data, mimeType, customSystemPrompt) {
     const apiKey = config.get('groq.apiKey');
     if (!apiKey) return Promise.resolve(null);
 
-    const cacheKey = _cacheKey(base64Data.slice(0, 4096)); // hash first 4KB for speed
-    const cached = _getCache(cacheKey);
-    if (cached !== undefined) {
-        logger.debug(`Vision cache hit (${cacheKey.slice(0, 8)}…)`);
-        return Promise.resolve(cached);
+    // Manual-tag calls use a stricter prompt — bypass cache so the re-check is always fresh
+    const cacheKey = customSystemPrompt ? null : _cacheKey(base64Data.slice(0, 4096));
+    if (cacheKey) {
+        const cached = _getCache(cacheKey);
+        if (cached !== undefined) {
+            logger.debug(`Vision cache hit (${cacheKey.slice(0, 8)}…)`);
+            return Promise.resolve(cached);
+        }
     }
 
-    const systemContent =
+    const systemContent = customSystemPrompt ||
         'You are a strict content moderator for a WhatsApp group.\n' +
         'Examine the image and determine if it contains ANY of the following:\n' +
         '- Sexually explicit or pornographic content\n' +
@@ -483,7 +486,7 @@ function callGroqVision(base64Data, mimeType) {
                         const parsed = JSON.parse(data);
                         const answer = (parsed.choices?.[0]?.message?.content || '').trim().toUpperCase();
                         const result = answer.startsWith('YES');
-                        _setCache(cacheKey, result);
+                        if (cacheKey) _setCache(cacheKey, result);
                         resolve(result);
                     } catch {
                         resolve(null);
@@ -538,6 +541,100 @@ async function checkMediaWithLLM(client, msg, senderJid, msgType, groupConfig, e
         logger.warn('[beta] Vision moderation check failed', e.message);
         return false;
     }
+}
+
+/**
+ * Beta: manual-tag vision check — stricter prompt, bypasses cache.
+ * If violation → enforce normally.
+ * If clean → forward the image/sticker to the report target for admin review.
+ * Returns true if a violation was found, false otherwise.
+ */
+async function checkMediaManualTag(client, msg, senderJid, msgType, groupConfig, enforcementConfig, rateLimiter, lang) {
+    const { executeEnforcement } = require('./enforcement');
+    const { t } = require('./i18n');
+
+    const apiKey = config.get('groq.apiKey');
+    if (!apiKey) return false;
+
+    let media;
+    try {
+        media = await msg.downloadMedia();
+    } catch (e) {
+        logger.warn(`[beta] Failed to download ${msgType} for manual vision check`, e.message);
+        return false;
+    }
+    if (!media || !media.data) return false;
+
+    const strictPrompt =
+        'You are a strict content moderator for a WhatsApp group.\n' +
+        'IMPORTANT: A human moderator has manually flagged this image as potentially inappropriate.\n' +
+        'Apply extra scrutiny — a human flag is meaningful evidence of a problem.\n' +
+        'Determine if this image contains ANY of the following:\n' +
+        '- Sexually explicit, pornographic, or sexually suggestive content\n' +
+        '- Partial nudity or sexual harassment imagery\n' +
+        '- Hate symbols (swastikas, Nazi imagery, etc.)\n' +
+        '- Extreme violence, gore, or graphic injury\n' +
+        '- Racist imagery or derogatory caricatures\n' +
+        '- Offensive text within the image (slurs, threats, curses)\n' +
+        '- Incitement to violence or terrorism\n' +
+        '- Any content a reasonable person would find offensive in a group chat\n' +
+        'Policy: "WHEN IN DOUBT, BLOCK". A human flagged this — take that seriously.\n' +
+        'Reply with exactly one word: YES (violates) or NO (does not violate). Nothing else.';
+
+    recordCall();
+    try {
+        const isViolation = await callGroqVision(media.data, media.mimetype, strictPrompt);
+
+        if (isViolation === true) {
+            logger.info(`[beta] Manual vision check flagged ${msgType} in ${groupConfig.groupName} from ${senderJid}`);
+            cursesTrainingLog.logEnforcement(
+                groupConfig.groupId, groupConfig.groupName, senderJid,
+                `[${msgType}]`, t('reason_llm_violation', lang), 'vision_manual'
+            );
+            await executeEnforcement(
+                client, msg, senderJid,
+                [t('reason_llm_violation', lang)],
+                '', msgType, groupConfig, enforcementConfig, rateLimiter, lang, 'vision_manual'
+            );
+            return true;
+        }
+
+        // Still clean — forward image to report target for admin review
+        logger.info(`[beta] Manual vision check: ${msgType} from ${senderJid} in ${groupConfig.groupName} — clean, forwarding to admin`);
+        const targetJid = _resolveReportTarget(groupConfig);
+        const typeLabel = msgType === 'sticker' ? '🎭 סטיקר' : '📸 תמונה';
+        const caption = lang === 'he'
+            ? `🔍 *GroupShield — תמונה מתויגת ידנית*\n\nקבוצה: *${groupConfig.groupName}*\nסוג: ${typeLabel}\n\nמנהל תייג אותי על תמונה זו — בדקתי פעמיים עם AI ולא זוהתה הפרה ברורה.`
+            : `🔍 *GroupShield — Manually Flagged Image*\n\nGroup: *${groupConfig.groupName}*\nType: ${msgType}\n\nA moderator tagged me on this — double-checked with AI, no clear violation detected.`;
+
+        try {
+            await msg.forward(targetJid);
+            await client.sendMessage(targetJid, caption, { linkPreview: false });
+        } catch {
+            // forward() may fail for some message types — fall back to re-sending the media
+            try {
+                await client.sendMessage(targetJid, media, { caption });
+            } catch (e2) {
+                logger.warn('[beta] Failed to forward flagged image to report target', e2.message);
+            }
+        }
+
+        return false;
+    } catch (e) {
+        logger.warn('[beta] Manual vision check failed', e.message);
+        return false;
+    }
+}
+
+/** Resolve the JID that should receive reports for a group */
+function _resolveReportTarget(groupConfig) {
+    const target = groupConfig.reportTarget || 'dm';
+    if (target === 'mgmt_group' && groupConfig.mgmtGroupId) return groupConfig.mgmtGroupId;
+    if (target.startsWith('phone:')) {
+        const phone = target.split(':')[1];
+        if (phone) return phone + '@s.whatsapp.net';
+    }
+    return groupConfig.ownerJid;
 }
 
 /**
@@ -763,4 +860,4 @@ async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfi
     }
 }
 
-module.exports = { checkWithLLM, notifyDeveloperPendingPhrasesList, getGroqStats, checkMediaWithLLM, checkLinkWithLLM };
+module.exports = { checkWithLLM, notifyDeveloperPendingPhrasesList, getGroqStats, checkMediaWithLLM, checkMediaManualTag, checkLinkWithLLM };
