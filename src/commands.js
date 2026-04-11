@@ -222,6 +222,45 @@ async function executeCommand(client, senderJid, command, lang, overrideGroupCon
             return t('restart_message', lang);
         }
 
+        // ── Manual enforcement (admin + developer) ───────────────────
+        const enforceMatch = cmd.match(/^אכוף\s+(\d+)(?:\s+(.+))?$/i) || cmd.match(/^enforce\s+(\d+)(?:\s+(.+))?$/i);
+        if (enforceMatch) {
+            const phone = enforceMatch[1].trim();
+            const groupNameArg = enforceMatch[2]?.trim();
+
+            let targetGroup = groupConfig;
+            if (groupNameArg) {
+                const allGroups = await database.getAllGroups();
+                targetGroup = (allGroups || []).find(g =>
+                    g.groupName && g.groupName.toLowerCase() === groupNameArg.toLowerCase()
+                ) || (allGroups || []).find(g =>
+                    g.groupName && g.groupName.toLowerCase().includes(groupNameArg.toLowerCase())
+                );
+                if (!targetGroup) {
+                    return lang === 'he'
+                        ? `❌ לא נמצאה קבוצה בשם "${groupNameArg}".`
+                        : `❌ No group found named "${groupNameArg}".`;
+                }
+            }
+            if (!targetGroup) return t('no_group_linked', lang);
+
+            const targetJid = phone + '@s.whatsapp.net';
+            const enfConfig = await database.getEnforcement(targetGroup.groupId);
+            const { executeEnforcement } = require('./enforcement');
+            const reason = lang === 'he' ? 'אכיפה ידנית ע"י מנהל' : 'Manual enforcement by admin';
+            // null msg → deleteMessage step is skipped safely (deleteMessage checks if(msg))
+            const mockRateLimiter = { throttle: async (fn) => fn() };
+            await executeEnforcement(
+                client, null, targetJid,
+                [reason], '', 'manual',
+                targetGroup, enfConfig, mockRateLimiter, lang, 'manual_enforce'
+            );
+            logger.auditLog(senderJid, 'MANUAL_ENFORCE', { targetUser: phone, groupId: targetGroup.groupId, groupName: targetGroup.groupName }, true);
+            return lang === 'he'
+                ? `✅ בוצעה אכיפה ידנית על ${phone} בקבוצה "${targetGroup.groupName}".`
+                : `✅ Manual enforcement executed for ${phone} in "${targetGroup.groupName}".`;
+        }
+
         // ── Developer: activate / deactivate media beta ──────────────
         const betaEnableMatch  = cmd.match(/^הפעל בטא (.+)$/i)  || cmd.match(/^beta enable (.+)$/i);
         const betaDisableMatch = cmd.match(/^הפסק בטא (.+)$/i)  || cmd.match(/^beta disable (.+)$/i);
