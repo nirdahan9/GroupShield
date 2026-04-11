@@ -24,6 +24,26 @@ const LLM_CACHE = new Map();
 const CACHE_TTL_MS  = 60 * 60 * 1000; // 1 hour
 const CACHE_MAX     = 1000;
 
+// ── Beta: in-memory store for pending manual-enforce messages ─────────────────
+// When a sticker/image is forwarded to the report target for admin review,
+// we store the original Message object here keyed by its serialized ID.
+// This lets handleBetaEnforceReply delete the original without relying on
+// getMessageById (which fails for uncached messages) or fetchMessages (which
+// fails with 'waitForChatLoading' errors in headless mode).
+// Entries auto-expire after 24h to prevent memory leaks.
+const _pendingEnforceMsgs = new Map();
+
+function storePendingEnforceMsg(msgId, msg) {
+    _pendingEnforceMsgs.set(msgId, msg);
+    setTimeout(() => _pendingEnforceMsgs.delete(msgId), 24 * 60 * 60 * 1000);
+}
+function getPendingEnforceMsg(msgId) {
+    return _pendingEnforceMsgs.get(msgId) || null;
+}
+function deletePendingEnforceMsg(msgId) {
+    _pendingEnforceMsgs.delete(msgId);
+}
+
 function _cacheKey(text) {
     return crypto.createHash('sha256').update(text.trim().toLowerCase()).digest('hex');
 }
@@ -605,6 +625,9 @@ async function checkMediaManualTag(client, msg, senderJid, msgType, groupConfig,
         const typeLabel = msgType === 'sticker' ? '🎭 סטיקר' : '📸 תמונה';
         const senderPhone = senderJid.replace(/@.*/, '');
         const msgIdSerialized = msg.id?._serialized || '';
+        // Store message reference so handleBetaEnforceReply can delete it reliably
+        if (msgIdSerialized) storePendingEnforceMsg(msgIdSerialized, msg);
+
         const caption = lang === 'he'
             ? `🔍 *${typeLabel}* | *${groupConfig.groupName}*\nAI לא זיהה הפרה — השב *אכוף* לאכיפה ידנית.\n[gs-enforce:${groupConfig.groupId}|${senderPhone}|${msgIdSerialized}]`
             : `🔍 *${typeLabel}* | *${groupConfig.groupName}*\nAI found no violation — reply *enforce* to manually enforce.\n[gs-enforce:${groupConfig.groupId}|${senderPhone}|${msgIdSerialized}]`;
@@ -862,4 +885,4 @@ async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfi
     }
 }
 
-module.exports = { checkWithLLM, notifyDeveloperPendingPhrasesList, getGroqStats, checkMediaWithLLM, checkMediaManualTag, checkLinkWithLLM };
+module.exports = { checkWithLLM, notifyDeveloperPendingPhrasesList, getGroqStats, checkMediaWithLLM, checkMediaManualTag, checkLinkWithLLM, getPendingEnforceMsg, deletePendingEnforceMsg };

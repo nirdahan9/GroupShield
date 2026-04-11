@@ -180,26 +180,15 @@ async function handleBetaEnforceReply(client, msg, senderJid, lang) {
             return true;
         }
 
-        // Try to fetch original group message so it can be deleted
-        let originalMsg = null;
-        if (msgId) {
-            try {
-                originalMsg = await client.getMessageById(msgId);
-            } catch { /* may not be in cache */ }
-
-            // Fallback: search recent group messages if not found via direct lookup
-            if (!originalMsg) {
-                try {
-                    const chat = await client.getChatById(groupId);
-                    const recent = await chat.fetchMessages({ limit: 50 });
-                    originalMsg = recent.find(m => m.id._serialized === msgId) || null;
-                    if (originalMsg) logger.info('[beta-enforce] Found original msg via fetchMessages fallback');
-                    else logger.warn(`[beta-enforce] Message not found in recent 50 msgs | msgId: ${msgId}`);
-                } catch (e2) {
-                    logger.warn(`[beta-enforce] fetchMessages fallback failed: ${e2.message}`);
-                }
-            }
+        // Retrieve the original message for deletion.
+        // Primary: in-memory store set at the time the sticker/image was forwarded to admin.
+        // Fallback: getMessageById (works only if message is still in the client cache).
+        const { getPendingEnforceMsg, deletePendingEnforceMsg } = require('./llm');
+        let originalMsg = msgId ? getPendingEnforceMsg(msgId) : null;
+        if (!originalMsg && msgId) {
+            try { originalMsg = await client.getMessageById(msgId); } catch { /* not in cache */ }
         }
+        if (msgId) deletePendingEnforceMsg(msgId);
 
         const targetJid = phone + '@s.whatsapp.net';
         const enfConfig = await database.getEnforcement(groupId);
