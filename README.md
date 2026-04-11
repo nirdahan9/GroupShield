@@ -2,7 +2,7 @@
 
 Production-grade WhatsApp moderation engine with a bilingual setup UX, deterministic enforcement pipeline, and operational reliability built for real communities.
 
-https://nirdahan9.github.io/GroupShield/
+https://www.groupshield.icu
 
 ## Core strengths
 
@@ -59,6 +59,7 @@ src/utils.js        → Shared utilities (phone parsing, group description, rule
 src/health.js       → Health checks and self-healing hooks
 src/backup.js       → Automated backup jobs
 src/llm.js          → AI moderation layer (Groq)
+landing/            → Public landing page (groupshield.icu)
 ```
 
 ## Credits
