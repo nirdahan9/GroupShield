@@ -179,14 +179,14 @@ body {
 }
 
 /* Anchor offset for fixed navbar */
-section[id] { scroll-margin-top: 72px; }
+h2[id] { scroll-margin-top: 72px; }
 
 @media (max-width: 768px) {
   .nav-links { display: none; }
   .nav-cta { display: none; }
   .nav-hamburger { display: block; }
   .navbar-inner { height: 56px; }
-  section[id] { scroll-margin-top: 64px; }
+  h2[id] { scroll-margin-top: 64px; }
 
   /* Hide logo text, keep only image */
   .nav-logo span { display: none; }
