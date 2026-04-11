@@ -183,7 +183,12 @@ async function handleBetaEnforceReply(client, msg, senderJid, lang) {
         // Try to fetch original group message so it can be deleted
         let originalMsg = null;
         if (msgId) {
-            try { originalMsg = await client.getMessageById(msgId); } catch { /* message may be gone */ }
+            try {
+                originalMsg = await client.getMessageById(msgId);
+                if (!originalMsg) logger.warn(`[beta-enforce] getMessageById returned null for msgId: ${msgId}`);
+            } catch (e) {
+                logger.warn(`[beta-enforce] getMessageById failed: ${e.message} | msgId: ${msgId}`);
+            }
         }
 
         const targetJid = phone + '@s.whatsapp.net';
@@ -480,6 +485,12 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
                 await msg.reply(response);
             }
             return;
+        }
+
+        // Beta: "אכוף" / "enforce" reply to a gs-enforce forwarded message in the management group
+        if (/^(אכוף|enforce)$/i.test(content.trim()) && msg.hasQuotedMsg) {
+            const handled = await handleBetaEnforceReply(client, msg, senderJid, lang);
+            if (handled) return;
         }
 
         const statusResponse = await buildMgmtGroupStatusResponse(client, content, mgmtLinkedGroups, lang);
