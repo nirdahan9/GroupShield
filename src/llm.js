@@ -521,7 +521,7 @@ async function checkMediaWithLLM(client, msg, senderJid, msgType, groupConfig, e
     recordCall();
     try {
         const isViolation = await callGroqVision(media.data, media.mimetype);
-        if (isViolation !== true) return;
+        if (isViolation !== true) return false;
 
         logger.info(`[beta] Vision flagged ${msgType} in ${groupConfig.groupName} from ${senderJid}`);
         cursesTrainingLog.logEnforcement(
@@ -533,8 +533,10 @@ async function checkMediaWithLLM(client, msg, senderJid, msgType, groupConfig, e
             [t('reason_llm_violation', lang)],
             '', msgType, groupConfig, enforcementConfig, rateLimiter, lang, 'vision_beta'
         );
+        return true;
     } catch (e) {
         logger.warn('[beta] Vision moderation check failed', e.message);
+        return false;
     }
 }
 

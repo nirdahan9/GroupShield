@@ -591,15 +591,33 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
                 );
                 if (hasCursesPreset) {
                     const quotedMsg = await msg.getQuotedMessage();
+                    const enforcementCfg = await database.getEnforcement(groupJid);
+                    const quotedSenderJid = await resolveContactToPhone(client, getNormalizedJid(quotedMsg.author || quotedMsg.from));
+
                     if (quotedMsg && quotedMsg.body) {
-                        const enforcementCfg = await database.getEnforcement(groupJid);
-                        const quotedSenderJid = await resolveContactToPhone(client, getNormalizedJid(quotedMsg.author || quotedMsg.from));
+                        // Text message — existing flow
                         logger.info(`Manual LLM report by ${extractNumber(senderJid)} in ${groupConfig.groupName} for msg from ${extractNumber(quotedSenderJid)}`);
                         try { await msg.react('🔍'); } catch (e) { /* ignore */ }
                         checkWithLLM(
                             client, quotedMsg, quotedSenderJid, quotedMsg.body, quotedMsg.type,
                             groupConfig, enforcementCfg, rateLimiter, lang, true
                         ).catch(e => logger.warn('Manual LLM check error', e.message));
+
+                    } else if (quotedMsg && quotedMsg.hasMedia &&
+                               (quotedMsg.type === 'image' || quotedMsg.type === 'sticker') &&
+                               groupConfig.mediaBetaEnabled) {
+                        // Image/sticker in beta mode — vision check
+                        logger.info(`Manual vision report by ${extractNumber(senderJid)} in ${groupConfig.groupName} for ${quotedMsg.type} from ${extractNumber(quotedSenderJid)}`);
+                        try { await msg.react('🔍'); } catch (e) { /* ignore */ }
+                        const { checkMediaWithLLM } = require('./llm');
+                        checkMediaWithLLM(
+                            client, quotedMsg, quotedSenderJid, quotedMsg.type,
+                            groupConfig, enforcementCfg, rateLimiter, lang
+                        ).then(async (wasViolation) => {
+                            if (!wasViolation) {
+                                try { await msg.react('✅'); } catch (e) { /* ignore */ }
+                            }
+                        }).catch(e => logger.warn('Manual vision check error', e.message));
                     }
                 }
                 return; // Don't apply normal enforcement to the reporting message itself
