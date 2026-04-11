@@ -24,24 +24,22 @@ const LLM_CACHE = new Map();
 const CACHE_TTL_MS  = 60 * 60 * 1000; // 1 hour
 const CACHE_MAX     = 1000;
 
-// ── Beta: in-memory store for pending manual-enforce messages ─────────────────
-// When a sticker/image is forwarded to the report target for admin review,
-// we store the original Message object here keyed by its serialized ID.
-// This lets handleBetaEnforceReply delete the original without relying on
-// getMessageById (which fails for uncached messages) or fetchMessages (which
-// fails with 'waitForChatLoading' errors in headless mode).
-// Entries auto-expire after 24h to prevent memory leaks.
-const _pendingEnforceMsgs = new Map();
+// ── Beta: in-memory store for pending manual-enforce reviews ──────────────────
+// Keyed by the serialized ID of the caption message sent to the report target.
+// Value: { originalMsg, groupId, senderPhone }
+// handleBetaEnforceReply looks up by quoted.id._serialized — no metadata needed
+// in the visible caption text. Entries auto-expire after 24h.
+const _pendingEnforceStore = new Map();
 
-function storePendingEnforceMsg(msgId, msg) {
-    _pendingEnforceMsgs.set(msgId, msg);
-    setTimeout(() => _pendingEnforceMsgs.delete(msgId), 24 * 60 * 60 * 1000);
+function storePendingEnforce(captionMsgId, data) {
+    _pendingEnforceStore.set(captionMsgId, data);
+    setTimeout(() => _pendingEnforceStore.delete(captionMsgId), 24 * 60 * 60 * 1000);
 }
-function getPendingEnforceMsg(msgId) {
-    return _pendingEnforceMsgs.get(msgId) || null;
+function lookupPendingEnforce(captionMsgId) {
+    return _pendingEnforceStore.get(captionMsgId) || null;
 }
-function deletePendingEnforceMsg(msgId) {
-    _pendingEnforceMsgs.delete(msgId);
+function clearPendingEnforce(captionMsgId) {
+    _pendingEnforceStore.delete(captionMsgId);
 }
 
 function _cacheKey(text) {
@@ -624,21 +622,30 @@ async function checkMediaManualTag(client, msg, senderJid, msgType, groupConfig,
         const targetJid = _resolveReportTarget(groupConfig);
         const typeLabel = msgType === 'sticker' ? '🎭 סטיקר' : '📸 תמונה';
         const senderPhone = senderJid.replace(/@.*/, '');
-        const msgIdSerialized = msg.id?._serialized || '';
-        // Store message reference so handleBetaEnforceReply can delete it reliably
-        if (msgIdSerialized) storePendingEnforceMsg(msgIdSerialized, msg);
-
-        const caption = lang === 'he'
-            ? `🔍 *${typeLabel}* | *${groupConfig.groupName}*\nAI לא זיהה הפרה — השב *אכוף* לאכיפה ידנית.\n[gs-enforce:${groupConfig.groupId}|${senderPhone}|${msgIdSerialized}]`
-            : `🔍 *${typeLabel}* | *${groupConfig.groupName}*\nAI found no violation — reply *enforce* to manually enforce.\n[gs-enforce:${groupConfig.groupId}|${senderPhone}|${msgIdSerialized}]`;
+        const caption = `🔍 *${typeLabel}* | *${groupConfig.groupName}*\nAI לא זיהה הפרה — השב *אכוף* לאכיפה ידנית.`;
 
         try {
             await msg.forward(targetJid);
-            await client.sendMessage(targetJid, caption, { linkPreview: false });
+            const sentCaption = await client.sendMessage(targetJid, caption, { linkPreview: false });
+            // Store enforce metadata keyed by the caption message ID — no metadata needed in caption text
+            if (sentCaption?.id?._serialized) {
+                storePendingEnforce(sentCaption.id._serialized, {
+                    originalMsg: msg,
+                    groupId: groupConfig.groupId,
+                    senderPhone
+                });
+            }
         } catch {
             // forward() may fail for some message types — fall back to re-sending the media
             try {
-                await client.sendMessage(targetJid, media, { caption });
+                const sentCaption = await client.sendMessage(targetJid, media, { caption });
+                if (sentCaption?.id?._serialized) {
+                    storePendingEnforce(sentCaption.id._serialized, {
+                        originalMsg: msg,
+                        groupId: groupConfig.groupId,
+                        senderPhone
+                    });
+                }
             } catch (e2) {
                 logger.warn('[beta] Failed to forward flagged image to report target', e2.message);
             }
@@ -885,4 +892,4 @@ async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfi
     }
 }
 
-module.exports = { checkWithLLM, notifyDeveloperPendingPhrasesList, getGroqStats, checkMediaWithLLM, checkMediaManualTag, checkLinkWithLLM, getPendingEnforceMsg, deletePendingEnforceMsg };
+module.exports = { checkWithLLM, notifyDeveloperPendingPhrasesList, getGroqStats, checkMediaWithLLM, checkMediaManualTag, checkLinkWithLLM, lookupPendingEnforce, clearPendingEnforce };

@@ -163,45 +163,32 @@ async function handleBetaEnforceReply(client, msg, senderJid, lang) {
         const quoted = await msg.getQuotedMessage();
         if (!quoted || !quoted.fromMe) return false;
 
-        // Parse [gs-enforce:<groupId>|<phone>|<msgId>] from the quoted message body or caption
-        const text = quoted.body || quoted.caption || '';
-        const match = text.match(/\[gs-enforce:([^|[\]]+)\|(\d+)\|([^\]]*)\]/);
-        if (!match) return false;
+        // Look up enforce metadata by the quoted caption message's serialized ID
+        const { lookupPendingEnforce, clearPendingEnforce } = require('./llm');
+        const captionMsgId = quoted.id?._serialized;
+        const enforceData = captionMsgId ? lookupPendingEnforce(captionMsgId) : null;
+        if (!enforceData) return false;
 
-        const groupId = match[1];
-        const phone   = match[2];
-        const msgId   = match[3];
+        const { originalMsg, groupId, senderPhone } = enforceData;
+        clearPendingEnforce(captionMsgId);
 
         const groupConfig = await database.getGroup(groupId);
         if (!groupConfig || !groupConfig.mediaBetaEnabled) {
-            await client.sendMessage(msg.from,
-                lang === 'he' ? '❌ מצב הבטא אינו פעיל לקבוצה זו.' : '❌ Beta mode is not active for this group.',
-                { linkPreview: false });
+            await client.sendMessage(msg.from, '❌ מצב הבטא אינו פעיל לקבוצה זו.', { linkPreview: false });
             return true;
         }
 
-        // Retrieve the original message for deletion.
-        // Primary: in-memory store set at the time the sticker/image was forwarded to admin.
-        // Fallback: getMessageById (works only if message is still in the client cache).
-        const { getPendingEnforceMsg, deletePendingEnforceMsg } = require('./llm');
-        let originalMsg = msgId ? getPendingEnforceMsg(msgId) : null;
-        if (!originalMsg && msgId) {
-            try { originalMsg = await client.getMessageById(msgId); } catch { /* not in cache */ }
-        }
-        if (msgId) deletePendingEnforceMsg(msgId);
-
-        const targetJid = phone + '@s.whatsapp.net';
+        const targetJid = senderPhone + '@s.whatsapp.net';
         const enfConfig = await database.getEnforcement(groupId);
         const { executeEnforcement } = require('./enforcement');
-        const reason = lang === 'he' ? 'אכיפה ידנית ע"י מנהל (בטא)' : 'Manual enforcement by admin (beta)';
         await executeEnforcement(
             client, originalMsg, targetJid,
-            [reason], '', 'manual',
+            ['אכיפה ידנית ע"י מנהל (בטא)'], '', 'manual',
             groupConfig, enfConfig,
             { throttle: async (fn) => fn() },
             lang, 'manual_enforce'
         );
-        logger.auditLog(senderJid, 'BETA_MANUAL_ENFORCE', { targetUser: phone, groupId, groupName: groupConfig.groupName }, true);
+        logger.auditLog(senderJid, 'BETA_MANUAL_ENFORCE', { targetUser: senderPhone, groupId, groupName: groupConfig.groupName }, true);
         return true;
     } catch (e) {
         logger.warn('handleBetaEnforceReply failed', e.message);
