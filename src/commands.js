@@ -764,7 +764,9 @@ async function stopEnforcement(client, senderJid, groupConfig, lang) {
         }
 
         logger.auditLog(senderJid || 'system_timeout', 'STOP_ENFORCEMENT', `Group: ${groupConfig.groupName}`, true);
-        return null; // Messages already sent above
+        // Return the stop message so the command handler sends it to the sender.
+        // (The sender may already have received it via sendReport if their report target is DM.)
+        return stopMsg;
     } catch (error) {
         logger.error('Failed to stop enforcement', error);
         return t('error_generic', lang, { error: error.message });

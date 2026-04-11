@@ -352,7 +352,11 @@ async function handleGroupName(client, jid, content, state, lang) {
             const count = chat.participants ? chat.participants.length : 0;
             const botInfo = await client.info;
             const botJid = botInfo.wid._serialized;
-            const botParticipant = chat.participants.find(p => p.id._serialized === botJid);
+            const botNumber = extractNumber(botJid);
+            const botParticipant = chat.participants.find(p =>
+                p.id._serialized === botJid ||
+                extractNumber(p.id._serialized) === botNumber
+            );
             const isAdmin = botParticipant && (botParticipant.isAdmin || botParticipant.isSuperAdmin);
 
             const canClaim = await database.canOwnerClaimGroup(groupId, jid);
@@ -429,9 +433,12 @@ async function handleGroupConfirm(client, jid, content, state, lang) {
             const chat = await client.getChatById(groupId);
             const botInfo = await client.info;
             const botJid = botInfo.wid._serialized;
+            const botNumber = extractNumber(botJid);
 
+            // Match by full JID first; fall back to phone number comparison (handles LID mismatches)
             const botParticipant = chat.participants.find(p =>
-                p.id._serialized === botJid
+                p.id._serialized === botJid ||
+                extractNumber(p.id._serialized) === botNumber
             );
             const isAdmin = botParticipant && (botParticipant.isAdmin || botParticipant.isSuperAdmin);
 
@@ -475,12 +482,25 @@ async function handleAdminCheck(client, jid, content, state, lang) {
     if (check === 'בדוק' || check === 'check') {
         const groupId = state.candidateGroupId;
         try {
-            const chat = await client.getChatById(groupId);
+            // Use getChats() for a fresh snapshot — more reliable than getChatById() alone
+            // when the bot was recently re-added or just promoted to admin.
+            let chat;
+            try {
+                const allChats = await client.getChats();
+                chat = allChats.find(c => c.id && c.id._serialized === groupId);
+            } catch (_) { /* fall through */ }
+            if (!chat) {
+                chat = await client.getChatById(groupId);
+            }
+
             const botInfo = await client.info;
             const botJid = botInfo.wid._serialized;
+            const botNumber = extractNumber(botJid);
 
+            // Match by full JID first; fall back to phone number (handles LID mismatches)
             const botParticipant = chat.participants.find(p =>
-                p.id._serialized === botJid
+                p.id._serialized === botJid ||
+                extractNumber(p.id._serialized) === botNumber
             );
             const isAdmin = botParticipant && (botParticipant.isAdmin || botParticipant.isSuperAdmin);
 
