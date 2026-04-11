@@ -81,12 +81,8 @@ const strings = {
         en: '⚙️ *Custom Rules*\n\nChoose type:\n\n1️⃣ *Allowed messages only* — only specific messages allowed\n2️⃣ *Forbidden messages* — specific messages blocked, rest allowed'
     },
     'curses_preset_selected': {
-        he: '✅ חסימת שפה פוגענית הופעלה.\nהבוט יזהה ויחסום שפה פוגענית, בוטה ואלימה בעברית ובאנגלית עם זיהוי חכם של עקיפות.\n\n💡 *טיפ:* בכל עת תוכל לתייג את *@GroupShield* בתשובה להודעה חשודה — הבוט יבצע בדיקת AI נוספת על אותה הודעה.',
-        en: '✅ Offensive language blocking enabled.\nThe bot will detect and block offensive, vulgar and violent language in Hebrew and English using smart bypass detection.\n\n💡 *Tip:* At any time you can mention *@GroupShield* in a reply to a suspicious message — the bot will run an additional AI check on it.'
-    },
-    'curses_training_notice': {
-        he: '📊 *הודעה לחברי הקבוצה:*\nהקבוצה הצטרפה למערכת GroupShield לחסימת שפה פוגענית.\nהודעות בקבוצה עשויות להישמר לצורך שיפור ואימון הבוט — ללא פרטים מזהים.',
-        en: '📊 *Notice to group members:*\nThis group has joined GroupShield offensive language protection.\nMessages in this group may be saved for bot improvement and training — without identifying details.'
+        he: '✅ חסימת שפה פוגענית הופעלה.\nהבוט יזהה ויחסום שפה פוגענית, בוטה ואלימה בעברית ובאנגלית עם זיהוי חכם של עקיפות.\n\n💡 *טיפ:* בכל עת תוכל לתייג את *@GroupShield* בתשובה להודעה חשודה — הבוט יבצע בדיקת AI נוספת על אותה הודעה.\n\n📊 *שים לב:* הודעות בקבוצה עשויות להישמר לצורך שיפור ואימון הבוט — ללא פרטים מזהים.',
+        en: '✅ Offensive language blocking enabled.\nThe bot will detect and block offensive, vulgar and violent language in Hebrew and English using smart bypass detection.\n\n💡 *Tip:* At any time you can mention *@GroupShield* in a reply to a suspicious message — the bot will run an additional AI check on it.\n\n📊 *Note:* Messages in the group may be saved for bot improvement and training — without identifying details.'
     },
     'shabbat_preset_selected': {
         he: '🕯️ *שמירת שבת וחג הופעלה!*\nהבוט יסגור את הקבוצה 5 דקות לפני כניסת השבת והחגים ויפתח אותה 5 דקות לאחר יציאתם.\nהשעות לפי שעון ישראל.\n\n⚠️ *שים לב:* גם כשהקבוצה נעולה, *למנהלים תמיד יש אפשרות לשלוח הודעות* בקבוצה. אם אתה רוצה למנוע זאת, תצטרך להסיר הרשאות מנהל בזמן השבת ידנית.',
@@ -379,16 +375,16 @@ const strings = {
         en: '🚫 *You were removed from "{{groupName}}"*\n\n📝 *Reason:* {{reason}}\n💬 *Message:* {{content}}\n📅 *Time:* {{time}}'
     },
     'warning_report': {
-        he: '⚠️ *אזהרה ({{current}}/{{max}})*\n\n🏷️ *קבוצה:* {{groupName}}\n🧾 *מזהה קבוצה:* {{groupId}}\n👤 *שם:* {{pushname}}\n📱 *מספר:* {{number}}\n📝 *סיבה:* {{reason}}\n💬 *תוכן:* {{content}}',
-        en: '⚠️ *Warning ({{current}}/{{max}})*\n\n🏷️ *Group:* {{groupName}}\n🧾 *Group ID:* {{groupId}}\n👤 *Name:* {{pushname}}\n📱 *Number:* {{number}}\n📝 *Reason:* {{reason}}\n💬 *Content:* {{content}}'
+        he: '⚠️ *אזהרה ({{current}}/{{max}})*\n\n🏷️ *קבוצה:* {{groupName}}\n👤 *שם:* {{pushname}}\n📱 *מספר:* {{number}}\n📝 *סיבה:* {{reason}}\n💬 *תוכן:* {{content}}',
+        en: '⚠️ *Warning ({{current}}/{{max}})*\n\n🏷️ *Group:* {{groupName}}\n👤 *Name:* {{pushname}}\n📱 *Number:* {{number}}\n📝 *Reason:* {{reason}}\n💬 *Content:* {{content}}'
     },
     'violation_report': {
-        he: '🛡️ *דו"ח GroupShield*\n\n🏷️ *קבוצה:* {{groupName}}\n🆔 *מזהה:* {{violationId}}\n🧾 *מזהה קבוצה:* {{groupId}}\n👤 *שם:* {{pushname}}\n📱 *מספר:* {{number}}\n📝 *סיבה:* {{reason}}\n📝 *תוכן:* "{{content}}"\n📩 *הודעה פרטית:* {{privateStatus}}\n🚫 *הסרה:* {{removeStatus}}\n🕒 *זמן:* {{time}}',
-        en: '🛡️ *GroupShield Report*\n\n🏷️ *Group:* {{groupName}}\n🆔 *ID:* {{violationId}}\n🧾 *Group ID:* {{groupId}}\n👤 *Name:* {{pushname}}\n📱 *Number:* {{number}}\n📝 *Reason:* {{reason}}\n📝 *Content:* "{{content}}"\n📩 *Private msg:* {{privateStatus}}\n🚫 *Removal:* {{removeStatus}}\n🕒 *Time:* {{time}}'
+        he: '🛡️ *דו"ח GroupShield*\n\n🏷️ *קבוצה:* {{groupName}}\n🆔 *מזהה:* {{violationId}}\n👤 *שם:* {{pushname}}\n📱 *מספר:* {{number}}\n📝 *סיבה:* {{reason}}\n📝 *תוכן:* "{{content}}"\n📩 *הודעה פרטית:* {{privateStatus}}\n🚫 *הסרה:* {{removeStatus}}\n🕒 *זמן:* {{time}}',
+        en: '🛡️ *GroupShield Report*\n\n🏷️ *Group:* {{groupName}}\n🆔 *ID:* {{violationId}}\n👤 *Name:* {{pushname}}\n📱 *Number:* {{number}}\n📝 *Reason:* {{reason}}\n📝 *Content:* "{{content}}"\n📩 *Private msg:* {{privateStatus}}\n🚫 *Removal:* {{removeStatus}}\n🕒 *Time:* {{time}}'
     },
     'borderline_review_report': {
-        he: '🧐 *דו"ח בדיקה — GroupShield*\n\n🏷️ *קבוצה:* {{groupName}}\n🧾 *מזהה קבוצה:* {{groupId}}\n👤 *שם:* {{pushname}}\n📱 *מספר:* {{number}}\n🔎 *סיבת בדיקה:* {{trigger}}\n📝 *תוכן:* "{{content}}"\n⚠️ *סטטוס:* לבדיקה ידנית בלבד — לא בוצעה אכיפה\n🕒 *זמן:* {{time}}',
-        en: '🧐 *GroupShield Review Report*\n\n🏷️ *Group:* {{groupName}}\n🧾 *Group ID:* {{groupId}}\n👤 *Name:* {{pushname}}\n📱 *Number:* {{number}}\n🔎 *Review trigger:* {{trigger}}\n📝 *Content:* "{{content}}"\n⚠️ *Status:* Manual review only — no enforcement taken\n🕒 *Time:* {{time}}'
+        he: '🧐 *דו"ח בדיקה — GroupShield*\n\n🏷️ *קבוצה:* {{groupName}}\n👤 *שם:* {{pushname}}\n📱 *מספר:* {{number}}\n🔎 *סיבת בדיקה:* {{trigger}}\n📝 *תוכן:* "{{content}}"\n⚠️ *סטטוס:* לבדיקה ידנית בלבד — לא בוצעה אכיפה\n🕒 *זמן:* {{time}}',
+        en: '🧐 *GroupShield Review Report*\n\n🏷️ *Group:* {{groupName}}\n👤 *Name:* {{pushname}}\n📱 *Number:* {{number}}\n🔎 *Review trigger:* {{trigger}}\n📝 *Content:* "{{content}}"\n⚠️ *Status:* Manual review only — no enforcement taken\n🕒 *Time:* {{time}}'
     },
 
     // ── Welcome Flow & Rules Summary ─────────────────────────────────────
@@ -702,8 +698,26 @@ const strings = {
         en: '✅ Public removal notice: {{status}}'
     },
     'public_removal_notice_msg': {
-        he: '@{{number}} — הודעתך הוסרה ({{reason}})',
-        en: '@{{number}} — your message was removed ({{reason}})'
+        he: '{{number}} — הודעתך הוסרה ({{reason}})',
+        en: '{{number}} — your message was removed ({{reason}})'
+    },
+    'public_warning_notice_msg': {
+        he: '{{number}} — אזהרה {{current}}/{{max}} ({{reason}})',
+        en: '{{number}} — warning {{current}}/{{max}} ({{reason}})'
+    },
+
+    // ── Enforcement Announcement ─────────────────────────────────────────
+    'ask_enforcement_announce': {
+        he: '📣 *הודעת פתיחה לקבוצה*\n\nהאם לשלוח הודעה לקבוצה שהבוט מתחיל לאכוף?\n\n1️⃣ כן — שלח הודעה לקבוצה ✅\n2️⃣ לא ❌',
+        en: '📣 *Group announcement*\n\nShould the bot post a message in the group announcing enforcement has started?\n\n1️⃣ Yes — post message ✅\n2️⃣ No ❌'
+    },
+    'enforcement_announce_saved': {
+        he: '✅ הודעת פתיחה: {{status}}',
+        en: '✅ Group announcement: {{status}}'
+    },
+    'enforcement_announce_msg': {
+        he: '🛡️ *GroupShield הופעל בקבוצה זו.*\nהבוט יאכוף את חוקי הקבוצה באופן אוטומטי מעתה.',
+        en: '🛡️ *GroupShield is now active in this group.*\nThe bot will automatically enforce group rules from now on.'
     },
 
     // ── Feature 6: Grace Period ──────────────────────────────────────────

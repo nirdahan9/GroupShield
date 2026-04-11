@@ -7,6 +7,17 @@ const path = require('path');
 const config = require('./config');
 const messageLog = require('./messageLog');
 
+/**
+ * Format a phone number for display in group messages (e.g. 972541234567 → 972-54-123-4567)
+ */
+function formatNumberForDisplay(number) {
+    const str = String(number);
+    if (/^972\d{9}$/.test(str)) {
+        return `${str.slice(0, 3)}-${str.slice(3, 5)}-${str.slice(5, 8)}-${str.slice(8)}`;
+    }
+    return str;
+}
+
 const REMOVALS_LOG_FILE = path.join(__dirname, '../removals_log.txt');
 
 // Track users currently undergoing the removal process
@@ -140,13 +151,30 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
                 await database.updateEnforcementActionStep(actionId, 'warningStatus', 'skipped');
             }
 
+            // Public group notice for warning (if enabled)
+            if (enforcementConfig.publicRemovalNotice) {
+                try {
+                    const displayNumber = formatNumberForDisplay(number);
+                    const noticeText = t('public_warning_notice_msg', lang, {
+                        number: displayNumber,
+                        current: newCount.toString(),
+                        max: maxWarnings.toString(),
+                        reason
+                    });
+                    await client.sendMessage(groupId, noticeText, { mentions: [targetJid] }).catch(async () => {
+                        await client.sendMessage(groupId, noticeText);
+                    });
+                } catch (e) {
+                    logger.warn(`Public warning notice failed for ${number}`, e);
+                }
+            }
+
             // Report warning if reporting is enabled
             if (enforcementConfig.sendReport) {
                 const warningReport = t('warning_report', lang, {
                     current: newCount.toString(),
                     max: maxWarnings.toString(),
                     groupName: groupConfig.groupName,
-                    groupId: groupConfig.groupId,
                     pushname,
                     number,
                     reason,
@@ -183,8 +211,11 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
         // STEP 1b: Public removal notice in group (if enabled)
         if (enforcementConfig.publicRemovalNotice) {
             try {
-                const noticeText = t('public_removal_notice_msg', lang, { number, reason });
-                await client.sendMessage(groupId, noticeText);
+                const displayNumber = formatNumberForDisplay(number);
+                const noticeText = t('public_removal_notice_msg', lang, { number: displayNumber, reason });
+                await client.sendMessage(groupId, noticeText, { mentions: [targetJid] }).catch(async () => {
+                    await client.sendMessage(groupId, noticeText);
+                });
             } catch (e) {
                 logger.warn(`Public removal notice failed for ${number}`, e);
             }
@@ -235,7 +266,6 @@ async function executeEnforcement(client, msg, senderJid, violations, content, m
         if (enforcementConfig.sendReport) {
             const report = t('violation_report', lang, {
                 groupName: groupConfig.groupName,
-                groupId: groupConfig.groupId,
                 pushname,
                 number,
                 reason,
@@ -336,8 +366,6 @@ async function handleUndo(client, msg, groupConfig, lang) {
     // Extract action ID + phone number from report
     const idMatch = quotedContent.match(/(?:ID|מזהה):\s*(ENF-[\w-]+)/i);
     const actionId = idMatch ? idMatch[1] : null;
-    const groupIdMatch = quotedContent.match(/(?:Group ID|מזהה קבוצה):\s*([^\s\n]+)/i);
-    const quotedGroupId = groupIdMatch ? groupIdMatch[1] : null;
     const match = quotedContent.match(/(?:מספר|Number):\s*(\d+)/i);
     if (!match) {
         return t('undo_failed', lang, { error: lang === 'he' ? 'לא זוהה מספר' : 'Number not found' });
@@ -373,16 +401,11 @@ async function handleUndo(client, msg, groupConfig, lang) {
 
     let effectiveGroupConfig = groupConfig;
 
-    // In shared management groups, group ID is mandatory for safe undo routing
-    const linked = await database.getGroupsByMgmtGroup(msg.from);
-    if (linked.length > 1 && !quotedGroupId) {
-        return t('undo_requires_group_id', lang);
-    }
-
-    if (quotedGroupId) {
-        const byQuoted = await database.getGroup(quotedGroupId);
-        if (byQuoted) {
-            effectiveGroupConfig = byQuoted;
+    // Resolve group from the action record (groupId stored in DB — no longer in report text)
+    if (action.groupId) {
+        const byAction = await database.getGroup(action.groupId);
+        if (byAction) {
+            effectiveGroupConfig = byAction;
         }
     }
 

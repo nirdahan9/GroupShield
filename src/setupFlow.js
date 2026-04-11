@@ -164,6 +164,8 @@ async function processSetupMessage(client, senderJid, content) {
             return await handlePeriodicReminderTime(client, senderJid, content, state, lang);
         case 'rules_in_description':
             return await handleRulesInDescription(client, senderJid, content, state, lang);
+        case 'enforcement_announce':
+            return await handleEnforcementAnnounce(client, senderJid, content, state, lang);
         case 'summary':
             return await handleSummary(client, senderJid, content, state, lang);
         default:
@@ -243,6 +245,7 @@ function getStepPrompt(step, lang, state) {
         }
         case 'periodic_reminder_time': return t('ask_periodic_reminder_time', lang);
         case 'rules_in_description': return t('ask_rules_in_description', lang);
+        case 'enforcement_announce': return t('ask_enforcement_announce', lang);
         default:                return null;
     }
 }
@@ -1362,9 +1365,8 @@ async function handleRulesInDescription(client, jid, content, state, lang) {
     if (!enabled && !disabled) return t('ask_rules_in_description', lang);
 
     const status = enabled ? (lang === 'he' ? 'מופעל' : 'Enabled') : (lang === 'he' ? 'כבוי' : 'Disabled');
-    const newState = { ...state, rulesInDescription: enabled };
-    await advance(jid, state, { step: 'summary', rulesInDescription: enabled });
-    return t('rules_in_description_saved', lang, { status }) + '\n\n' + await buildSummary(newState, state.reportTarget, state.mgmtGroupId, lang);
+    await advance(jid, state, { step: 'enforcement_announce', rulesInDescription: enabled });
+    return t('rules_in_description_saved', lang, { status }) + '\n\n' + t('ask_enforcement_announce', lang);
 }
 
 async function buildSummary(state, reportTarget, mgmtGroupId, lang) {
@@ -1449,6 +1451,18 @@ async function buildSummary(state, reportTarget, mgmtGroupId, lang) {
     });
 }
 
+async function handleEnforcementAnnounce(client, jid, content, state, lang) {
+    const choice = content.trim();
+    const enabled = choice === '1' || choice.includes('כן') || choice.toLowerCase() === 'yes';
+    const disabled = choice === '2' || choice.includes('לא') || choice.toLowerCase() === 'no';
+    if (!enabled && !disabled) return t('ask_enforcement_announce', lang);
+
+    const status = enabled ? (lang === 'he' ? 'מופעל' : 'Enabled') : (lang === 'he' ? 'כבוי' : 'Disabled');
+    const newState = { ...state, enforcementAnnounce: enabled };
+    await advance(jid, state, { step: 'summary', enforcementAnnounce: enabled });
+    return t('enforcement_announce_saved', lang, { status }) + '\n\n' + await buildSummary(newState, state.reportTarget, state.mgmtGroupId, lang);
+}
+
 async function handleSummary(client, jid, content, state, lang) {
     const choice = content.trim();
     if (choice === '1' || choice.includes('אשר') || choice.toLowerCase().includes('confirm')) {
@@ -1501,12 +1515,6 @@ async function handleSummary(client, jid, content, state, lang) {
                     matchMode: 'smart',
                     isCursesPreset: true
                 });
-                // Notify group members that messages may be saved for training
-                try {
-                    await client.sendMessage(groupId, t('curses_training_notice', lang), { linkPreview: false });
-                } catch (e) {
-                    logger.warn('Failed to send curses training notice to group', e);
-                }
             } else if (state.rulesType === 'shabbat') {
                 await database.updateGroupShabbatConfig(groupId, {
                     enabled: true,
@@ -1595,7 +1603,16 @@ async function handleSummary(client, jid, content, state, lang) {
                 }
             }
 
-            // 12. Clear setup state
+            // 12. Send enforcement announcement to group (if enabled)
+            if (state.enforcementAnnounce) {
+                try {
+                    await client.sendMessage(groupId, t('enforcement_announce_msg', lang), { linkPreview: false });
+                } catch (e) {
+                    logger.warn('Failed to send enforcement announcement to group', e);
+                }
+            }
+
+            // 13. Clear setup state
             await saveState(jid, { step: 'done' });
 
             logger.info(`Setup completed for group ${state.groupName} by ${extractNumber(jid)}`);
