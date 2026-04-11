@@ -772,6 +772,24 @@ async function handleGroupMessage(client, msg, senderJid, groupJid, msgType, con
             const forceCheck = warnCount >= Math.ceil(maxWarnings * 2 / 3);
             checkWithLLM(client, msg, senderJid, content, msgType, groupConfig, enforcementConfig, rateLimiter, lang, forceCheck)
                 .catch(e => logger.warn('LLM check error', e.message));
+
+            // ── Beta: vision check for images / stickers ─────────────
+            if (groupConfig.mediaBetaEnabled && msg.hasMedia && (msgType === 'image' || msgType === 'sticker')) {
+                const { checkMediaWithLLM } = require('./llm');
+                checkMediaWithLLM(client, msg, senderJid, msgType, groupConfig, enforcementConfig, rateLimiter, lang)
+                    .catch(e => logger.warn('[beta] Media check error', e.message));
+            }
+
+            // ── Beta: link check ─────────────────────────────────────
+            if (groupConfig.mediaBetaEnabled && msgType === 'chat') {
+                const msgLinks = Array.isArray(msg.links) ? msg.links : [];
+                const hasUrl = msgLinks.length > 0 || /https?:\/\//i.test(content);
+                if (hasUrl) {
+                    const { checkLinkWithLLM } = require('./llm');
+                    checkLinkWithLLM(client, msg, senderJid, content, groupConfig, enforcementConfig, rateLimiter, lang)
+                        .catch(e => logger.warn('[beta] Link check error', e.message));
+                }
+            }
         }
     }
 }

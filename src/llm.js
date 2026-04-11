@@ -220,7 +220,7 @@ function isSuspicious(text) {
 
 // ── Groq API call ─────────────────────────────────────────────────────────────
 
-function callGroq(text) {
+function callGroq(text, customSystemPrompt) {
     const apiKey = config.get('groq.apiKey');
     if (!apiKey) return Promise.resolve(null);
 
@@ -232,7 +232,7 @@ function callGroq(text) {
         return Promise.resolve(cached);
     }
 
-    const systemContent =
+    const systemContent = customSystemPrompt ||
         'You are a strict, zero-tolerance content moderation classifier for a WhatsApp group.\n' +
         'Rule: NO swearing, NO offensive language, NO insults, NO death wishes, and NO derogatory slang.\n' +
         'Policy: "WHEN IN DOUBT, BLOCK". If the message is ambiguous, slightly offensive, passive-aggressive, or attempts to bypass filters using slang/misspellings, treat it as a violation.\n' +
@@ -414,6 +414,225 @@ async function notifyDeveloperPendingPhrasesList(client) {
     }
 }
 
+// ── Vision model (beta) ───────────────────────────────────────────────────
+// Used for image/sticker moderation when mediaBetaEnabled is set on a group.
+
+const VISION_MODEL   = 'meta-llama/llama-4-scout-17b-16e-instruct';
+const VISION_TIMEOUT = 8000;
+
+function callGroqVision(base64Data, mimeType) {
+    const apiKey = config.get('groq.apiKey');
+    if (!apiKey) return Promise.resolve(null);
+
+    const cacheKey = _cacheKey(base64Data.slice(0, 4096)); // hash first 4KB for speed
+    const cached = _getCache(cacheKey);
+    if (cached !== undefined) {
+        logger.debug(`Vision cache hit (${cacheKey.slice(0, 8)}…)`);
+        return Promise.resolve(cached);
+    }
+
+    const systemContent =
+        'You are a strict content moderator for a WhatsApp group.\n' +
+        'Examine the image and determine if it contains ANY of the following:\n' +
+        '- Sexually explicit or pornographic content\n' +
+        '- Hate symbols (swastikas, Nazi imagery, etc.)\n' +
+        '- Extreme violence, gore, or graphic injury\n' +
+        '- Racist imagery or derogatory caricatures\n' +
+        '- Offensive text within the image (slurs, threats, curses)\n' +
+        '- Incitement to violence or terrorism\n' +
+        'Policy: "WHEN IN DOUBT, BLOCK".\n' +
+        'Reply with exactly one word: YES (violates) or NO (does not violate). Nothing else.';
+
+    const imageUrl = `data:${mimeType || 'image/webp'};base64,${base64Data}`;
+
+    const body = JSON.stringify({
+        model: VISION_MODEL,
+        messages: [
+            { role: 'system', content: systemContent },
+            {
+                role: 'user',
+                content: [
+                    { type: 'image_url', image_url: { url: imageUrl } },
+                    { type: 'text', text: 'Does this image violate the content policy?' }
+                ]
+            }
+        ],
+        max_tokens: 5,
+        temperature: 0
+    });
+
+    return new Promise((resolve) => {
+        const req = https.request(
+            {
+                hostname: 'api.groq.com',
+                path: '/openai/v1/chat/completions',
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json',
+                    'Content-Length': Buffer.byteLength(body)
+                }
+            },
+            (res) => {
+                let data = '';
+                res.on('data', chunk => { data += chunk; });
+                res.on('end', () => {
+                    try {
+                        const parsed = JSON.parse(data);
+                        const answer = (parsed.choices?.[0]?.message?.content || '').trim().toUpperCase();
+                        const result = answer.startsWith('YES');
+                        _setCache(cacheKey, result);
+                        resolve(result);
+                    } catch {
+                        resolve(null);
+                    }
+                });
+            }
+        );
+        req.setTimeout(VISION_TIMEOUT, () => { req.destroy(); resolve(null); });
+        req.on('error', () => resolve(null));
+        req.write(body);
+        req.end();
+    });
+}
+
+/**
+ * Beta: analyse image/sticker with a vision LLM.
+ * Fires enforce if flagged. Always fire-and-forget from handlers.
+ */
+async function checkMediaWithLLM(client, msg, senderJid, msgType, groupConfig, enforcementConfig, rateLimiter, lang) {
+    const { executeEnforcement } = require('./enforcement');
+    const { t } = require('./i18n');
+
+    const apiKey = config.get('groq.apiKey');
+    if (!apiKey) return;
+
+    let media;
+    try {
+        media = await msg.downloadMedia();
+    } catch (e) {
+        logger.warn(`[beta] Failed to download ${msgType} for vision check`, e.message);
+        return;
+    }
+    if (!media || !media.data) return;
+
+    recordCall();
+    try {
+        const isViolation = await callGroqVision(media.data, media.mimetype);
+        if (isViolation !== true) return;
+
+        logger.info(`[beta] Vision flagged ${msgType} in ${groupConfig.groupName} from ${senderJid}`);
+        cursesTrainingLog.logEnforcement(
+            groupConfig.groupId, groupConfig.groupName, senderJid,
+            `[${msgType}]`, t('reason_llm_violation', lang), 'vision_beta'
+        );
+        await executeEnforcement(
+            client, msg, senderJid,
+            [t('reason_llm_violation', lang)],
+            '', msgType, groupConfig, enforcementConfig, rateLimiter, lang, 'vision_beta'
+        );
+    } catch (e) {
+        logger.warn('[beta] Vision moderation check failed', e.message);
+    }
+}
+
+/**
+ * Beta: check URLs in a message against Groq.
+ * Fetches page metadata (title + description) and asks the LLM if the site is harmful.
+ * Fires enforce if any URL is flagged. Always fire-and-forget from handlers.
+ */
+async function checkLinkWithLLM(client, msg, senderJid, content, groupConfig, enforcementConfig, rateLimiter, lang) {
+    const { executeEnforcement } = require('./enforcement');
+    const { t } = require('./i18n');
+
+    const apiKey = config.get('groq.apiKey');
+    if (!apiKey) return;
+
+    // Extract URLs: prefer msg.links array, fall back to regex
+    let urls = [];
+    if (Array.isArray(msg.links) && msg.links.length > 0) {
+        urls = msg.links.map(l => (typeof l === 'string' ? l : l.link)).filter(Boolean);
+    }
+    if (urls.length === 0) {
+        const found = (content || '').match(/https?:\/\/[^\s,]+/gi);
+        if (found) urls = found;
+    }
+    if (urls.length === 0) return;
+
+    for (const rawUrl of urls.slice(0, 3)) { // check at most 3 URLs per message
+        let urlContext = rawUrl;
+
+        // Try to fetch metadata (title + og:description) to improve LLM accuracy
+        try {
+            urlContext = await _fetchUrlMetadata(rawUrl);
+        } catch { /* keep raw URL */ }
+
+        recordCall();
+        try {
+            const prompt =
+                'You are a strict content moderator for a WhatsApp group.\n' +
+                'Determine if the following website is harmful or inappropriate, including:\n' +
+                '- Pornographic or adult content sites\n' +
+                '- Sites promoting violence, terrorism, or hate\n' +
+                '- Gambling or illegal activity sites\n' +
+                'Policy: "WHEN IN DOUBT, BLOCK".\n' +
+                'Reply with exactly one word: YES (harmful) or NO (not harmful). Nothing else.';
+
+            const isViolation = await callGroq(urlContext, prompt);
+            if (isViolation !== true) continue;
+
+            logger.info(`[beta] Link flagged in ${groupConfig.groupName} from ${senderJid}: ${rawUrl.slice(0, 80)}`);
+            cursesTrainingLog.logEnforcement(
+                groupConfig.groupId, groupConfig.groupName, senderJid,
+                rawUrl, t('reason_llm_violation', lang), 'link_beta'
+            );
+            await executeEnforcement(
+                client, msg, senderJid,
+                [t('reason_llm_violation', lang)],
+                rawUrl, 'chat', groupConfig, enforcementConfig, rateLimiter, lang, 'link_beta'
+            );
+            return; // stop after first match
+        } catch (e) {
+            logger.warn('[beta] Link moderation check failed', e.message);
+        }
+    }
+}
+
+/**
+ * Fetch page title + og:description for a URL (timeout 4s).
+ * Returns a compact string like "URL | Title | Description" for the LLM.
+ */
+function _fetchUrlMetadata(url) {
+    return new Promise((resolve, reject) => {
+        const parsedUrl = new URL(url);
+        const isHttps = parsedUrl.protocol === 'https:';
+        const lib = isHttps ? https : require('http');
+
+        const req = lib.get(
+            { hostname: parsedUrl.hostname, path: parsedUrl.pathname + parsedUrl.search, headers: { 'User-Agent': 'Mozilla/5.0' } },
+            (res) => {
+                // Follow one redirect
+                if ((res.statusCode === 301 || res.statusCode === 302) && res.headers.location) {
+                    resolve(_fetchUrlMetadata(res.headers.location).catch(() => url));
+                    return;
+                }
+                let html = '';
+                res.on('data', chunk => { if (html.length < 20000) html += chunk; });
+                res.on('end', () => {
+                    const titleMatch = html.match(/<title[^>]*>([^<]{1,200})/i);
+                    const descMatch  = html.match(/<meta[^>]+(?:name="description"|property="og:description")[^>]+content="([^"]{1,200})"/i)
+                                    || html.match(/<meta[^>]+content="([^"]{1,200})"[^>]+(?:name="description"|property="og:description")/i);
+                    const title = (titleMatch?.[1] || '').trim();
+                    const desc  = (descMatch?.[1]  || '').trim();
+                    resolve([url, title, desc].filter(Boolean).join(' | '));
+                });
+            }
+        );
+        req.setTimeout(4000, () => { req.destroy(); reject(new Error('timeout')); });
+        req.on('error', reject);
+    });
+}
+
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /**
@@ -538,4 +757,4 @@ async function checkWithLLM(client, msg, senderJid, content, msgType, groupConfi
     }
 }
 
-module.exports = { checkWithLLM, notifyDeveloperPendingPhrasesList, getGroqStats };
+module.exports = { checkWithLLM, notifyDeveloperPendingPhrasesList, getGroqStats, checkMediaWithLLM, checkLinkWithLLM };

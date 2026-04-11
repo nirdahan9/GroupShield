@@ -222,6 +222,16 @@ async function executeCommand(client, senderJid, command, lang, overrideGroupCon
             return t('restart_message', lang);
         }
 
+        // ── Developer: activate / deactivate media beta ──────────────
+        const betaEnableMatch  = cmd.match(/^הפעל בטא (.+)$/i)  || cmd.match(/^beta enable (.+)$/i);
+        const betaDisableMatch = cmd.match(/^הפסק בטא (.+)$/i)  || cmd.match(/^beta disable (.+)$/i);
+        if (betaEnableMatch || betaDisableMatch) {
+            if (!isDeveloper) return t('developer_only_command', lang);
+            const enable     = !!betaEnableMatch;
+            const targetName = (betaEnableMatch || betaDisableMatch)[1].trim();
+            return await toggleMediaBeta(targetName, enable, lang);
+        }
+
         // ── Developer: manage allowed-words whitelist ─────────────────
         const allowAddMatch = cmd.match(/^allowed\s+add\s+(.+)$/i) || cmd.match(/^מותר\s+הוסף\s+(.+)$/i);
         if (allowAddMatch) {
@@ -883,6 +893,48 @@ async function stopEnforcementOnNameRejection(client, senderJid, requestId, lang
 
     // Stop enforcement fully
     return await stopEnforcement(client, senderJid || groupConfig.ownerJid, groupConfig, lang);
+}
+
+/**
+ * Developer helper — enable or disable media beta for a group identified by name.
+ * Validates that the curses preset is active when enabling.
+ */
+async function toggleMediaBeta(targetName, enable, lang) {
+    const allGroups = await database.getAllGroups();
+    const found = (allGroups || []).find(g =>
+        g.groupName && g.groupName.toLowerCase() === targetName.toLowerCase()
+    ) || (allGroups || []).find(g =>
+        g.groupName && g.groupName.toLowerCase().includes(targetName.toLowerCase())
+    );
+
+    if (!found) {
+        return lang === 'he'
+            ? `❌ לא נמצאה קבוצה בשם "${targetName}". השתמש ב"סטטוס מפתח" לרשימת הקבוצות.`
+            : `❌ No group found named "${targetName}". Use "dev status" to list groups.`;
+    }
+
+    if (enable) {
+        const rules = await database.getRules(found.groupId);
+        const hasCurses = rules.some(r =>
+            r.ruleType === 'forbidden_messages' && r.ruleData?.isCursesPreset
+        );
+        if (!hasCurses) {
+            return lang === 'he'
+                ? `❌ הקבוצה "${found.groupName}" לא פועלת במצב אכיפת שפה פוגענית — הפעל אותה קודם דרך ה-setup.`
+                : `❌ Group "${found.groupName}" does not have offensive language enforcement active — enable it via setup first.`;
+        }
+    }
+
+    await database.setMediaBeta(found.groupId, enable);
+    logger.auditLog('developer', enable ? 'BETA_ENABLE' : 'BETA_DISABLE', { groupId: found.groupId, groupName: found.groupName }, true);
+
+    return enable
+        ? (lang === 'he'
+            ? `✅ מצב בטא הופעל לקבוצה *${found.groupName}*.\nתמונות, סטיקרים ולינקים יבדקו ע"י AI.`
+            : `✅ Beta mode enabled for *${found.groupName}*.\nImages, stickers and links will be checked by AI.`)
+        : (lang === 'he'
+            ? `✅ מצב בטא הופסק לקבוצה *${found.groupName}*.`
+            : `✅ Beta mode disabled for *${found.groupName}*.`);
 }
 
 module.exports = {

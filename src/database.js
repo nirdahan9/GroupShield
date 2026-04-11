@@ -340,6 +340,11 @@ class Database {
                         this.db.run("ALTER TABLE groups ADD COLUMN borderlineReviewEnabled INTEGER DEFAULT 0");
                         logger.info("Migrated schema: Added borderlineReviewEnabled to groups");
                     }
+                    const hasMediaBetaEnabled = rows2.some(r => r.name === 'mediaBetaEnabled');
+                    if (!hasMediaBetaEnabled) {
+                        this.db.run("ALTER TABLE groups ADD COLUMN mediaBetaEnabled INTEGER DEFAULT 0");
+                        logger.info("Migrated schema: Added mediaBetaEnabled to groups");
+                    }
                 }
             });
 
@@ -1238,6 +1243,10 @@ class Database {
 
     async updateGroupBorderlineReview(groupId, enabled) {
         await this._run('UPDATE groups SET borderlineReviewEnabled = ? WHERE groupId = ?', [enabled ? 1 : 0, groupId]);
+    }
+
+    async setMediaBeta(groupId, enabled) {
+        await this._run('UPDATE groups SET mediaBetaEnabled = ? WHERE groupId = ?', [enabled ? 1 : 0, groupId]);
     }
 
     async updateGroupLastReminderAt(groupId) {
