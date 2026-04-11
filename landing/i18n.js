@@ -146,7 +146,7 @@ const translations = {
     },
     he: {
         "hero-desc": "ניהול קבוצת ווטסאפ לא צריך להיות מלחמה.<br>GroupShield אוכף את הכללים שלך בשבילך באופן אוטומטי לחלוטין.",
-        "btn-start": "🚀 נסו בעצמכם",
+        "btn-start": "נסו בעצמכם 🚀",
         "btn-features": "גלה את הפיצ'רים",
         "btn-demo": "חווה את GroupShield",
         "features-title": "כל מה שהקבוצה שלך צריכה",
