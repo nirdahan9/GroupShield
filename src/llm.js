@@ -435,6 +435,8 @@ function callGroqVision(base64Data, mimeType) {
         'You are a strict content moderator for a WhatsApp group.\n' +
         'Examine the image and determine if it contains ANY of the following:\n' +
         '- Sexually explicit or pornographic content\n' +
+        '- Partial nudity or sexually suggestive imagery (e.g. exposed genitals, explicit poses, sexual memes)\n' +
+        '- Sexual harassment or exploitation imagery\n' +
         '- Hate symbols (swastikas, Nazi imagery, etc.)\n' +
         '- Extreme violence, gore, or graphic injury\n' +
         '- Racist imagery or derogatory caricatures\n' +
@@ -572,7 +574,9 @@ async function checkLinkWithLLM(client, msg, senderJid, content, groupConfig, en
             const prompt =
                 'You are a strict content moderator for a WhatsApp group.\n' +
                 'Determine if the following website is harmful or inappropriate, including:\n' +
-                '- Pornographic or adult content sites\n' +
+                '- Pornographic, adult content, or sexually explicit sites\n' +
+                '- Escort, sex work, or sexual services sites\n' +
+                '- Sexual dating or hookup sites\n' +
                 '- Sites promoting violence, terrorism, or hate\n' +
                 '- Gambling or illegal activity sites\n' +
                 'Policy: "WHEN IN DOUBT, BLOCK".\n' +
