@@ -163,8 +163,8 @@
                 </div>
             </div>
             <div class="card glass detail-card" style="text-align: center; padding: 2.5rem 1rem;">
-                <div id="stat-uptime" style="font-size: 3rem; font-weight: 800; color: var(--secondary);">—</div>
-                <div style="margin-top: 0.5rem; color: var(--text-dim);" data-i18n="stat-uptime-label">Days Running
+                <div id="stat-scanned" style="font-size: 3rem; font-weight: 800; color: var(--secondary);">—</div>
+                <div style="margin-top: 0.5rem; color: var(--text-dim);" data-i18n="stat-scanned-label">Messages Scanned
                 </div>
             </div>
         </div>
@@ -1130,7 +1130,7 @@ graph TD
                         'stat-groups': data.groups,
                         'stat-violations': data.violations,
                         'stat-removals': data.removals,
-                        'stat-uptime': data.uptime_days
+                        'stat-scanned': data.messages_scanned
                     };
                     for (const [id, val] of Object.entries(map)) {
                         const el = document.getElementById(id);

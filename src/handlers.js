@@ -86,6 +86,8 @@ async function rewriteReplyCommandFromReport(msg, content, senderJid) {
 async function processMessage(client, msg, spamMap, rateLimiter) {
     if (msg.fromMe) return;
 
+    database.incrementCounter('messages_scanned').catch(() => {});
+
     const remoteJid = msg.from;
     let senderJid = getNormalizedJid(msg.author || msg.from);
 

@@ -191,6 +191,12 @@ class Database {
                 last_updated TEXT DEFAULT (datetime('now'))
             )`);
 
+            // General bot counters (messages_scanned, etc.)
+            this.db.run(`CREATE TABLE IF NOT EXISTS bot_counters (
+                key TEXT PRIMARY KEY,
+                value INTEGER DEFAULT 0
+            )`);
+
             // Member join times (for grace period feature)
             this.db.run(`CREATE TABLE IF NOT EXISTS member_join_times (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -630,16 +636,12 @@ class Database {
         const groups = await this._get("SELECT COUNT(*) AS cnt FROM groups WHERE active = 1 AND verified = 1");
         const violations = await this._get("SELECT COUNT(*) AS cnt FROM enforcement_actions");
         const removals = await this._get("SELECT COUNT(*) AS cnt FROM enforcement_actions WHERE status = 'completed'");
-        const oldest = await this._get("SELECT MIN(createdAt) AS ts FROM groups WHERE active = 1 AND verified = 1");
-        let uptime_days = 0;
-        if (oldest && oldest.ts) {
-            uptime_days = Math.floor((Date.now() - new Date(oldest.ts).getTime()) / (1000 * 60 * 60 * 24));
-        }
+        const messages_scanned = await this.getCounter('messages_scanned');
         return {
             groups: groups ? groups.cnt : 0,
             violations: violations ? violations.cnt : 0,
             removals: removals ? removals.cnt : 0,
-            uptime_days
+            messages_scanned
         };
     }
 
@@ -1162,6 +1164,21 @@ class Database {
             'SELECT 1 FROM groups WHERE ownerJid = ? AND active = 1', [jid]
         );
         return !!row;
+    }
+
+    // ── Bot counters ──────────────────────────────────────────────────────
+
+    async incrementCounter(key) {
+        await this._run(
+            `INSERT INTO bot_counters (key, value) VALUES (?, 1)
+             ON CONFLICT(key) DO UPDATE SET value = value + 1`,
+            [key]
+        );
+    }
+
+    async getCounter(key) {
+        const row = await this._get('SELECT value FROM bot_counters WHERE key = ?', [key]);
+        return row ? row.value : 0;
     }
 
     // ── Enforcement stats ─────────────────────────────────────────────────

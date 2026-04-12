@@ -35,7 +35,7 @@ function start(db) {
 
     async function publish() {
         try {
-            const stats = await db.getPublicStats();
+            const stats = await db.getLandingStats();
             await pushToFirebase(stats, secret);
             logger.info('[statsPublisher] Stats pushed to Firebase', stats);
         } catch (e) {
