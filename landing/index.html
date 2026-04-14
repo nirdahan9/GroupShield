@@ -1160,6 +1160,7 @@ graph TD
 
     <script>
         (function () {
+            // Section fade-in on scroll
             const io = new IntersectionObserver(function (entries) {
                 entries.forEach(function (e) {
                     if (e.isIntersecting) {
@@ -1170,6 +1171,37 @@ graph TD
             }, { threshold: 0.08 });
             document.querySelectorAll('.section-fade-in').forEach(function (el) {
                 io.observe(el);
+            });
+
+            // Custom smooth scroll for anchor links (slower, more controlled)
+            function easeInOutQuart(t) {
+                return t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
+            }
+
+            document.addEventListener('click', function (e) {
+                var anchor = e.target.closest('a[href^="#"]');
+                if (!anchor) return;
+                var href = anchor.getAttribute('href');
+                if (!href || href === '#') return;
+                var target = document.querySelector(href);
+                if (!target) return;
+                e.preventDefault();
+
+                var navHeight = window.innerWidth <= 768 ? 56 : 64;
+                var startPos = window.scrollY;
+                var targetPos = target.getBoundingClientRect().top + startPos - navHeight;
+                var distance = targetPos - startPos;
+                var duration = 1000;
+                var startTime = null;
+
+                function step(timestamp) {
+                    if (!startTime) startTime = timestamp;
+                    var elapsed = timestamp - startTime;
+                    var progress = Math.min(elapsed / duration, 1);
+                    window.scrollTo(0, startPos + distance * easeInOutQuart(progress));
+                    if (progress < 1) requestAnimationFrame(step);
+                }
+                requestAnimationFrame(step);
             });
         })();
     </script>
