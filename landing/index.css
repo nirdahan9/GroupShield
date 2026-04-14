@@ -887,14 +887,6 @@ html[dir="rtl"] .pipeline-pulse {
   text-transform: uppercase;
 }
 
-/* Section fade-in on scroll */
-.section-fade-in {
-  opacity: 0;
-  transition: opacity 0.7s ease-out;
-}
-.section-fade-in.visible {
-  opacity: 1;
-}
 
 /* FAQ Accordion */
 .faq-accordion {

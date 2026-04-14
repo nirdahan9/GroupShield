@@ -1160,24 +1160,6 @@ graph TD
         }
     </script>
 
-    <script>
-        // Section fade-in on scroll
-        (function () {
-            var targets = document.querySelectorAll('section');
-            var obs = new IntersectionObserver(function (entries) {
-                entries.forEach(function (entry) {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                        obs.unobserve(entry.target);
-                    }
-                });
-            }, { threshold: 0.08 });
-            targets.forEach(function (el) {
-                el.classList.add('section-fade-in');
-                obs.observe(el);
-            });
-        })();
-    </script>
 </body>
 
 </html>
