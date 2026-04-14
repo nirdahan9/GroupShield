@@ -1,7 +1,7 @@
 const translations = {
     en: {
         "hero-desc": "Managing a WhatsApp group shouldn't be a constant battle.<br>GroupShield enforces your rules for you - automatically.",
-        "btn-start": "🚀 Try it yourself",
+        "btn-start": "Try it yourself",
         "btn-features": "Discover Features",
         "btn-demo": "Experience GroupShield",
         "features-title": "Everything Your Group Needs",
@@ -146,7 +146,7 @@ const translations = {
     },
     he: {
         "hero-desc": "ניהול קבוצת ווטסאפ לא צריך להיות מלחמה.<br>GroupShield אוכף את הכללים שלך בשבילך באופן אוטומטי לחלוטין.",
-        "btn-start": "נסו בעצמכם 🚀",
+        "btn-start": "נסו בעצמכם",
         "btn-features": "גלה את הפיצ'רים",
         "btn-demo": "חווה את GroupShield",
         "features-title": "כל מה שהקבוצה שלך צריכה",
