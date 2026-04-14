@@ -75,10 +75,10 @@
         }
     </script>
     <section class="hero" style="padding: 7rem 0 3rem; position: relative;">
-        <!-- Glowing Background Orbs -->
+        <div class="hero-glow-orb"></div>
         <div class="container hero-content animate">
             <h1
-                style="display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; direction: ltr;">
+                style="display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; direction: ltr; position: relative; z-index: 1;">
                 <img src="hero.png" alt="GroupShield Logo"
                     style="width: 65px; height: 65px; border-radius: 50%; object-fit: cover; border: 2px solid var(--secondary); box-shadow: 0 0 15px rgba(0, 255, 163, 0.4);">
                 GroupShield
@@ -98,7 +98,7 @@
     </section>
 
     <section class="container" style="padding: 8rem 0 4rem;">
-        <h2 id="features" style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="features-title">Generic &
+        <h2 id="features" class="gradient-text" style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="features-title">Generic &
             Powerful</h2>
         <p style="text-align: center; color: var(--text-dim); margin-bottom: 4rem;" data-i18n="features-desc">One bot to
             rule them all. Simple for admins, transparent for users.</p>
@@ -142,7 +142,7 @@
 
     <!-- Stats Section -->
     <section class="container" style="padding: 2rem 0 6rem;">
-        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="stats-title">Live Stats</h2>
+        <h2 class="gradient-text" style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="stats-title">Live Stats</h2>
         <p style="text-align: center; color: var(--text-dim); margin-bottom: 3rem;" data-i18n="stats-desc">Real data
             from the running production instance.</p>
         <div class="feature-list stats-list"
@@ -172,7 +172,7 @@
 
     <!-- Chat Simulation Engine -->
     <section class="container" style="padding: 4rem 0;">
-        <h2 id="demo" style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="demo-title">Experience
+        <h2 id="demo" class="gradient-text" style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="demo-title">Experience
             GroupShield</h2>
         <p style="text-align: center; color: var(--text-dim); margin-bottom: 3rem;" data-i18n="demo-desc">A visual
             simulation of how GroupShield transforms your community management.</p>
@@ -272,7 +272,7 @@
 
     <!-- Logic Engine & Footer -->
     <section class="container" style="padding: 4rem 0 0;">
-        <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="logic-title">The Logic Engine
+        <h2 class="gradient-text" style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="logic-title">The Logic Engine
         </h2>
         <div class="sim-container glass" style="padding: 3rem 1rem;">
             <div class="pipeline-track" id="pipeline-simulator">
@@ -311,7 +311,7 @@
 
     <!-- Detection Flow Diagram -->
     <section class="container" style="padding: 8rem 0 4rem;">
-        <h2 id="detection-flow" style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="flow-title">How We Catch the
+        <h2 id="detection-flow" class="gradient-text" style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="flow-title">How We Catch the
             Uncatchable</h2>
         <p style="text-align: center; color: var(--text-dim); margin-bottom: 3rem;" data-i18n="flow-desc">A real-time
             trace of a message engineered to slip through every filter.</p>
@@ -562,105 +562,142 @@
     </section>
 
     <!-- FAQ Section -->
-    <section class="container" style="padding: 4rem 0 8rem; max-width: 1000px; margin: 0 auto;">
-        <h2 id="faq" style="text-align: center; font-size: 2.5rem; margin-bottom: 3rem;" data-i18n="faq-title">Frequently Asked
+    <section class="container" style="padding: 6rem 0;">
+        <h2 id="faq" class="gradient-text" style="text-align: center; font-size: 2.5rem; margin-bottom: 2rem;" data-i18n="faq-title">Frequently Asked
             Questions</h2>
 
-        <div class="feature-list" style="margin-top: 0;">
-            <div class="card glass detail-card" style="text-align: center;">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-1-q">Is my privacy protected?</h3>
-                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-1-a">Yes. GroupShield does not save
-                    your messages. Message contents are strictly evaluated in memory and discarded immediately unless a
-                    violation occurs (for reporting purposes only).</p>
+        <div class="faq-accordion">
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    <span data-i18n="faq-1-q">Is my privacy protected?</span>
+                    <span class="faq-chevron">▾</span>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner" data-i18n="faq-1-a">Yes. GroupShield does not save your messages. Message contents are strictly evaluated in memory and discarded immediately unless a violation occurs (for reporting purposes only).</div>
+                </div>
             </div>
 
-            <div class="card glass detail-card" style="text-align: center;">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-2-q">Can I use it on multiple
-                    groups?</h3>
-                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-2-a">Absolutely. A single
-                    GroupShield instance can seamlessly manage thousands of groups, each with its own independent rule
-                    configuration.</p>
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    <span data-i18n="faq-2-q">Can I use it on multiple groups?</span>
+                    <span class="faq-chevron">▾</span>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner" data-i18n="faq-2-a">Absolutely. A single GroupShield instance can seamlessly manage thousands of groups, each with its own independent rule configuration.</div>
+                </div>
             </div>
 
-            <div class="card glass detail-card" style="text-align: center;">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-3-q">What happens if the bot
-                    crashes?</h3>
-                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-3-a">GroupShield is built with a
-                    self-healing architecture. It automatically detects connection drops and safely restarts the browser
-                    session without missing any backend data.</p>
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    <span data-i18n="faq-3-q">What happens if the bot crashes?</span>
+                    <span class="faq-chevron">▾</span>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner" data-i18n="faq-3-a">GroupShield is built with a self-healing architecture. It automatically detects connection drops and safely restarts the browser session without missing any backend data.</div>
+                </div>
             </div>
 
-            <div class="card glass detail-card" style="text-align: center;">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-4-q">Does it read images or files?
-                </h3>
-                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-4-a">No. GroupShield currently only
-                    processes text messages. You can optionally configure it to automatically block all non-text media
-                    if you wish.</p>
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    <span data-i18n="faq-4-q">Does it read images or files?</span>
+                    <span class="faq-chevron">▾</span>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner" data-i18n="faq-4-a">No. GroupShield currently only processes text messages. You can optionally configure it to automatically block all non-text media if you wish.</div>
+                </div>
             </div>
 
-            <div class="card glass detail-card" style="text-align: center;">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-5-q">What's the maximum group size?
-                </h3>
-                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-5-a">GroupShield works flawlessly
-                    with WhatsApp's maximum group size (1024 members) and handles high-volume message traffic
-                    effortlessly.</p>
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    <span data-i18n="faq-5-q">What's the maximum group size?</span>
+                    <span class="faq-chevron">▾</span>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner" data-i18n="faq-5-a">GroupShield works flawlessly with WhatsApp's maximum group size (1024 members) and handles high-volume message traffic effortlessly.</div>
+                </div>
             </div>
 
-            <div class="card glass detail-card" style="text-align: center;">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-6-q">Do I need technical knowledge?
-                </h3>
-                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-6-a">Not at all. The entire setup
-                    process is done through an intuitive chat interface directly in WhatsApp.</p>
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    <span data-i18n="faq-6-q">Do I need technical knowledge?</span>
+                    <span class="faq-chevron">▾</span>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner" data-i18n="faq-6-a">Not at all. The entire setup process is done through an intuitive chat interface directly in WhatsApp.</div>
+                </div>
             </div>
 
-            <div class="card glass detail-card" style="text-align: center;">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-7-q">How does offensive language
-                    detection work?</h3>
-                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-7-a">It uses a two-layer approach.
-                    First, a local wordlist detects known offensive words instantly with no API call. Then, a suspicion
-                    scorer decides whether a message is worth escalating. Suspicious messages are passed to a
-                    Groq-hosted Llama 3.1 model that catches bypass attempts like letter substitutions (e.g. א replaced
-                    by @) and leet-speak. Prompt injection attempts are blocked before they reach the model.</p>
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    <span data-i18n="faq-7-q">How does offensive language detection work?</span>
+                    <span class="faq-chevron">▾</span>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner" data-i18n="faq-7-a">It uses a two-layer approach. First, a local wordlist detects known offensive words instantly with no API call. Then, a suspicion scorer decides whether a message is worth escalating. Suspicious messages are passed to a Groq-hosted Llama 3.1 model that catches bypass attempts like letter substitutions (e.g. א replaced by @) and leet-speak. Prompt injection attempts are blocked before they reach the model.</div>
+                </div>
             </div>
 
-            <div class="card glass detail-card" style="text-align: center;">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-8-q">Can I add or remove words from
-                    the offensive language list?</h3>
-                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-8-a">Yes. Admins can add custom
-                    forbidden phrases or mark specific words as allowed (overriding the default list) using simple
-                    commands directly in WhatsApp — no code changes needed.</p>
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    <span data-i18n="faq-8-q">Can I add or remove words from the offensive language list?</span>
+                    <span class="faq-chevron">▾</span>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner" data-i18n="faq-8-a">Yes. Admins can add custom forbidden phrases or mark specific words as allowed (overriding the default list) using simple commands directly in WhatsApp — no code changes needed.</div>
+                </div>
             </div>
 
-            <div class="card glass detail-card" style="text-align: center;">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-9-q">Does the bot work during
-                    Shabbat?</h3>
-                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-9-a">Yes. GroupShield itself runs
-                    24/7 on a VPS — Shabbat mode locks the WhatsApp group, not the bot. The bot stays active and
-                    re-locks the group automatically if an admin manually reopens it during Shabbat.</p>
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    <span data-i18n="faq-9-q">Does the bot work during Shabbat?</span>
+                    <span class="faq-chevron">▾</span>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner" data-i18n="faq-9-a">Yes. GroupShield itself runs 24/7 on a VPS — Shabbat mode locks the WhatsApp group, not the bot. The bot stays active and re-locks the group automatically if an admin manually reopens it during Shabbat.</div>
+                </div>
             </div>
 
-            <div class="card glass detail-card" style="text-align: center;">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-10-q">What happens when a user is
-                    warned?</h3>
-                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-10-a">Each violation increments the
-                    user's warning counter. If warnings are enabled, the bot sends a private DM to the user explaining
-                    the violation. Once the warning threshold is reached, the full enforcement pipeline kicks in: delete
-                    the message, remove the user, and send a detailed report to the management group.</p>
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    <span data-i18n="faq-10-q">What happens when a user is warned?</span>
+                    <span class="faq-chevron">▾</span>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner" data-i18n="faq-10-a">Each violation increments the user's warning counter. If warnings are enabled, the bot sends a private DM to the user explaining the violation. Once the warning threshold is reached, the full enforcement pipeline kicks in: delete the message, remove the user, and send a detailed report to the management group.</div>
+                </div>
             </div>
 
-            <div class="card glass detail-card" style="text-align: center;">
-                <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;" data-i18n="faq-11-q">Can an admin undo a removal?
-                </h3>
-                <p style="color: var(--text-dim); line-height: 1.6;" data-i18n="faq-11-a">Yes. Every removal report
-                    contains a unique action ID. Admins can reply to the report with "undo" to reverse the action — the
-                    bot cancels the removal, resets the user's warnings, and logs the reversal.</p>
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    <span data-i18n="faq-11-q">Can an admin undo a removal?</span>
+                    <span class="faq-chevron">▾</span>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner" data-i18n="faq-11-a">Yes. Every removal report contains a unique action ID. Admins can reply to the report with "undo" to reverse the action — the bot cancels the removal, resets the user's warnings, and logs the reversal.</div>
+                </div>
             </div>
         </div>
+
+        <script>
+            function toggleFaq(btn) {
+                var item = btn.closest('.faq-item');
+                var answer = item.querySelector('.faq-answer');
+                var isOpen = item.classList.contains('open');
+                document.querySelectorAll('.faq-item.open').forEach(function(el) {
+                    el.classList.remove('open');
+                    el.querySelector('.faq-answer').style.maxHeight = '0';
+                });
+                if (!isOpen) {
+                    item.classList.add('open');
+                    answer.style.maxHeight = answer.scrollHeight + 'px';
+                }
+            }
+        </script>
     </section>
 
     <!-- Under the Hood (Technical) -->
     <section class="container" style="padding: 8rem 0 8rem;">
-        <h2 id="tech-stack" style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="tech-title">Under the Hood</h2>
+        <h2 id="tech-stack" class="gradient-text" style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="tech-title">Under the Hood</h2>
         <p style="text-align: center; color: var(--text-dim); margin-bottom: 5rem;" data-i18n="tech-desc">For the technically curious — the architecture powering GroupShield.</p>
 
         <!-- Tech Stack -->
@@ -761,19 +798,34 @@ graph TD
 
     </section>
 
-    <footer
-        style="text-align: center; padding: 4rem; color: var(--text-dim); border-top: 1px solid var(--glass-border);">
-        <p data-i18n="footer-text">© 2026 GroupShield</p>
-        <a href="https://www.linkedin.com/in/nir-dahan01/" target="_blank"
-            style="color: inherit; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); padding: 0.5rem 1.2rem; border-radius: 20px; text-decoration: none; font-size: 0.95rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 1.5rem; transition: all 0.3s ease; font-weight: 500;"
-            onmouseover="this.style.background='rgba(10,102,194,0.2)'; this.style.borderColor='rgba(10,102,194,0.5)'; this.style.color='#60a5fa'"
-            onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='inherit'">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                <path
-                    d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z" />
-            </svg>
-            <span data-i18n="footer-linkedin">Nir Dahan</span>
-        </a>
+    <footer style="border-top: 1px solid var(--glass-border); padding: 3rem 2rem;">
+        <div style="max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 1.5rem;">
+            <!-- Logo + name -->
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <img src="hero.png" alt="GroupShield" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--glass-border);">
+                <span class="gradient-text" style="font-weight: 700; font-size: 1rem;">GroupShield</span>
+            </div>
+
+            <!-- WhatsApp CTA -->
+            <a href="https://wa.me/972559216919?text=%D7%94%D7%AA%D7%97%D7%9C" target="_blank"
+                rel="noopener noreferrer" class="btn btn-whatsapp"
+                style="padding: 0.75rem 2rem; font-size: 1rem;"
+                onclick="if(window.va) window.va('try_bot_clicked');" data-i18n="btn-start">🚀 Try it yourself</a>
+
+            <!-- LinkedIn + copyright -->
+            <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; justify-content: center;">
+                <a href="https://www.linkedin.com/in/nir-dahan01/" target="_blank"
+                    style="color: var(--text-dim); border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); padding: 0.4rem 1rem; border-radius: 20px; text-decoration: none; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; transition: all 0.3s ease; font-weight: 500;"
+                    onmouseover="this.style.background='rgba(10,102,194,0.2)'; this.style.borderColor='rgba(10,102,194,0.5)'; this.style.color='#60a5fa'"
+                    onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(255,255,255,0.1)'; this.style.color='var(--text-dim)'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z" />
+                    </svg>
+                    <span data-i18n="footer-linkedin">Nir Dahan</span>
+                </a>
+                <p style="color: var(--text-dim); font-size: 0.8rem; margin: 0;" data-i18n="footer-text">© 2026 GroupShield</p>
+            </div>
+        </div>
     </footer>
 
     <script>
@@ -1141,6 +1193,25 @@ graph TD
                     // stats.json not available — leave dashes
                 });
         }
+    </script>
+
+    <script>
+        // Section fade-in on scroll
+        (function () {
+            var targets = document.querySelectorAll('section');
+            var obs = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        obs.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.08 });
+            targets.forEach(function (el) {
+                el.classList.add('section-fade-in');
+                obs.observe(el);
+            });
+        })();
     </script>
 </body>
 
