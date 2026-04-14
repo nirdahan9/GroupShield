@@ -95,7 +95,7 @@
         </div>
     </section>
 
-    <section class="container" style="padding: 8rem 0 4rem;">
+    <section class="container section-fade-in" style="padding: 8rem 0 4rem;">
         <h2 id="features" class="gradient-text" style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="features-title">Generic &
             Powerful</h2>
         <p style="text-align: center; color: var(--text-dim); margin-bottom: 4rem;" data-i18n="features-desc">One bot to
@@ -139,7 +139,7 @@
     </section>
 
     <!-- Stats Section -->
-    <section class="container" style="padding: 2rem 0 6rem;">
+    <section class="container section-fade-in" style="padding: 2rem 0 6rem;">
         <h2 class="gradient-text" style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="stats-title">Live Stats</h2>
         <p style="text-align: center; color: var(--text-dim); margin-bottom: 3rem;" data-i18n="stats-desc">Real data
             from the running production instance.</p>
@@ -169,7 +169,7 @@
     </section>
 
     <!-- Chat Simulation Engine -->
-    <section class="container" style="padding: 4rem 0;">
+    <section class="container section-fade-in" style="padding: 4rem 0;">
         <h2 id="demo" class="gradient-text" style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="demo-title">Experience
             GroupShield</h2>
         <p style="text-align: center; color: var(--text-dim); margin-bottom: 3rem;" data-i18n="demo-desc">A visual
@@ -269,7 +269,7 @@
     </section>
 
     <!-- Logic Engine & Footer -->
-    <section class="container" style="padding: 4rem 0 0;">
+    <section class="container section-fade-in" style="padding: 4rem 0 0;">
         <h2 class="gradient-text" style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="logic-title">The Logic Engine
         </h2>
         <div class="sim-container glass" style="padding: 3rem 1rem;">
@@ -308,7 +308,7 @@
     </section>
 
     <!-- Detection Flow Diagram -->
-    <section class="container" style="padding: 8rem 0 4rem;">
+    <section class="container section-fade-in" style="padding: 8rem 0 4rem;">
         <h2 id="detection-flow" class="gradient-text" style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="flow-title">How We Catch the
             Uncatchable</h2>
         <p style="text-align: center; color: var(--text-dim); margin-bottom: 3rem;" data-i18n="flow-desc">A real-time
@@ -560,7 +560,7 @@
     </section>
 
     <!-- FAQ Section -->
-    <section class="container" style="padding: 6rem 0;">
+    <section class="container section-fade-in" style="padding: 6rem 0;">
         <h2 id="faq" class="gradient-text" style="text-align: center; font-size: 2.5rem; margin-bottom: 2rem;" data-i18n="faq-title">Frequently Asked
             Questions</h2>
 
@@ -667,7 +667,7 @@
     </section>
 
     <!-- Under the Hood (Technical) -->
-    <section class="container" style="padding: 8rem 0 8rem;">
+    <section class="container section-fade-in" style="padding: 8rem 0 8rem;">
         <h2 id="tech-stack" class="gradient-text" style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="tech-title">Under the Hood</h2>
         <p style="text-align: center; color: var(--text-dim); margin-bottom: 5rem;" data-i18n="tech-desc">For the technically curious — the architecture powering GroupShield.</p>
 
@@ -1156,6 +1156,22 @@ graph TD
                     // stats.json not available — leave dashes
                 });
         }
+    </script>
+
+    <script>
+        (function () {
+            const io = new IntersectionObserver(function (entries) {
+                entries.forEach(function (e) {
+                    if (e.isIntersecting) {
+                        e.target.classList.add('visible');
+                        io.unobserve(e.target);
+                    }
+                });
+            }, { threshold: 0.08 });
+            document.querySelectorAll('.section-fade-in').forEach(function (el) {
+                io.observe(el);
+            });
+        })();
     </script>
 
 </body>
