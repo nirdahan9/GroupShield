@@ -48,7 +48,7 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  z-index: 9999;
+  z-index: 999;
   background: rgba(5, 10, 20, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -955,18 +955,4 @@ html[dir="rtl"] .pipeline-pulse {
   color: var(--text-dim);
   font-size: 0.9rem;
   line-height: 1.7;
-}
-
-/* Hero glow orb */
-.hero-glow-orb {
-  position: absolute;
-  top: 20%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 700px;
-  height: 700px;
-  background: radial-gradient(circle, rgba(0, 229, 255, 0.12) 0%, transparent 65%);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 0;
 }
