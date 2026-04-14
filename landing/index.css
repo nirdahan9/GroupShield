@@ -890,12 +890,10 @@ html[dir="rtl"] .pipeline-pulse {
 /* Section fade-in on scroll */
 .section-fade-in {
   opacity: 0;
-  transform: translateY(32px);
-  transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+  transition: opacity 0.7s ease-out;
 }
 .section-fade-in.visible {
   opacity: 1;
-  transform: translateY(0);
 }
 
 /* FAQ Accordion */
